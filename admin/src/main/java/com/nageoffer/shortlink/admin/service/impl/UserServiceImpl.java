@@ -8,6 +8,8 @@ import com.nageoffer.shortlink.admin.dao.entity.UserDO;
 import com.nageoffer.shortlink.admin.dao.mapper.UserMapper;
 import com.nageoffer.shortlink.admin.dto.resp.UserRespDTO;
 import com.nageoffer.shortlink.admin.service.UserService;
+import lombok.RequiredArgsConstructor;
+import org.redisson.api.RBloomFilter;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
@@ -15,8 +17,9 @@ import org.springframework.stereotype.Service;
  * 用户接口实现层
  */
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements UserService {
-
+    private final RBloomFilter<String> userRegisterCachePenetrationBloomFilter;
     @Override
     public UserRespDTO getUserByUsername(String username) {
         LambdaQueryWrapper<UserDO> lambdaQueryWrapper = new LambdaQueryWrapper<>();
@@ -25,8 +28,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
         UserRespDTO userRespDTO = new UserRespDTO();
         if(userDO!=null){
             BeanUtils.copyProperties(userDO,userRespDTO);
-
+            return userRespDTO;
         }
         throw new ClientException(UserErrorCodeEnum.USER_NULL);
+    }
+
+    @Override
+    public Boolean hasUsername(String username) {
+        return userRegisterCachePenetrationBloomFilter.contains(username);
     }
 }
