@@ -1,11 +1,13 @@
 package com.nageoffer.shortlink.admin.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.nageoffer.shortlink.admin.common.convention.exception.ClientException;
 import com.nageoffer.shortlink.admin.common.enums.UserErrorCodeEnum;
 import com.nageoffer.shortlink.admin.dao.entity.UserDO;
 import com.nageoffer.shortlink.admin.dao.mapper.UserMapper;
+import com.nageoffer.shortlink.admin.dto.req.UserRegisterReqDto;
 import com.nageoffer.shortlink.admin.dto.resp.UserRespDTO;
 import com.nageoffer.shortlink.admin.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -36,5 +38,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
     @Override
     public Boolean hasUsername(String username) {
         return userRegisterCachePenetrationBloomFilter.contains(username);
+    }
+
+    @Override
+    public void register(UserRegisterReqDto registerReqDto) {
+        if(hasUsername(registerReqDto.getUsername())){
+            throw new ClientException(UserErrorCodeEnum.USER_EXIST);
+        }
+        userRegisterCachePenetrationBloomFilter.add(registerReqDto.getUsername());
+        int insert = baseMapper.insert(BeanUtil.toBean(registerReqDto, UserDO.class));
+        if(insert<1){
+            throw new ClientException(UserErrorCodeEnum.USER_SAVE_ERROR);
+        }
+
+
     }
 }
