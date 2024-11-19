@@ -4,7 +4,7 @@ import com.nageoffer.shortlink.admin.service.GroupService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RestController;
 
-@RestController
+@RestController("/api/short-link/v1/group")
 @RequiredArgsConstructor
 public class GroupController {
     private final GroupService groupService;
