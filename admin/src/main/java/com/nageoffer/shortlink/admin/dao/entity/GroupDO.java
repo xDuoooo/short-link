@@ -1,21 +1,24 @@
 package com.nageoffer.shortlink.admin.dao.entity;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
+import com.nageoffer.shortlink.admin.common.database.BaseDO;
+import lombok.*;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.Date;
 
 /**
  * 
  * @TableName t_group
  */
+@EqualsAndHashCode(callSuper = true)
 @TableName(value ="t_group")
 @Data
-public class GroupDO implements Serializable {
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class GroupDO extends BaseDO implements Serializable{
     /**
      * ID
      */
@@ -43,27 +46,11 @@ public class GroupDO implements Serializable {
      * 分组排序
      */
     @TableField(value = "sort_order")
-    private Integer sort_order;
-
-    /**
-     * 创建时间
-     */
-    @TableField(value = "create_time",fill = FieldFill.INSERT)
-    private Date create_time;
-
-    /**
-     * 修改时间
-     */
-    @TableField(value = "update_time",fill = FieldFill.INSERT_UPDATE)
-    private Date update_time;
-
-    /**
-     * 删除标识 0：未删除 1：已删除
-     */
-    @TableField(value = "del_flag",fill = FieldFill.INSERT)
-    private Integer del_flag;
+    private Integer sortOrder;
 
     @Serial
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
+
+
 }

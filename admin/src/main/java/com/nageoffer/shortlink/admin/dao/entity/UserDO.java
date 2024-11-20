@@ -1,11 +1,10 @@
 package com.nageoffer.shortlink.admin.dao.entity;
 
-import com.baomidou.mybatisplus.annotation.FieldFill;
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.nageoffer.shortlink.admin.common.database.BaseDO;
+import lombok.AllArgsConstructor;
 import lombok.Data;
-
-import java.util.Date;
+import lombok.RequiredArgsConstructor;
 
 /**
  * 用户持久层实体
@@ -13,7 +12,9 @@ import java.util.Date;
  */
 @Data
 @TableName("t_user")
-public class UserDO{
+@AllArgsConstructor
+@RequiredArgsConstructor
+public class UserDO extends BaseDO {
     /**
      * ID
      */
@@ -52,24 +53,6 @@ public class UserDO{
      * 注销时间戳
      */
     private Long deletionTime;
-
-    /**
-     * 创建时间
-     */
-    @TableField(fill = FieldFill.INSERT)
-    private Date createTime;
-
-    /**
-     * 修改时间
-     */
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    private Date updateTime;
-
-    /**
-     * 删除标识 0:未删除 1:已删除
-     */
-    @TableField(fill = FieldFill.INSERT)
-    private Integer delFlag;
 
 
 }

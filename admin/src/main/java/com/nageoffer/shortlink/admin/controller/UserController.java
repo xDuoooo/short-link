@@ -87,7 +87,7 @@ public class UserController {
     public Result<Boolean> checkLogin(@RequestParam("username") String username,@RequestParam("token") String token){
         return Results.success(userService.checkLogin(username,token));
     }
-
+    
     /**
      * 用户退出登录
      * @param username
