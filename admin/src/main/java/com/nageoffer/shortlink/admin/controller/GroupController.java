@@ -22,6 +22,7 @@ public class GroupController {
 
     /**
      * 新增短链接分组
+     *
      * @param groupSaveReqDTO
      * @return
      */
@@ -33,21 +34,35 @@ public class GroupController {
 
     /**
      * 获取短链接分组DTO
+     *
      * @return
      */
     @GetMapping
-    public Result<List<GroupRespDTO>> listGroups(){
+    public Result<List<GroupRespDTO>> listGroups() {
         return Results.success(groupService.listGroups());
     }
 
     /**
      * 短链接分组修改
+     *
      * @param groupUpdateReqDTO
      * @return
      */
     @PutMapping
-    public Result<Void> updateGroup(@RequestBody GroupUpdateReqDTO groupUpdateReqDTO){
+    public Result<Void> updateGroup(@RequestBody GroupUpdateReqDTO groupUpdateReqDTO) {
         groupService.updateGroup(groupUpdateReqDTO);
+        return Results.success();
+    }
+
+    /**
+     * 短链接分组删除
+     *
+     * @param gid
+     * @return
+     */
+    @DeleteMapping
+    public Result<Void> deleteGroup(@RequestParam String gid) {
+        groupService.deleteGroup(gid);
         return Results.success();
     }
 }

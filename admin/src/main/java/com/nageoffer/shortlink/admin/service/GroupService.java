@@ -30,4 +30,6 @@ public interface GroupService extends IService<GroupDO> {
      * @param groupUpdateReqDTO
      */
     void updateGroup(GroupUpdateReqDTO groupUpdateReqDTO);
+
+    void deleteGroup(String gid);
 }
