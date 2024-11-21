@@ -1,8 +1,8 @@
 package com.nageoffer.shortlink.admin.remote.dto;
 
-import cn.hutool.core.lang.TypeReference;
 import cn.hutool.http.HttpUtil;
 import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.TypeReference;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.nageoffer.shortlink.admin.common.convention.result.Result;
 import com.nageoffer.shortlink.admin.remote.dto.req.ShortLinkCreateReqDTO;
