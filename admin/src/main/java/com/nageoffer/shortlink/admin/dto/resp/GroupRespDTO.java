@@ -28,6 +28,6 @@ public class GroupRespDTO {
      * 分组排序
      */
     @TableField(value = "sort_order")
-    private Integer sort_order;
+    private Integer sortOrder;
 
 }

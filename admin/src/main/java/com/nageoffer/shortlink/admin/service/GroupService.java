@@ -2,6 +2,7 @@ package com.nageoffer.shortlink.admin.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.nageoffer.shortlink.admin.dao.entity.GroupDO;
+import com.nageoffer.shortlink.admin.dto.req.GroupOrderReqDTO;
 import com.nageoffer.shortlink.admin.dto.req.GroupUpdateReqDTO;
 import com.nageoffer.shortlink.admin.dto.resp.GroupRespDTO;
 
@@ -32,4 +33,6 @@ public interface GroupService extends IService<GroupDO> {
     void updateGroup(GroupUpdateReqDTO groupUpdateReqDTO);
 
     void deleteGroup(String gid);
+
+    void orderGroup(List<GroupOrderReqDTO> groupOrderReqDTOS);
 }

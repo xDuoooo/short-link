@@ -2,6 +2,7 @@ package com.nageoffer.shortlink.admin.controller;
 
 import com.nageoffer.shortlink.admin.common.convention.result.Result;
 import com.nageoffer.shortlink.admin.common.convention.result.Results;
+import com.nageoffer.shortlink.admin.dto.req.GroupOrderReqDTO;
 import com.nageoffer.shortlink.admin.dto.req.GroupSaveReqDTO;
 import com.nageoffer.shortlink.admin.dto.req.GroupUpdateReqDTO;
 import com.nageoffer.shortlink.admin.dto.resp.GroupRespDTO;
@@ -15,7 +16,7 @@ import java.util.List;
  * 短链接分组控制层
  */
 @RestController
-@RequestMapping("/api/short-link/v1/group")
+@RequestMapping("/api/short-link/admin/v1/group")
 @RequiredArgsConstructor
 public class GroupController {
     private final GroupService groupService;
@@ -65,4 +66,17 @@ public class GroupController {
         groupService.deleteGroup(gid);
         return Results.success();
     }
+
+    /**
+     * 短链接分组排序
+     *
+     * @param
+     * @return
+     */
+    @PostMapping("/sort")
+    public Result<Void> order(@RequestBody List<GroupOrderReqDTO> groupOrderReqDTOS) {
+        groupService.orderGroup(groupOrderReqDTOS);
+        return Results.success();
+    }
+
 }

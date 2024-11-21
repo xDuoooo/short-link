@@ -9,6 +9,7 @@ import com.nageoffer.shortlink.admin.common.biz.user.UserContext;
 import com.nageoffer.shortlink.admin.common.database.BaseDO;
 import com.nageoffer.shortlink.admin.dao.entity.GroupDO;
 import com.nageoffer.shortlink.admin.dao.mapper.GroupMapper;
+import com.nageoffer.shortlink.admin.dto.req.GroupOrderReqDTO;
 import com.nageoffer.shortlink.admin.dto.req.GroupUpdateReqDTO;
 import com.nageoffer.shortlink.admin.dto.resp.GroupRespDTO;
 import com.nageoffer.shortlink.admin.service.GroupService;
@@ -73,6 +74,17 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO>
         GroupDO groupDO = new GroupDO();
         groupDO.setDelFlag(1);
         baseMapper.update(groupDO,eq);
+    }
+
+    @Override
+    public void orderGroup(List<GroupOrderReqDTO> groupOrderReqDTOS) {
+        for (GroupOrderReqDTO groupOrderReqDTO : groupOrderReqDTOS) {
+            LambdaUpdateWrapper<GroupDO> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+            lambdaUpdateWrapper.eq(GroupDO::getGid,groupOrderReqDTO.getGid()).eq(GroupDO::getUsername,UserContext.getUsername()).eq(BaseDO::getDelFlag,0);
+            GroupDO groupDO = GroupDO.builder().sortOrder(groupOrderReqDTO.getSortOrder()).build();
+            update(groupDO,lambdaUpdateWrapper);
+        }
+
     }
 
     private boolean hasGid(String gid){
