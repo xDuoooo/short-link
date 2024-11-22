@@ -2,6 +2,7 @@ package com.nageoffer.shortlink.project.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.text.StrBuilder;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -12,6 +13,8 @@ import com.nageoffer.shortlink.project.common.convention.exception.ServiceExcept
 import com.nageoffer.shortlink.project.common.database.BaseDO;
 import com.nageoffer.shortlink.project.common.enums.ValidateTypeEnum;
 import com.nageoffer.shortlink.project.dao.entity.LinkDO;
+import com.nageoffer.shortlink.project.dao.entity.LinkGoToDO;
+import com.nageoffer.shortlink.project.dao.mapper.LinkGoToMapper;
 import com.nageoffer.shortlink.project.dao.mapper.LinkMapper;
 import com.nageoffer.shortlink.project.dto.req.ShortLinkCreateReqDTO;
 import com.nageoffer.shortlink.project.dto.req.ShortLinkPageReqDTO;
@@ -21,6 +24,8 @@ import com.nageoffer.shortlink.project.dto.resp.ShortLinkGroupCountQueryRespDTO;
 import com.nageoffer.shortlink.project.dto.resp.ShortLinkPageRespDTO;
 import com.nageoffer.shortlink.project.service.LinkService;
 import com.nageoffer.shortlink.project.util.HashUtil;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.RedissonBloomFilter;
@@ -30,6 +35,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.rowset.serial.SerialException;
+import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
@@ -47,6 +53,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
 
     private final LinkMapper linkMapper;
 
+    private final LinkGoToMapper linkGoToMapper;
     @Override
     public ShortLinkCreateRespDTO createShortLink(ShortLinkCreateReqDTO shortLinkCreateReqDTO) {
         String shortLinkSuffix = generateSuffix(shortLinkCreateReqDTO);
@@ -66,9 +73,15 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
                 .enableStatus(1)
                 .fullShortUrl(fullShortUrl)
                 .build();
+        LinkGoToDO linkGoToDO = LinkGoToDO.builder()
+                .fullShortUrl(fullShortUrl)
+                .gid(shortLinkDO.getGid())
+                .build();
         try {
             //此时多个相同的并发请求可能到达这里
             baseMapper.insert(shortLinkDO);
+            linkGoToMapper.insert(linkGoToDO);
+
         } catch (DuplicateKeyException ex) {
 
             LambdaQueryWrapper<LinkDO> queryWrapper = Wrappers.lambdaQuery(LinkDO.class)
@@ -79,7 +92,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
                 throw new ServiceException("短链接生成重复");
             }
         }
-        shortUriCreateCachePenetrationBloomFilter.add(shortLinkSuffix);
+        shortUriCreateCachePenetrationBloomFilter.add(fullShortUrl);
         return ShortLinkCreateRespDTO.builder()
                 .fullShortUrl(shortLinkDO.getFullShortUrl())
                 .originUrl(shortLinkDO.getOriginUrl()).build();
@@ -150,6 +163,33 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
         }
 
 
+    }
+
+    @Override
+    public void restoreUrl(String shortUri, HttpServletRequest request, HttpServletResponse response) {
+        String serverName = request.getServerName();
+        String fullShortUrl = serverName + "/" + shortUri;
+        LambdaQueryWrapper<LinkGoToDO> linkGoToDOLambdaQueryWrapper = Wrappers.lambdaQuery(LinkGoToDO.class)
+                .eq(LinkGoToDO::getFullShortUrl, fullShortUrl);
+        LinkGoToDO linkGoToDO = linkGoToMapper.selectOne(linkGoToDOLambdaQueryWrapper);
+        if (linkGoToDO == null){
+            //严禁来说，此处需要进行风控
+            return;
+        }
+        LambdaQueryWrapper<LinkDO> linkDOLambdaQueryWrapper = Wrappers.lambdaQuery(LinkDO.class)
+                .eq(LinkDO::getGid , linkGoToDO.getGid())
+                .eq(LinkDO::getFullShortUrl, fullShortUrl)
+                .eq(BaseDO::getDelFlag, 0)
+                .eq(LinkDO::getEnableStatus, 1);
+        LinkDO linkDO = baseMapper.selectOne(linkDOLambdaQueryWrapper);
+        if(linkDO!=null){
+            try{
+                response.sendRedirect(linkDO.getOriginUrl());
+
+            } catch (Exception e) {
+                throw new ServiceException("服务端异常:跳转失败");
+            }
+        }
     }
 
     private String generateSuffix(ShortLinkCreateReqDTO shortLinkCreateReqDTO) {

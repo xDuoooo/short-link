@@ -3,7 +3,6 @@ package com.nageoffer.shortlink.project.dao.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.nageoffer.shortlink.project.dao.entity.LinkDO;
 import com.nageoffer.shortlink.project.dto.resp.ShortLinkGroupCountQueryRespDTO;
-import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
 

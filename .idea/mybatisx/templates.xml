@@ -68,8 +68,8 @@
             <option name="tableUIInfoList">
               <list>
                 <TableUIInfo>
-                  <option name="className" value="t_link" />
-                  <option name="tableName" value="t_link" />
+                  <option name="className" value="t_link_goto_0" />
+                  <option name="tableName" value="t_link_goto_0" />
                 </TableUIInfo>
               </list>
             </option>
