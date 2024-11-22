@@ -18,16 +18,14 @@ public class GroupRespDTO {
     @TableField(value = "name")
     private String name;
 
-    /**
-     * 创建分组用户名
-     */
-    @TableField(value = "username")
-    private String username;
 
     /**
      * 分组排序
      */
     @TableField(value = "sort_order")
     private Integer sortOrder;
-
+    /**
+     * 当前分组下短链接数量
+     */
+    private Integer shortLinkCount;
 }

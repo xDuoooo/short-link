@@ -3,6 +3,7 @@ package com.nageoffer.shortlink.project.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.text.StrBuilder;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -13,6 +14,7 @@ import com.nageoffer.shortlink.project.dao.mapper.LinkMapper;
 import com.nageoffer.shortlink.project.dto.req.ShortLinkCreateReqDTO;
 import com.nageoffer.shortlink.project.dto.req.ShortLinkPageReqDTO;
 import com.nageoffer.shortlink.project.dto.resp.ShortLinkCreateRespDTO;
+import com.nageoffer.shortlink.project.dto.resp.ShortLinkGroupCountQueryRespDTO;
 import com.nageoffer.shortlink.project.dto.resp.ShortLinkPageRespDTO;
 import com.nageoffer.shortlink.project.service.LinkService;
 import com.nageoffer.shortlink.project.util.HashUtil;
@@ -24,6 +26,7 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
 import javax.sql.rowset.serial.SerialException;
+import java.util.List;
 
 /**
  * @author Duo
@@ -36,6 +39,8 @@ import javax.sql.rowset.serial.SerialException;
 public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements LinkService {
 
     private final RBloomFilter<String> shortUriCreateCachePenetrationBloomFilter;
+
+    private final LinkMapper linkMapper;
 
     @Override
     public ShortLinkCreateRespDTO createShortLink(ShortLinkCreateReqDTO shortLinkCreateReqDTO) {
@@ -84,6 +89,12 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
                 .eq(BaseDO::getDelFlag, 0);
         IPage<LinkDO> resultPage = baseMapper.selectPage(shortLinkPageReqDTO,lambdaQueryWrapper);
         return resultPage.convert(each ->BeanUtil.toBean(each, ShortLinkPageRespDTO.class));
+    }
+
+    @Override
+    public List<ShortLinkGroupCountQueryRespDTO> listGroupShortLinkCount(List<String> gids) {
+        return linkMapper.listGroupShortLinkCount(gids);
+
     }
 
     private String generateSuffix(ShortLinkCreateReqDTO shortLinkCreateReqDTO){

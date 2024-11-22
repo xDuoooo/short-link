@@ -2,6 +2,10 @@ package com.nageoffer.shortlink.project.dao.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.nageoffer.shortlink.project.dao.entity.LinkDO;
+import com.nageoffer.shortlink.project.dto.resp.ShortLinkGroupCountQueryRespDTO;
+import org.apache.ibatis.annotations.Mapper;
+
+import java.util.List;
 
 /**
 * @author Duo
@@ -9,7 +13,10 @@ import com.nageoffer.shortlink.project.dao.entity.LinkDO;
 * @createDate 2024-11-21 09:54:27
 * @Entity generator.dto/entity.TLink
 */
+
 public interface LinkMapper extends BaseMapper<LinkDO> {
+
+    List<ShortLinkGroupCountQueryRespDTO> listGroupShortLinkCount(List<String> gids);
 
 }
 

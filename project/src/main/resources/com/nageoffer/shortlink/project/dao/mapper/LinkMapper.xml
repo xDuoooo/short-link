@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nageoffer.shortlink.project.dao.mapper.LinkMapper">
+
+    <select id="listGroupShortLinkCount"
+            resultType="com.nageoffer.shortlink.project.dto.resp.ShortLinkGroupCountQueryRespDTO">
+        select gid,count(1) as shortLinkCount FROM t_link where gid in
+        <foreach collection="list" open="(" close=")" separator="," item="each">
+            #{each}
+        </foreach>
+        and enable_status=1
+        group by gid
+    </select>
+</mapper>
