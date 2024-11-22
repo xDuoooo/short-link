@@ -2,39 +2,28 @@ package com.nageoffer.shortlink.project.dto.req;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.nageoffer.shortlink.project.common.database.BaseDO;
 import lombok.Data;
 
 import java.util.Date;
-
-/**
- * 短链接创建请求对象
- */
 @Data
-public class ShortLinkCreateReqDTO {
+public class ShortLinkUpdateReqDTO {
 
-    /**
-     * 域名
-     */
-    @TableField(value = "domain")
-    private String domain;
+
     /**
      * 原始链接
      */
     @TableField(value = "origin_url")
     private String originUrl;
+    /**
+     * 完整短链接
+     */
+    private String fullShortUrl;
 
     /**
      * 分组标识
      */
     @TableField(value = "gid")
     private String gid;
-
-    /**
-     * 创建类型 0：控制台 1：接口
-     */
-    @TableField(value = "created_type")
-    private Integer createdType;
 
     /**
      * 有效期类型 0：永久有效 1：用户自定义
@@ -54,5 +43,6 @@ public class ShortLinkCreateReqDTO {
      */
     @TableField(value = "describe")
     private String describe;
+
 
 }

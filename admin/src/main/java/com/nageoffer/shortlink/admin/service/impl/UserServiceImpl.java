@@ -16,6 +16,7 @@ import com.nageoffer.shortlink.admin.dto.req.UserRegisterReqDTO;
 import com.nageoffer.shortlink.admin.dto.req.UserUpdateReqDTO;
 import com.nageoffer.shortlink.admin.dto.resp.UserLoginRespDTO;
 import com.nageoffer.shortlink.admin.dto.resp.UserRespDTO;
+import com.nageoffer.shortlink.admin.service.GroupService;
 import com.nageoffer.shortlink.admin.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.redisson.api.RBloomFilter;
@@ -37,14 +38,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
     private final RBloomFilter<String> userRegisterCachePenetrationBloomFilter;
     private final RedissonClient redissonClient;
     private final StringRedisTemplate stringRedisTemplate;
+    private final GroupService groupService;
+
     @Override
     public UserRespDTO getUserByUsername(String username) {
         LambdaQueryWrapper<UserDO> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(UserDO::getUsername,username);
+        lambdaQueryWrapper.eq(UserDO::getUsername, username);
         UserDO userDO = baseMapper.selectOne(lambdaQueryWrapper);
         UserRespDTO userRespDTO = new UserRespDTO();
-        if(userDO!=null){
-            BeanUtils.copyProperties(userDO,userRespDTO);
+        if (userDO != null) {
+            BeanUtils.copyProperties(userDO, userRespDTO);
             return userRespDTO;
         }
         throw new ClientException(UserErrorCodeEnum.USER_NULL);
@@ -57,24 +60,25 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
 
     @Override
     public void register(UserRegisterReqDTO registerReqDto) {
-        if(hasUsername(registerReqDto.getUsername())){
+        if (hasUsername(registerReqDto.getUsername())) {
             throw new ClientException(UserErrorCodeEnum.USER_EXIST);
         }
         RLock lock = redissonClient.getLock(RedisCacheConstants.LOCK_USER_REGISTER_KEY + registerReqDto.getUsername());
-        try{
-           if (lock.tryLock()){
+        try {
+            if (lock.tryLock()) {
                 try {
                     int insert = baseMapper.insert(BeanUtil.toBean(registerReqDto, UserDO.class));
-                    if(insert<1){
+                    if (insert < 1) {
                         throw new ClientException(UserErrorCodeEnum.USER_SAVE_ERROR);
                     }
-                }catch (DuplicateKeyException exception){
+                } catch (DuplicateKeyException exception) {
                     throw new ClientException(UserErrorCodeEnum.USER_EXIST);
 
                 }
-               userRegisterCachePenetrationBloomFilter.add(registerReqDto.getUsername());
-           }
-        }finally {
+                userRegisterCachePenetrationBloomFilter.add(registerReqDto.getUsername());
+                groupService.saveGroup(registerReqDto.getUsername(),"默认分组");
+            }
+        } finally {
             lock.unlock();
         }
 
@@ -87,9 +91,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
 
 
         LambdaUpdateWrapper<UserDO> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-        lambdaUpdateWrapper.eq(UserDO::getUsername,userUpdateReqDTO.getUsername());
+        lambdaUpdateWrapper.eq(UserDO::getUsername, userUpdateReqDTO.getUsername());
         int update = baseMapper.update(BeanUtil.toBean(userUpdateReqDTO, UserDO.class), lambdaUpdateWrapper);
-        if(update < 1){
+        if (update < 1) {
             throw new ClientException("不存在该用户");
         }
     }
@@ -98,35 +102,35 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
     public UserLoginRespDTO login(UserLoginReqDTO userLoginReqDTO) {
         //TODO 后续有时间完善  判断是否登录 使用token
         LambdaQueryWrapper<UserDO> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(UserDO::getUsername, userLoginReqDTO.getUsername()).eq(UserDO::getDelFlag,0);
+        lambdaQueryWrapper.eq(UserDO::getUsername, userLoginReqDTO.getUsername()).eq(UserDO::getDelFlag, 0);
         UserDO userDO = baseMapper.selectOne(lambdaQueryWrapper);
-        if (userDO == null){
+        if (userDO == null) {
             throw new ClientException("用户不存在");
         }
-        if(!userDO.getPassword().equals(userLoginReqDTO.getPassword())){
+        if (!userDO.getPassword().equals(userLoginReqDTO.getPassword())) {
             throw new ClientException("密码错误");
         }
         Boolean hasLogin = stringRedisTemplate.hasKey("login_" + userLoginReqDTO.getUsername());
-        if(hasLogin!=null && hasLogin){
+        if (hasLogin != null && hasLogin) {
             throw new ClientException("用户已登录");
         }
         String uuid = UUID.randomUUID().toString();
-        stringRedisTemplate.opsForHash().put("login_" + userLoginReqDTO.getUsername(),uuid, JSON.toJSONString(userDO));
+        stringRedisTemplate.opsForHash().put("login_" + userLoginReqDTO.getUsername(), uuid, JSON.toJSONString(userDO));
         //TODO 这里暂时设置30days
-        stringRedisTemplate.expire("login_" + userLoginReqDTO.getUsername(),30L, TimeUnit.DAYS);
+        stringRedisTemplate.expire("login_" + userLoginReqDTO.getUsername(), 30L, TimeUnit.DAYS);
         return new UserLoginRespDTO(uuid);
     }
 
     @Override
-    public Boolean checkLogin(String username,String token) {
+    public Boolean checkLogin(String username, String token) {
         Object redisToken = stringRedisTemplate.opsForHash().get("login_" + username, token);
-        return redisToken != null ;
+        return redisToken != null;
     }
 
     @Override
     public void logout(String username, String token) {
-        if(checkLogin(username,token)){
-            stringRedisTemplate.opsForHash().delete("login_" + username,token);
+        if (checkLogin(username, token)) {
+            stringRedisTemplate.opsForHash().delete("login_" + username, token);
             return;
         }
         throw new ClientException("用户Token不存在或用户未登录");

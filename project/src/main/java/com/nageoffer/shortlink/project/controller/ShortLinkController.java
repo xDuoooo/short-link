@@ -5,6 +5,7 @@ import com.nageoffer.shortlink.project.common.convention.result.Result;
 import com.nageoffer.shortlink.project.common.convention.result.Results;
 import com.nageoffer.shortlink.project.dto.req.ShortLinkCreateReqDTO;
 import com.nageoffer.shortlink.project.dto.req.ShortLinkPageReqDTO;
+import com.nageoffer.shortlink.project.dto.req.ShortLinkUpdateReqDTO;
 import com.nageoffer.shortlink.project.dto.resp.ShortLinkCreateRespDTO;
 import com.nageoffer.shortlink.project.dto.resp.ShortLinkGroupCountQueryRespDTO;
 import com.nageoffer.shortlink.project.dto.resp.ShortLinkPageRespDTO;
@@ -29,6 +30,13 @@ public class ShortLinkController {
         return Results.success(linkService.createShortLink(shortLinkCreateReqDTO));
 
     }
+
+    @PutMapping("/update")
+    public Result<Void> updateShortLink(@RequestBody ShortLinkUpdateReqDTO requestParam){
+        linkService.updateShortLink(requestParam);
+        return Results.success();
+    }
+
     /**
      * 分页查询短链接请求
      * @return

@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.nageoffer.shortlink.project.dao.entity.LinkDO;
 import com.nageoffer.shortlink.project.dto.req.ShortLinkCreateReqDTO;
 import com.nageoffer.shortlink.project.dto.req.ShortLinkPageReqDTO;
+import com.nageoffer.shortlink.project.dto.req.ShortLinkUpdateReqDTO;
 import com.nageoffer.shortlink.project.dto.resp.ShortLinkCreateRespDTO;
 import com.nageoffer.shortlink.project.dto.resp.ShortLinkGroupCountQueryRespDTO;
 import com.nageoffer.shortlink.project.dto.resp.ShortLinkPageRespDTO;
@@ -38,4 +39,10 @@ public interface LinkService extends IService<LinkDO> {
      * @return
      */
     List<ShortLinkGroupCountQueryRespDTO> listGroupShortLinkCount(List<String> gids);
+
+    /**
+     * 修改对岸链接接口
+     * @param requestParam
+     */
+    void updateShortLink(ShortLinkUpdateReqDTO requestParam);
 }

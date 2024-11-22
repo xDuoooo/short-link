@@ -3,7 +3,6 @@ package com.nageoffer.shortlink.admin.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.nageoffer.shortlink.admin.common.biz.user.UserContext;
@@ -16,7 +15,6 @@ import com.nageoffer.shortlink.admin.dto.req.GroupUpdateReqDTO;
 import com.nageoffer.shortlink.admin.dto.resp.GroupRespDTO;
 import com.nageoffer.shortlink.admin.remote.dto.ShortLinkRemoteService;
 import com.nageoffer.shortlink.admin.remote.dto.resp.ShortLinkGroupCountQueryRespDTO;
-import com.nageoffer.shortlink.admin.remote.dto.resp.ShortLinkPageRespDTO;
 import com.nageoffer.shortlink.admin.service.GroupService;
 import com.nageoffer.shortlink.admin.util.RandomIncludeUpperAndLowerAndNumberUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -45,16 +44,19 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO>
 
 
     @Override
-    public void saveGroup(String groupName) {
+    public void saveGroup(String username, String groupName) {
         String gid;
         //Gid存在
         do {
             gid = RandomIncludeUpperAndLowerAndNumberUtil.generate(6);
-        } while (hasGid(gid));
-        String username = (UserContext.getUsername());
-        GroupDO buildDO = GroupDO.builder().gid(gid).sortOrder(0).name(groupName).username(UserContext.getUsername()).build();
+        } while (hasGid(username,gid));
+        GroupDO buildDO = GroupDO.builder().gid(gid).sortOrder(0).name(groupName).username(username).build();
         baseMapper.insert(buildDO);
 
+    }
+    @Override
+    public void saveGroup(String groupName) {
+        this.saveGroup(UserContext.getUsername(),groupName);
     }
 
     @Override
@@ -108,11 +110,10 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO>
         }
 
     }
-
-    private boolean hasGid(String gid){
+    //可以有多个相同gid对应不同username
+    private boolean hasGid(String username,String gid){
         LambdaQueryWrapper<GroupDO> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        // TODO 网关
-        lambdaQueryWrapper.eq(GroupDO::getGid,gid);
+        lambdaQueryWrapper.eq(GroupDO::getGid,gid).eq(GroupDO::getUsername, Optional.ofNullable(username).orElse(UserContext.getUsername()));
         GroupDO groupDO = baseMapper.selectOne(lambdaQueryWrapper);
 
         if (groupDO!=null){
