@@ -107,7 +107,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
                 throw new ServiceException("短链接生成重复");
             }
         }
-        stringRedisTemplate.opsForValue().set(String.format(GOTO_SHORT_LINK_KEY,fullShortUrl), shortLinkCreateReqDTO.getOriginUrl(), LinkUtil.getLinkCacheValidDate(shortLinkCreateReqDTO.getValidDate()),TimeUnit.MILLISECONDS);
+        stringRedisTemplate.opsForValue().set(String.format(GOTO_SHORT_LINK_KEY, fullShortUrl), shortLinkCreateReqDTO.getOriginUrl(), LinkUtil.getLinkCacheValidDate(shortLinkCreateReqDTO.getValidDate()), TimeUnit.MILLISECONDS);
         shortUriCreateCachePenetrationBloomFilter.add(fullShortUrl);
 
         return ShortLinkCreateRespDTO.builder()
@@ -194,21 +194,31 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
         if (StrUtil.isNotBlank(originalLink)) {
             try {
                 response.sendRedirect(originalLink);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+            } catch (Exception e) {
+                throw new ServiceException("服务端异常:跳转失败");
             }
             return;
         }
         //查的是域名+短链接
         boolean contains = shortUriCreateCachePenetrationBloomFilter.contains(fullShortUrl);
         //如果不存在 那么就一定不存在 直接返回
-        if (!contains){
+        if (!contains) {
+            try {
+                response.sendRedirect("/page/notFound");
+            } catch (Exception e) {
+                throw new ServiceException("服务端异常:跳转失败");
+            }
             return;
         }
         //缓存中存在，那么也有可能不存在，此时需要判断
         String gotoIsNullShortLink = stringRedisTemplate.opsForValue().get(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortUrl));
-        if(StrUtil.isNotBlank(gotoIsNullShortLink)){
+        if (StrUtil.isNotBlank(gotoIsNullShortLink)) {
             //IS NULL
+            try {
+                response.sendRedirect("/page/notFound");
+            } catch (Exception e) {
+                throw new ServiceException("服务端异常:跳转失败");
+            }
             return;
         }
 
@@ -230,8 +240,13 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
                     .eq(LinkGoToDO::getFullShortUrl, fullShortUrl);
             LinkGoToDO linkGoToDO = linkGoToMapper.selectOne(linkGoToDOLambdaQueryWrapper);
             if (linkGoToDO == null) {
-                stringRedisTemplate.opsForValue().set(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortUrl),"-",30, TimeUnit.SECONDS);
+                stringRedisTemplate.opsForValue().set(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortUrl), "-", 30, TimeUnit.SECONDS);
                 //严禁来说，此处需要进行风控
+                try {
+                    response.sendRedirect("/page/notFound");
+                } catch (Exception e) {
+                    throw new ServiceException("服务端异常:跳转失败");
+                }
                 return;
             }
             LambdaQueryWrapper<LinkDO> linkDOLambdaQueryWrapper = Wrappers.lambdaQuery(LinkDO.class)
@@ -241,14 +256,21 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
                     .eq(LinkDO::getEnableStatus, 1);
             LinkDO linkDO = baseMapper.selectOne(linkDOLambdaQueryWrapper);
             if (linkDO != null) {
-                if (linkDO.getValidDate() != null && linkDO.getValidDate().before(new Date())){
-                    stringRedisTemplate.opsForValue().set(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortUrl),"-",30, TimeUnit.SECONDS);
+                //有效期判断
+                if (linkDO.getValidDate() != null && linkDO.getValidDate().before(new Date())) {
+                    //过了有效期
+                    stringRedisTemplate.opsForValue().set(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortUrl), "-", 30, TimeUnit.SECONDS);
+                    try {
+                        response.sendRedirect("/page/notFound");
+                    } catch (Exception e) {
+                        throw new ServiceException("服务端异常:跳转失败");
+                    }
                     return;
                 }
 
 
                 try {
-                    stringRedisTemplate.opsForValue().set(String.format(GOTO_SHORT_LINK_KEY,fullShortUrl), linkDO.getOriginUrl(), LinkUtil.getLinkCacheValidDate(linkDO.getValidDate()),TimeUnit.MILLISECONDS);
+                    stringRedisTemplate.opsForValue().set(String.format(GOTO_SHORT_LINK_KEY, fullShortUrl), linkDO.getOriginUrl(), LinkUtil.getLinkCacheValidDate(linkDO.getValidDate()), TimeUnit.MILLISECONDS);
                     response.sendRedirect(linkDO.getOriginUrl());
 
                 } catch (Exception e) {
@@ -264,6 +286,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
         }
 
     }
+
     //短链接后缀，只放在布隆过滤器中
     private String generateSuffix(ShortLinkCreateReqDTO shortLinkCreateReqDTO) {
         int customGenerateCount = 0;

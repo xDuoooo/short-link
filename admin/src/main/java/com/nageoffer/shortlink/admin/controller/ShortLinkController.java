@@ -57,4 +57,13 @@ public class ShortLinkController {
     public Result<List<ShortLinkGroupCountQueryRespDTO>> pageShortLink(@RequestParam List<String> requestParam) {
         return shortLinkRemoteService.listGroupShortLinkCount(requestParam);
     }
-}
+    /**
+     * 根据URL获取对应网站的标题
+     * @param url
+     * @return
+     */
+    @GetMapping("/api/short-link/admin/v1/title")
+    public Result<String> getTitleByUrl(@RequestParam("url") String url){
+        return shortLinkRemoteService.getTitleByUrl(url);
+    }
+}4
