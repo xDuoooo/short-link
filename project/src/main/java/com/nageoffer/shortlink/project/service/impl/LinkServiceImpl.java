@@ -25,6 +25,7 @@ import com.nageoffer.shortlink.project.dto.resp.ShortLinkGroupCountQueryRespDTO;
 import com.nageoffer.shortlink.project.dto.resp.ShortLinkPageRespDTO;
 import com.nageoffer.shortlink.project.service.LinkService;
 import com.nageoffer.shortlink.project.util.HashUtil;
+import com.nageoffer.shortlink.project.util.LinkUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -40,11 +41,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.rowset.serial.SerialException;
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
-import static com.nageoffer.shortlink.project.common.constant.RedisKeyConstant.GOTO_SHORT_LINK_KEY;
-import static com.nageoffer.shortlink.project.common.constant.RedisKeyConstant.LOCK_GOTO_SHORT_LINK_KEY;
+import static com.nageoffer.shortlink.project.common.constant.RedisKeyConstant.*;
 
 /**
  * @author Duo
@@ -105,7 +107,9 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
                 throw new ServiceException("短链接生成重复");
             }
         }
+        stringRedisTemplate.opsForValue().set(String.format(GOTO_SHORT_LINK_KEY,fullShortUrl), shortLinkCreateReqDTO.getOriginUrl(), LinkUtil.getLinkCacheValidDate(shortLinkCreateReqDTO.getValidDate()),TimeUnit.MILLISECONDS);
         shortUriCreateCachePenetrationBloomFilter.add(fullShortUrl);
+
         return ShortLinkCreateRespDTO.builder()
                 .fullShortUrl("http://" + shortLinkDO.getFullShortUrl())
                 .originUrl(shortLinkDO.getOriginUrl()).build();
@@ -195,6 +199,20 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
             }
             return;
         }
+        //查的是域名+短链接
+        boolean contains = shortUriCreateCachePenetrationBloomFilter.contains(fullShortUrl);
+        //如果不存在 那么就一定不存在 直接返回
+        if (!contains){
+            return;
+        }
+        //缓存中存在，那么也有可能不存在，此时需要判断
+        String gotoIsNullShortLink = stringRedisTemplate.opsForValue().get(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortUrl));
+        if(StrUtil.isNotBlank(gotoIsNullShortLink)){
+            //IS NULL
+            return;
+        }
+
+        //记录不是NULL
 
         //缓存击穿 使用分布式锁解决
         RLock lock = redissonClient.getLock(String.format(LOCK_GOTO_SHORT_LINK_KEY, fullShortUrl));
@@ -206,10 +224,13 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
                 response.sendRedirect(originalLink);
                 return;
             }
+
+
             LambdaQueryWrapper<LinkGoToDO> linkGoToDOLambdaQueryWrapper = Wrappers.lambdaQuery(LinkGoToDO.class)
                     .eq(LinkGoToDO::getFullShortUrl, fullShortUrl);
             LinkGoToDO linkGoToDO = linkGoToMapper.selectOne(linkGoToDOLambdaQueryWrapper);
             if (linkGoToDO == null) {
+                stringRedisTemplate.opsForValue().set(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortUrl),"-",30, TimeUnit.SECONDS);
                 //严禁来说，此处需要进行风控
                 return;
             }
@@ -220,8 +241,14 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
                     .eq(LinkDO::getEnableStatus, 1);
             LinkDO linkDO = baseMapper.selectOne(linkDOLambdaQueryWrapper);
             if (linkDO != null) {
+                if (linkDO.getValidDate() != null && linkDO.getValidDate().before(new Date())){
+                    stringRedisTemplate.opsForValue().set(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortUrl),"-",30, TimeUnit.SECONDS);
+                    return;
+                }
+
+
                 try {
-                    stringRedisTemplate.opsForValue().set(String.format(GOTO_SHORT_LINK_KEY, fullShortUrl), linkDO.getOriginUrl());
+                    stringRedisTemplate.opsForValue().set(String.format(GOTO_SHORT_LINK_KEY,fullShortUrl), linkDO.getOriginUrl(), LinkUtil.getLinkCacheValidDate(linkDO.getValidDate()),TimeUnit.MILLISECONDS);
                     response.sendRedirect(linkDO.getOriginUrl());
 
                 } catch (Exception e) {
@@ -237,7 +264,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
         }
 
     }
-
+    //短链接后缀，只放在布隆过滤器中
     private String generateSuffix(ShortLinkCreateReqDTO shortLinkCreateReqDTO) {
         int customGenerateCount = 0;
         String shortUri;
@@ -251,7 +278,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
             shortUri = HashUtil.hashToBase62(originUrl);
             //在下一步 redis 中判断是否 存在 冲突
             //这里 如果不存在 就 一定   ！！在布隆过滤器中！！  不存在
-            //但是如果多个相同的uri 到这个位置  有可能 都会放行!!!!!!!!!!!!!!!!!!!
+            //但是如果多个相同的uri 到这个位置  有可能 都会放行!!!!!!!!!!!!!!!!!!! 存的是 域名+ 短链接
             if (!shortUriCreateCachePenetrationBloomFilter.contains(shortLinkCreateReqDTO.getDomain() + "/" + shortUri)) {
                 break;
             }
