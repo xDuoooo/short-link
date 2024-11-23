@@ -54,6 +54,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
     private final LinkMapper linkMapper;
 
     private final LinkGoToMapper linkGoToMapper;
+
     @Override
     public ShortLinkCreateRespDTO createShortLink(ShortLinkCreateReqDTO shortLinkCreateReqDTO) {
         String shortLinkSuffix = generateSuffix(shortLinkCreateReqDTO);
@@ -94,7 +95,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
         }
         shortUriCreateCachePenetrationBloomFilter.add(fullShortUrl);
         return ShortLinkCreateRespDTO.builder()
-                .fullShortUrl(shortLinkDO.getFullShortUrl())
+                .fullShortUrl("http://" + shortLinkDO.getFullShortUrl())
                 .originUrl(shortLinkDO.getOriginUrl()).build();
     }
 
@@ -106,7 +107,11 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
                 .eq(LinkDO::getEnableStatus, 1)
                 .eq(BaseDO::getDelFlag, 0);
         IPage<LinkDO> resultPage = baseMapper.selectPage(shortLinkPageReqDTO, lambdaQueryWrapper);
-        return resultPage.convert(each -> BeanUtil.toBean(each, ShortLinkPageRespDTO.class));
+        return resultPage.convert(each -> {
+            ShortLinkPageRespDTO bean = BeanUtil.toBean(each, ShortLinkPageRespDTO.class);
+            bean.setDomain("http://" + bean.getDomain());
+            return bean;
+        });
     }
 
     @Override
@@ -154,7 +159,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
             LambdaUpdateWrapper<LinkDO> wrapper = Wrappers.lambdaUpdate(LinkDO.class)
                     .eq(LinkDO::getFullShortUrl, requestParam.getFullShortUrl())
                     .eq(LinkDO::getDelFlag, 0)
-                    .eq(LinkDO::getEnableStatus,1);
+                    .eq(LinkDO::getEnableStatus, 1);
             baseMapper.delete(wrapper);
             linkDO.setGid(requestParam.getGid());
             baseMapper.insert(linkDO);
@@ -172,18 +177,18 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
         LambdaQueryWrapper<LinkGoToDO> linkGoToDOLambdaQueryWrapper = Wrappers.lambdaQuery(LinkGoToDO.class)
                 .eq(LinkGoToDO::getFullShortUrl, fullShortUrl);
         LinkGoToDO linkGoToDO = linkGoToMapper.selectOne(linkGoToDOLambdaQueryWrapper);
-        if (linkGoToDO == null){
+        if (linkGoToDO == null) {
             //严禁来说，此处需要进行风控
             return;
         }
         LambdaQueryWrapper<LinkDO> linkDOLambdaQueryWrapper = Wrappers.lambdaQuery(LinkDO.class)
-                .eq(LinkDO::getGid , linkGoToDO.getGid())
+                .eq(LinkDO::getGid, linkGoToDO.getGid())
                 .eq(LinkDO::getFullShortUrl, fullShortUrl)
                 .eq(BaseDO::getDelFlag, 0)
                 .eq(LinkDO::getEnableStatus, 1);
         LinkDO linkDO = baseMapper.selectOne(linkDOLambdaQueryWrapper);
-        if(linkDO!=null){
-            try{
+        if (linkDO != null) {
+            try {
                 response.sendRedirect(linkDO.getOriginUrl());
 
             } catch (Exception e) {
