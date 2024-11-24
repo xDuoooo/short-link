@@ -66,4 +66,4 @@ public class ShortLinkController {
     public Result<String> getTitleByUrl(@RequestParam("url") String url){
         return shortLinkRemoteService.getTitleByUrl(url);
     }
-}4
+}
