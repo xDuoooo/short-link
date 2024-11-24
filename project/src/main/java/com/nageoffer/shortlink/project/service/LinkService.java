@@ -24,12 +24,14 @@ public interface LinkService extends IService<LinkDO> {
 
     /**
      * 串讲短链接接口
+     *
      * @return 短链接创建纤细
      */
     ShortLinkCreateRespDTO createShortLink(ShortLinkCreateReqDTO shortLinkCreateReqDTO);
 
     /**
      * 分页查询短链接
+     *
      * @param shortLinkPageReqDTO
      * @return
      */
@@ -37,6 +39,7 @@ public interface LinkService extends IService<LinkDO> {
 
     /**
      * 获取分组下短链接数量接口
+     *
      * @param gids
      * @return
      */
@@ -44,15 +47,18 @@ public interface LinkService extends IService<LinkDO> {
 
     /**
      * 修改对岸链接接口
+     *
      * @param requestParam
      */
     void updateShortLink(ShortLinkUpdateReqDTO requestParam);
 
     /**
      * 短链接跳转
+     *
      * @param shortUri
      * @param request
      * @param response
      */
     void restoreUrl(String shortUri, HttpServletRequest request, HttpServletResponse response);
+
 }

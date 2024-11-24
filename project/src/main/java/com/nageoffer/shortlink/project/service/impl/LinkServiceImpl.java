@@ -3,9 +3,7 @@ package com.nageoffer.shortlink.project.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.text.StrBuilder;
 import cn.hutool.core.util.StrUtil;
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -29,8 +27,11 @@ import com.nageoffer.shortlink.project.util.LinkUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.redisson.RedissonBloomFilter;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.redisson.api.RBloomFilter;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
@@ -39,8 +40,9 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.sql.rowset.serial.SerialException;
 import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -85,6 +87,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
                 .validDate(shortLinkCreateReqDTO.getValidDate())
                 .describe(shortLinkCreateReqDTO.getDescribe())
                 .shortUri(shortLinkSuffix)
+                .favicon(getFavicon(shortLinkCreateReqDTO.getOriginUrl()))
                 .enableStatus(1)
                 .fullShortUrl(fullShortUrl)
                 .build();
@@ -309,6 +312,23 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
 
         }
         return shortUri;
+    }
+    @SneakyThrows
+    private String getFavicon(String url) {
+        try {
+            // 使用 Jsoup 直接连接网站（自动处理重定向）
+            Document document = Jsoup.connect(url).followRedirects(true).get();
+
+            // 尝试找到 favicon 的 <link> 标签
+            Element faviconElement = document.selectFirst("link[rel~=(?i)^(shortcut|icon|apple-touch-icon)]");
+            if (faviconElement != null) {
+                return faviconElement.attr("abs:href"); // 返回完整的 favicon URL
+            }
+        } catch (IOException e) {
+            // 打印错误信息或进行日志记录
+            System.err.println("Error fetching favicon: " + e.getMessage());
+        }
+        return null; // 未找到 favicon
     }
 }
 
