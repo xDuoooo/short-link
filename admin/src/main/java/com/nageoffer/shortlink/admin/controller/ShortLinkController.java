@@ -4,12 +4,12 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.nageoffer.shortlink.admin.common.convention.result.Result;
 import com.nageoffer.shortlink.admin.common.convention.result.Results;
 import com.nageoffer.shortlink.admin.remote.dto.ShortLinkRemoteService;
-import com.nageoffer.shortlink.admin.remote.dto.req.ShortLinkCreateReqDTO;
-import com.nageoffer.shortlink.admin.remote.dto.req.ShortLinkPageReqDTO;
-import com.nageoffer.shortlink.admin.remote.dto.req.ShortLinkUpdateReqDTO;
+import com.nageoffer.shortlink.admin.remote.dto.req.*;
 import com.nageoffer.shortlink.admin.remote.dto.resp.ShortLinkCreateRespDTO;
 import com.nageoffer.shortlink.admin.remote.dto.resp.ShortLinkGroupCountQueryRespDTO;
 import com.nageoffer.shortlink.admin.remote.dto.resp.ShortLinkPageRespDTO;
+import com.nageoffer.shortlink.admin.service.RecycleBinService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,7 +18,10 @@ import java.util.List;
  * 短链接后管控制层
  */
 @RestController
+@RequiredArgsConstructor
 public class ShortLinkController {
+
+    private final RecycleBinService recycleBinService;
 
     /**
      * TODO 后续重构为 SpringCloud Feign 调用
@@ -50,6 +53,7 @@ public class ShortLinkController {
     public Result<IPage<ShortLinkPageRespDTO>> pageShortLink(ShortLinkPageReqDTO requestParam) {
         return shortLinkRemoteService.pageShortLink(requestParam);
     }
+
     /**
      * 查询短链接分组下短链接数量
      */
@@ -66,4 +70,6 @@ public class ShortLinkController {
     public Result<String> getTitleByUrl(@RequestParam("url") String url){
         return shortLinkRemoteService.getTitleByUrl(url);
     }
+
+
 }

@@ -117,7 +117,9 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
                 .fullShortUrl("http://" + shortLinkDO.getFullShortUrl())
                 .originUrl(shortLinkDO.getOriginUrl()).build();
     }
-
+    /**
+     * 分页查询短链接
+     */
     @Override
     public IPage<ShortLinkPageRespDTO> pageShortLink(ShortLinkPageReqDTO shortLinkPageReqDTO) {
 
@@ -258,30 +260,24 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
                     .eq(BaseDO::getDelFlag, 0)
                     .eq(LinkDO::getEnableStatus, 1);
             LinkDO linkDO = baseMapper.selectOne(linkDOLambdaQueryWrapper);
-            if (linkDO != null) {
+            if (linkDO == null || linkDO.getValidDate() != null && linkDO.getValidDate().before(new Date())) {
                 //有效期判断
-                if (linkDO.getValidDate() != null && linkDO.getValidDate().before(new Date())) {
-                    //过了有效期
-                    stringRedisTemplate.opsForValue().set(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortUrl), "-", 30, TimeUnit.SECONDS);
-                    try {
-                        response.sendRedirect("/page/notFound");
-                    } catch (Exception e) {
-                        throw new ServiceException("服务端异常:跳转失败");
-                    }
-                    return;
-                }
-
-
+                //过了有效期
+                stringRedisTemplate.opsForValue().set(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, fullShortUrl), "-", 30, TimeUnit.SECONDS);
                 try {
-                    stringRedisTemplate.opsForValue().set(String.format(GOTO_SHORT_LINK_KEY, fullShortUrl), linkDO.getOriginUrl(), LinkUtil.getLinkCacheValidDate(linkDO.getValidDate()), TimeUnit.MILLISECONDS);
-                    response.sendRedirect(linkDO.getOriginUrl());
-
+                    response.sendRedirect("/page/notFound");
                 } catch (Exception e) {
                     throw new ServiceException("服务端异常:跳转失败");
                 }
+                return;
             }
+            try {
+                stringRedisTemplate.opsForValue().set(String.format(GOTO_SHORT_LINK_KEY, fullShortUrl), linkDO.getOriginUrl(), LinkUtil.getLinkCacheValidDate(linkDO.getValidDate()), TimeUnit.MILLISECONDS);
+                response.sendRedirect(linkDO.getOriginUrl());
 
-
+            } catch (Exception e) {
+                throw new ServiceException("服务端异常:跳转失败");
+            }
         } catch (Exception e) {
             throw new ServiceException("服务端异常:跳转失败");
         } finally {
@@ -313,6 +309,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
         }
         return shortUri;
     }
+
     @SneakyThrows
     private String getFavicon(String url) {
         try {
