@@ -3,11 +3,14 @@ package com.nageoffer.shortlink.project.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.Week;
+import cn.hutool.core.lang.UUID;
 import cn.hutool.core.text.StrBuilder;
+import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.nageoffer.shortlink.project.common.convention.exception.ServiceException;
@@ -30,8 +33,10 @@ import com.nageoffer.shortlink.project.util.HashUtil;
 import com.nageoffer.shortlink.project.util.LinkUtil;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jodd.util.StringUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -49,10 +54,12 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.nageoffer.shortlink.project.common.constant.RedisKeyConstant.*;
 
@@ -124,6 +131,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
                 .fullShortUrl("http://" + shortLinkDO.getFullShortUrl())
                 .originUrl(shortLinkDO.getOriginUrl()).build();
     }
+
     /**
      * 分页查询短链接
      */
@@ -200,12 +208,14 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
 
     @Override
     public void restoreUrl(String shortUri, HttpServletRequest request, HttpServletResponse response) {
+
+
         String serverName = request.getServerName();
         String fullShortUrl = serverName + "/" + shortUri;
         String originalLink = stringRedisTemplate.opsForValue().get(String.format(GOTO_SHORT_LINK_KEY, fullShortUrl));
         if (StrUtil.isNotBlank(originalLink)) {
             try {
-                shortLinkStats(fullShortUrl,null,request,response);
+                shortLinkStats(fullShortUrl, null, request, response);
                 response.sendRedirect(originalLink);
             } catch (Exception e) {
                 throw new ServiceException("服务端异常:跳转失败");
@@ -244,7 +254,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
             //双检 防止 大量请求在拿到锁前停滞
             originalLink = stringRedisTemplate.opsForValue().get(String.format(GOTO_SHORT_LINK_KEY, fullShortUrl));
             if (StrUtil.isNotBlank(originalLink)) {
-                shortLinkStats(fullShortUrl,null,request,response);
+                shortLinkStats(fullShortUrl, null, request, response);
                 response.sendRedirect(originalLink);
                 return;
             }
@@ -282,7 +292,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
             }
             try {
                 stringRedisTemplate.opsForValue().set(String.format(GOTO_SHORT_LINK_KEY, fullShortUrl), linkDO.getOriginUrl(), LinkUtil.getLinkCacheValidDate(linkDO.getValidDate()), TimeUnit.MILLISECONDS);
-                shortLinkStats(fullShortUrl, linkDO.getGid(), request,response);
+                shortLinkStats(fullShortUrl, linkDO.getGid(), request, response);
                 response.sendRedirect(linkDO.getOriginUrl());
 
             } catch (Exception e) {
@@ -339,9 +349,61 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
     }
 
 
-    private void shortLinkStats(String fullShortUrl, String gid, ServletRequest request, ServletResponse response) {
+    private void shortLinkStats(String fullShortUrl, String gid, HttpServletRequest request, HttpServletResponse response) {
+        //处理uv 利用 cookie
+        //获取cookie
+        //TODO 这里redis 有问题待修正
+        //问题如下Cookie中键"uv"有值不就代表不是新用户吗？为啥还要操作redis？
+        //2024-01-16 21:47
+        //栗子ing 回复 Mirac：感觉需要设置过期时间，然后操作redis就合理了
+        //2024-01-23 12:37
+        //暂无爱人 回复 Mirac：Cookie中 uv有值不代表是老用户，可能是用户第一次跳转过去，这时uv要+1，所以需要在redis中判断一下如果存在，说明老用户，不存在说明新用户，uv+1。
+        //2024-02-18 20:01
+        //乐忧忘忧 回复 Mirac：我的理解是该用户可能访问过别的短链接存入过uv值，所以需要判断该用户是不是第一次访问这个短链接
+        //2024-03-03 15:34
+        //yuemo 回复 乐忧忘忧：不是的，这里设置了cookie.setPath为当前短链接，访问其他短链接的uv不会被携带
+        //2024-03-15 20:02
+        //。。。。。。 回复 Mirac：我也想问，cookie中有uv不就已经说明了用户已经访问过了吗？
+        //2024-03-16 20:38
+        //给趣多多巧克力豆 回复 Mirac：因为用户可以访问多个短链接，那么无法仅仅通过cookie是否存在，来判断是否要将当前访问的短连接uv不加1，而是要通过一个key为当前短链接的set，来判断此set是否包含当前cookie，不包含，依然要将当前短链接uv加1
+        //2024-03-27 10:47
+        //郎同学 回复 给趣多多巧克力豆：代码里面设置了setpath，多个短链接cookie是不共享的, 如/xx1和/xx2两个链接cookie互不相干，如果/xx1 cookie存在，用户肯定不是第一次访问，所以不需要redis set来判断吧
+        //2024-04-09 16:45
+        //马丁 回复 Mirac：这个我想想，感觉可以改为如果没带uv就应该+1，如果携带了忽略
+        //2024-04-15 13:24
+        //GP 回复 马丁：方案一：Cookie的Path作用域为/，需要引入redis的set数据结构进行判断。
+        //方案二：Cookie的Path作用域为短链接的标识（shortUri），判断是否是携带了该Cookie，得知是否是第一次访问。个人认为第二种方法更好。
+        //贴一个Cookie的作用域链接Cookie · 语雀 《Cookie》
+        Cookie[] cookies = request.getCookies();
+        String uv = UUID.fastUUID().toString();
+        //有flag标识
+        AtomicBoolean uvFirstFlag = new AtomicBoolean();
         Date date = new Date();
         try {
+            Runnable addResponseCookieTask = () -> {
+                Cookie uvCookie = new Cookie("uv", uv);
+                uvCookie.setMaxAge(60 * 60 * 24 * 30);//该cookie有效期30天
+                uvCookie.setPath(StringUtil.substring(fullShortUrl, fullShortUrl.indexOf("/"), fullShortUrl.length()));
+                response.addCookie(uvCookie);
+                uvFirstFlag.set(Boolean.TRUE);
+                stringRedisTemplate.opsForSet().add("short-link:stats:uv" + fullShortUrl, uv);
+            };
+            if (ArrayUtil.isNotEmpty(cookies)) {
+                Arrays.stream(cookies).filter(each -> Objects.equals(each.getName(), "uv"))
+                        .findFirst()
+                        .map(Cookie::getValue)
+                        .ifPresentOrElse(each -> {
+                            Long added = stringRedisTemplate.opsForSet().add("short-link:stats:uv" + fullShortUrl, each);
+                            //added表示成功添加的元素的数量
+                            uvFirstFlag.set(added != null && added > 0L);
+                        }, addResponseCookieTask);
+            } else {
+                //不存在cookie
+                //获取cookie并返回前端
+                addResponseCookieTask.run();
+            }
+
+
             if (StrUtil.isBlank(gid)) {
                 LambdaQueryWrapper<LinkGoToDO> queryWrapper = Wrappers.lambdaQuery(LinkGoToDO.class)
                         .eq(LinkGoToDO::getFullShortUrl, fullShortUrl);
@@ -353,7 +415,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
             int weekValue = week.getIso8601Value();
             LinkAccessStatsDO linkAccessStatsDO = LinkAccessStatsDO.builder()
                     .pv(1)
-                    .uv(1)
+                    .uv(uvFirstFlag.get() ? 1 : 0)
                     .uip(1)
                     .hour(hour)
                     .weekday(weekValue)
