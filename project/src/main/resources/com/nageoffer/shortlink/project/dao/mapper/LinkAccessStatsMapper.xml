@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nageoffer.shortlink.project.dao.mapper.LinkAccessStatsMapper">
+
+
+    <insert id="shortLinkStats" parameterType="com.nageoffer.shortlink.project.dao.entity.LinkAccessStatsDO">
+        INSERT INTO
+        t_link_access_stats (
+        full_short_url,
+        gid,
+        date,
+        pv,
+        uv,
+        uip,
+        hour,
+        weekday,
+        create_time,
+        update_time,
+        del_flag
+        )
+        VALUES (
+        #{fullShortUrl},
+        #{gid},
+        #{date},
+        #{pv},
+        #{uv},
+        #{uip},
+        #{hour},
+        #{weekday},
+        NOW(),
+        NOW(),
+        #{delFlag}
+        )
+        ON DUPLICATE KEY UPDATE
+        pv = pv + #{pv},
+        uv = uv + #{uv},
+        uip = uip + #{uip};
+    </insert>
+
+</mapper>
