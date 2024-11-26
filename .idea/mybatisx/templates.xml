@@ -11,7 +11,7 @@
             <option name="classNameStrategy" value="same as tablename" />
             <option name="encoding" value="UTF-8" />
             <option name="extraClassSuffix" value="" />
-            <option name="ignoreFieldPrefix" value="" />
+            <option name="ignoreFieldPrefix" value="t_" />
             <option name="ignoreFieldSuffix" value="" />
             <option name="ignoreTablePrefix" value="" />
             <option name="ignoreTableSuffix" value="" />
@@ -68,8 +68,8 @@
             <option name="tableUIInfoList">
               <list>
                 <TableUIInfo>
-                  <option name="className" value="t_link_access_stats" />
-                  <option name="tableName" value="t_link_access_stats" />
+                  <option name="className" value="t_link_locale_stats" />
+                  <option name="tableName" value="t_link_locale_stats" />
                 </TableUIInfo>
               </list>
             </option>
