@@ -82,6 +82,8 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
 
     private final LinkOsStatsMapper linkOsStatsMapper;
     private final LinkBrowserStatsMapper linkBrowserStatsMapper;
+    private final LinkAccessLogsMapper linkAccessLogsMapper;
+    private final LinkDeviceStatsMapper linkDeviceStatsMapper;
     @Value("${short-link.stats.locale.amap-key}")
     private String statsAmapKey;
 
@@ -464,7 +466,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
                     .build();
             linkOsStatsMapper.shortLinkStats(linkOsStatsDO);
             String browser = LinkUtil.getBrowser(request);
-            LinkBrowserStats linkBrowserStats = LinkBrowserStats.builder()
+            LinkBrowserStatsDO linkBrowserStatsDO = LinkBrowserStatsDO.builder()
                     .browser(browser)
                     .cnt(1)
                     .fullShortUrl(fullShortUrl)
@@ -474,7 +476,29 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
                     .updateTime(date)
                     .delFlag(0)
                     .build();
-            linkBrowserStatsMapper.shortLinkStats(linkBrowserStats);
+            linkBrowserStatsMapper.shortLinkStats(linkBrowserStatsDO);
+
+            LinkAccessLogsDO linkAccessLogsDO = LinkAccessLogsDO.builder()
+                    .ip(ip)
+                    .user(uv)
+                    .gid(gid)
+                    .os(os)
+                    .fullShortUrl(fullShortUrl)
+                    .browser(browser)
+                    .build();
+            linkAccessLogsMapper.insert(linkAccessLogsDO);
+            LinkDeviceStatsDO linkDeviceStatsDO = LinkDeviceStatsDO.builder()
+                    .device(LinkUtil.getDevice(((HttpServletRequest) request)))
+                    .cnt(1)
+                    .gid(gid)
+                    .fullShortUrl(fullShortUrl)
+                    .date(new Date())
+                    .createTime(date)
+                    .updateTime(date)
+                    .delFlag(0)
+                    .build();
+            linkDeviceStatsMapper.shortLinkStats(linkDeviceStatsDO);
+
 
 
         } catch (Throwable ex) {

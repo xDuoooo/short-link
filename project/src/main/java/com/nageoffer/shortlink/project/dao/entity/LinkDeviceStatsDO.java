@@ -1,9 +1,9 @@
 package com.nageoffer.shortlink.project.dao.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.nageoffer.shortlink.project.common.database.BaseDO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,14 +15,14 @@ import java.util.Date;
 
 /**
  * 
- * @TableName t_link_browser_stats
+ * @TableName t_link_device_stats
  */
-@TableName(value ="t_link_browser_stats")
+@TableName(value ="t_link_device_stats")
 @Data
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
-public class LinkBrowserStats implements Serializable {
+public class LinkDeviceStatsDO extends BaseDO implements Serializable {
     /**
      * ID
      */
@@ -56,26 +56,9 @@ public class LinkBrowserStats implements Serializable {
     /**
      * 浏览器
      */
-    @TableField(value = "browser")
-    private String browser;
+    @TableField(value = "device")
+    private String device;
 
-    /**
-     * 创建时间
-     */
-    @TableField(value = "create_time")
-    private Date createTime;
-
-    /**
-     * 修改时间
-     */
-    @TableField(value = "update_time")
-    private Date updateTime;
-
-    /**
-     * 删除标识 0：未删除 1：已删除
-     */
-    @TableField(value = "del_flag")
-    private Integer delFlag;
 
     @Serial
     @TableField(exist = false)

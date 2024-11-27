@@ -68,8 +68,8 @@
             <option name="tableUIInfoList">
               <list>
                 <TableUIInfo>
-                  <option name="className" value="t_link_browser_stats" />
-                  <option name="tableName" value="t_link_browser_stats" />
+                  <option name="className" value="t_link_access_logs" />
+                  <option name="tableName" value="t_link_access_logs" />
                 </TableUIInfo>
               </list>
             </option>

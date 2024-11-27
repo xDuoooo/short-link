@@ -2,6 +2,7 @@ package com.nageoffer.shortlink.project.dao.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.nageoffer.shortlink.project.dao.entity.LinkBrowserStatsDO;
+import com.nageoffer.shortlink.project.dao.entity.LinkDeviceStatsDO;
 import org.springframework.web.bind.annotation.RequestParam;
 
 /**
@@ -10,12 +11,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 * @createDate 2024-11-26 23:49:41
 * @Entity generator.dto/entity.t_link_browser_stats
 */
-public interface LinkBrowserStatsMapper extends BaseMapper<LinkBrowserStatsDO> {
+public interface LinkDeviceStatsMapper extends BaseMapper<LinkBrowserStatsDO> {
     /**
      * 记录基础访问监控数据
-     * @param linkBrowserStatsDO
+     * @param linkDeviceStatsDO
      */
-    void shortLinkStats(@RequestParam("linkBrowserStatsDO") LinkBrowserStatsDO linkBrowserStatsDO);
+    void shortLinkStats(@RequestParam("linkDeviceStatsDO") LinkDeviceStatsDO linkDeviceStatsDO);
 }
 
 

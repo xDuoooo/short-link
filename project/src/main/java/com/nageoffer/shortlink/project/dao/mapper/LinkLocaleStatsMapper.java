@@ -1,7 +1,6 @@
 package com.nageoffer.shortlink.project.dao.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.nageoffer.shortlink.project.dao.entity.LinkAccessStatsDO;
 import com.nageoffer.shortlink.project.dao.entity.LinkLocaleStatsDO;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -17,7 +16,7 @@ public interface LinkLocaleStatsMapper extends BaseMapper<LinkLocaleStatsDO> {
      * 记录地区访问监控数据
      * @param linkLocaleStatsDO
      */
-    void shortLinkStats(@RequestParam("linkAccessStats") LinkLocaleStatsDO linkLocaleStatsDO);
+    void shortLinkStats(@RequestParam("linkBrowserStatsDO") LinkLocaleStatsDO linkLocaleStatsDO);
 
 }
 

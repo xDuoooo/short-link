@@ -16,7 +16,7 @@ public interface LinkAccessStatsMapper extends BaseMapper<LinkAccessStatsDO> {
      * 记录基础访问监控数据
      * @param linkAccessStatsDO
      */
-    void shortLinkStats(@RequestParam("linkAccessStats") LinkAccessStatsDO linkAccessStatsDO);
+    void shortLinkStats(@RequestParam("linkBrowserStatsDO") LinkAccessStatsDO linkAccessStatsDO);
 }
 
 

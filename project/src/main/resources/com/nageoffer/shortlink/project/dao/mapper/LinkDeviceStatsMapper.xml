@@ -2,17 +2,17 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.nageoffer.shortlink.project.dao.mapper.LinkBrowserStatsMapper">
+<mapper namespace="com.nageoffer.shortlink.project.dao.mapper.LinkDeviceStatsMapper">
 
 
-    <insert id="shortLinkStats" parameterType="com.nageoffer.shortlink.project.dao.entity.LinkBrowserStatsDO">
+    <insert id="shortLinkStats" parameterType="com.nageoffer.shortlink.project.dao.entity.LinkDeviceStatsDO">
         INSERT INTO
-        t_link_browser_stats (
+        t_link_device_stats (
         full_short_url,
         gid,
         date,
         cnt,
-        browser,
+        device,
         create_time,
         update_time,
         del_flag
@@ -22,7 +22,7 @@
         #{gid},
         #{date},
         #{cnt},
-        #{browser},
+        #{device},
         #{createTime},
         #{updateTime},
         #{delFlag}
