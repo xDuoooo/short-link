@@ -29,14 +29,15 @@
         #{uip},
         #{hour},
         #{weekday},
-        NOW(),
-        NOW(),
+        #{createTime},
+        #{updateTime},
         #{delFlag}
         )
         ON DUPLICATE KEY UPDATE
         pv = pv + #{pv},
         uv = uv + #{uv},
-        uip = uip + #{uip};
+        uip = uip + #{uip},
+        update_time = #{updateTime};
     </insert>
 
 </mapper>

@@ -2,7 +2,11 @@ package com.nageoffer.shortlink.project.common.database;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import java.util.Date;
 
@@ -10,6 +14,9 @@ import java.util.Date;
  * 数据库持久层对象基础属性
  */
 @Data
+@SuperBuilder
+@AllArgsConstructor
+@NoArgsConstructor
 public class BaseDO {
 
     /**

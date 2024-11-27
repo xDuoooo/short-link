@@ -7,6 +7,9 @@ import cn.hutool.core.lang.UUID;
 import cn.hutool.core.text.StrBuilder;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.http.HttpUtil;
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -15,12 +18,8 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.nageoffer.shortlink.project.common.convention.exception.ServiceException;
 import com.nageoffer.shortlink.project.common.database.BaseDO;
 import com.nageoffer.shortlink.project.common.enums.ValidateTypeEnum;
-import com.nageoffer.shortlink.project.dao.entity.LinkAccessStatsDO;
-import com.nageoffer.shortlink.project.dao.entity.LinkDO;
-import com.nageoffer.shortlink.project.dao.entity.LinkGoToDO;
-import com.nageoffer.shortlink.project.dao.mapper.LinkAccessStatsMapper;
-import com.nageoffer.shortlink.project.dao.mapper.LinkGoToMapper;
-import com.nageoffer.shortlink.project.dao.mapper.LinkMapper;
+import com.nageoffer.shortlink.project.dao.entity.*;
+import com.nageoffer.shortlink.project.dao.mapper.*;
 import com.nageoffer.shortlink.project.dto.req.ShortLinkCreateReqDTO;
 import com.nageoffer.shortlink.project.dto.req.ShortLinkPageReqDTO;
 import com.nageoffer.shortlink.project.dto.req.ShortLinkUpdateReqDTO;
@@ -43,20 +42,19 @@ import org.jsoup.nodes.Element;
 import org.redisson.api.RBloomFilter;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.nageoffer.shortlink.project.common.constant.RedisKeyConstant.*;
+import static com.nageoffer.shortlink.project.common.constant.ShortLinkConstant.AMOP_REMOTE_URL;
 
 /**
  * @author Duo
@@ -79,6 +77,13 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
     private final RedissonClient redissonClient;
 
     private final LinkAccessStatsMapper linkAccessStatsMapper;
+
+    private final LinkLocaleStatsMapper linkLocaleStatsMapper;
+
+    private final LinkOsStatsMapper linkOsStatsMapper;
+    private final LinkBrowserStatsMapper linkBrowserStatsMapper;
+    @Value("${short-link.stats.locale.amap-key}")
+    private String statsAmapKey;
 
     @Override
     public ShortLinkCreateRespDTO createShortLink(ShortLinkCreateReqDTO shortLinkCreateReqDTO) {
@@ -399,7 +404,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
             }
             String ip = LinkUtil.getIp(request);
             Long uvAdded = stringRedisTemplate.opsForSet().add("short-link:stats:uip" + fullShortUrl, ip);
-            boolean uipFirstFlag = uvAdded != null && uvAdded >  0L;
+            boolean uipFirstFlag = uvAdded != null && uvAdded > 0L;
             if (StrUtil.isBlank(gid)) {
                 LambdaQueryWrapper<LinkGoToDO> queryWrapper = Wrappers.lambdaQuery(LinkGoToDO.class)
                         .eq(LinkGoToDO::getFullShortUrl, fullShortUrl);
@@ -418,9 +423,60 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
                     .fullShortUrl(fullShortUrl)
                     .gid(gid)
                     .date(date)
+                    .build();
+            linkAccessStatsDO.setDelFlag(0);
+            linkAccessStatsDO.setCreateTime(date);
+            linkAccessStatsDO.setUpdateTime(date);
+            linkAccessStatsMapper.shortLinkStats(linkAccessStatsDO);
+            Map<String, Object> localeGetParam = new HashMap<>();
+            localeGetParam.put("ip", ip);
+            localeGetParam.put("key", statsAmapKey);
+            String localeResultStr = HttpUtil.get(AMOP_REMOTE_URL, localeGetParam);
+            JSONObject localeResultObj = JSON.parseObject(localeResultStr);
+            String infoCode = localeResultObj.getString("infocode");
+            if (StrUtil.isNotBlank(infoCode) && StrUtil.equals(infoCode, "10000")) {
+                String province = localeResultObj.getString("province");
+                boolean unknownProvinceFlag = StrUtil.equals(province, "[]");
+                LinkLocaleStatsDO linkLocaleStatsDO = LinkLocaleStatsDO.builder()
+                        .province(unknownProvinceFlag ? "未知" : province)
+                        .city(unknownProvinceFlag ? "未知" : localeResultObj.getString("city"))
+                        .adcode(unknownProvinceFlag ? "未知" : localeResultObj.getString("adcode"))
+                        .cnt(1)
+                        .fullShortUrl(fullShortUrl)
+                        .country("中国")
+                        .gid(gid)
+                        .date(new Date()).build();
+                linkLocaleStatsDO.setCreateTime(date);
+                linkLocaleStatsDO.setUpdateTime(date);
+                linkLocaleStatsDO.setDelFlag(0);
+                linkLocaleStatsMapper.shortLinkStats(linkLocaleStatsDO);
+            }
+            String os = LinkUtil.getOs(request);
+            LinkOsStatsDO linkOsStatsDO = LinkOsStatsDO.builder()
+                    .os(os)
+                    .cnt(1)
+                    .fullShortUrl(fullShortUrl)
+                    .gid(gid)
+                    .date(date)
+                    .createTime(date)
+                    .updateTime(date)
                     .delFlag(0)
                     .build();
-            linkAccessStatsMapper.shortLinkStats(linkAccessStatsDO);
+            linkOsStatsMapper.shortLinkStats(linkOsStatsDO);
+            String browser = LinkUtil.getBrowser(request);
+            LinkBrowserStats linkBrowserStats = LinkBrowserStats.builder()
+                    .browser(browser)
+                    .cnt(1)
+                    .fullShortUrl(fullShortUrl)
+                    .gid(gid)
+                    .date(date)
+                    .createTime(date)
+                    .updateTime(date)
+                    .delFlag(0)
+                    .build();
+            linkBrowserStatsMapper.shortLinkStats(linkBrowserStats);
+
+
         } catch (Throwable ex) {
             log.error("短链接访问量统计异常", ex);
         }

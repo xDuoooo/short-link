@@ -4,45 +4,42 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.Date;
 
-import com.nageoffer.shortlink.project.common.database.BaseDO;
-import lombok.*;
-import lombok.experimental.SuperBuilder;
-
 /**
  * 
- * @TableName t_link_access_stats
+ * @TableName t_link_browser_stats
  */
-/**
- * 基础访问实体
- */
-@TableName(value ="t_link_access_stats")
+@TableName(value ="t_link_browser_stats")
 @Data
+@SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
-@SuperBuilder
-public class LinkAccessStatsDO extends BaseDO implements Serializable {
+public class LinkBrowserStats implements Serializable {
     /**
      * ID
      */
-    @TableId(value = "id", type = IdType.AUTO)
+    @TableId(value = "id")
     private Long id;
-
-    /**
-     * 分组标识
-     */
-    @TableField(value = "gid")
-    private String gid;
 
     /**
      * 完整短链接
      */
     @TableField(value = "full_short_url")
     private String fullShortUrl;
+
+    /**
+     * 分组标识
+     */
+    @TableField(value = "gid")
+    private String gid;
 
     /**
      * 日期
@@ -53,35 +50,29 @@ public class LinkAccessStatsDO extends BaseDO implements Serializable {
     /**
      * 访问量
      */
-    @TableField(value = "pv")
-    private Integer pv;
+    @TableField(value = "cnt")
+    private Integer cnt;
 
     /**
-     * 独立访问数
+     * 浏览器
      */
-    @TableField(value = "uv")
-    private Integer uv;
+    @TableField(value = "browser")
+    private String browser;
 
     /**
-     * 独立IP数
+     * 创建时间
      */
-    @TableField(value = "uip")
-    private Integer uip;
+    @TableField(value = "create_time")
+    private Date createTime;
 
     /**
-     * 小时
+     * 修改时间
      */
-    @TableField(value = "hour")
-    private Integer hour;
+    @TableField(value = "update_time")
+    private Date updateTime;
 
     /**
-     * 星期
-     */
-    @TableField(value = "weekday")
-    private Integer weekday;
-
-    /**
-     * 删除标识：0 未删除 1 已删除
+     * 删除标识 0：未删除 1：已删除
      */
     @TableField(value = "del_flag")
     private Integer delFlag;
