@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nageoffer.shortlink.project.dao.mapper.LinkLocaleStatsMapper">
+
+
+    <insert id="shortLinkStats" parameterType="com.nageoffer.shortlink.project.dao.entity.LinkLocaleStatsDO">
+        INSERT INTO
+        t_link_locale_stats (
+        full_short_url,
+        gid,
+        date,
+        cnt,
+        province,
+        city,
+        adcode,
+        country,
+        create_time,
+        update_time,
+        del_flag
+        )
+        VALUES (
+        #{fullShortUrl},
+        #{gid},
+        #{date},
+        #{cnt},
+        #{province},
+        #{city},
+        #{adcode},
+        #{country},
+        #{createTime},
+        #{updateTime},
+        #{delFlag}
+        )
+        ON DUPLICATE KEY UPDATE
+        cnt = cnt + #{cnt},
+        update_time = #{updateTime};
+    </insert>
+
+</mapper>
+
