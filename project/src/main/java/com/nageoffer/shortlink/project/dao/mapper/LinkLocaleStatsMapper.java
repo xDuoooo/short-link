@@ -2,7 +2,11 @@ package com.nageoffer.shortlink.project.dao.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.nageoffer.shortlink.project.dao.entity.LinkLocaleStatsDO;
+import com.nageoffer.shortlink.project.dto.req.ShortLinkStatsReqDTO;
+import com.nageoffer.shortlink.project.dto.resp.ShortLinkStatsLocaleCNRespDTO;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
 
 /**
 * @author Duo
@@ -18,6 +22,8 @@ public interface LinkLocaleStatsMapper extends BaseMapper<LinkLocaleStatsDO> {
      */
     void shortLinkStats(@RequestParam("linkBrowserStatsDO") LinkLocaleStatsDO linkLocaleStatsDO);
 
+
+    List<ShortLinkStatsLocaleCNRespDTO> getOneLinkLocaleCntBetweenDateGroupByProvince(ShortLinkStatsReqDTO shortLinkStatsReqDTO);
 }
 
 

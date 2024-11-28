@@ -31,6 +31,22 @@
         cnt = cnt + #{cnt},
         update_time = #{updateTime};
     </insert>
+    <select id="listBrowserStatsByShortLink" resultType="com.nageoffer.shortlink.project.dao.entity.LinkBrowserStatsDO">
+        SELECT
+        browser,
+        SUM(cnt) AS cnt
+        FROM
+        t_link_browser_stats
+        WHERE
+        full_short_url = #{requestParam.fullShortUrl}
+        AND gid = #{requestParam.gid}
+        AND date BETWEEN #{requestParam.startDate} AND #{requestParam.endDate}
+        GROUP BY
+        browser
+    </select>
+
+
+
 
 </mapper>
 

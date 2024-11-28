@@ -39,5 +39,25 @@
         uip = uip + #{uip},
         update_time = #{updateTime};
     </insert>
+    <select id="getOneLinkBaseDateBetweenDate"
+            resultType="com.nageoffer.shortlink.project.dao.entity.LinkAccessStatsDO">
+        select date,sum(pv) as pv,sum(uv) as uv , sum(uip) as uip from t_link_access_stats where full_short_url =
+        #{fullShortUrl} and gid =
+        #{gid} and date between #{startDate} and #{endDate} group by date;
+
+    </select>
+    <select id="listHourStatsByShortLink" resultType="com.nageoffer.shortlink.project.dao.entity.LinkAccessStatsDO">
+        SELECT hour,SUM(pv) AS pv
+        FROM t_link_access_stats WHERE full_short_url = #{fullShortUrl} AND gid = #{gid}
+        AND date BETWEEN #{startDate} and #{endDate} GROUP BY full_short_url, gid, hour
+    </select>
+    <select id="listWeekdayStatsByShortLink"
+            resultType="com.nageoffer.shortlink.project.dao.entity.LinkAccessStatsDO">
+
+        SELECT weekday,SUM(pv) AS pv
+        FROM t_link_access_stats WHERE full_short_url = #{fullShortUrl} AND gid = #{gid}
+        AND date BETWEEN #{startDate} and #{endDate} GROUP BY full_short_url, gid, weekday
+
+    </select>
 
 </mapper>

@@ -3,27 +3,26 @@ package com.nageoffer.shortlink.project.dao.entity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-
-import java.io.Serial;
-import java.io.Serializable;
-import java.util.Date;
-
 import com.nageoffer.shortlink.project.common.database.BaseDO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+import java.io.Serial;
+import java.io.Serializable;
+import java.util.Date;
+
 /**
  * 
- * @TableName t_link_access_logs
+ * @TableName t_link_network_stats
  */
-@TableName(value ="t_link_access_logs")
+@TableName(value ="t_link_network_stats")
 @Data
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
-public class LinkAccessLogsDO extends BaseDO implements Serializable {
+public class LinkNetworkStatsDO extends BaseDO implements Serializable {
     /**
      * ID
      */
@@ -43,50 +42,22 @@ public class LinkAccessLogsDO extends BaseDO implements Serializable {
     private String gid;
 
     /**
-     * 用户信息
+     * 日期
      */
-    @TableField(value = "user")
-    private String user;
+    @TableField(value = "date")
+    private Date date;
+
+    /**
+     * 访问量
+     */
+    @TableField(value = "cnt")
+    private Integer cnt;
 
     /**
      * 浏览器
      */
-    @TableField(value = "browser")
-    private String browser;
-
-    /**
-     * 操作系统
-     */
-    @TableField(value = "os")
-    private String os;
-
-
-    /**
-     * 网络
-     */
     @TableField(value = "network")
     private String network;
-
-
-    /**
-     * 设备
-     */
-    @TableField(value = "device")
-    private String device;
-
-    /**
-     * 地区
-     */
-    @TableField(value = "locale")
-    private String locale;
-
-
-    /**
-     * IP
-     */
-    @TableField(value = "ip")
-    private String ip;
-
 
     @Serial
     @TableField(exist = false)

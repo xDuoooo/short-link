@@ -52,6 +52,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.nageoffer.shortlink.project.common.constant.RedisKeyConstant.*;
 import static com.nageoffer.shortlink.project.common.constant.ShortLinkConstant.AMOP_REMOTE_URL;
@@ -84,6 +85,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
     private final LinkBrowserStatsMapper linkBrowserStatsMapper;
     private final LinkAccessLogsMapper linkAccessLogsMapper;
     private final LinkDeviceStatsMapper linkDeviceStatsMapper;
+    private final LinkNetworkStatsMapper linkNetworkStatsMapper;
     @Value("${short-link.stats.locale.amap-key}")
     private String statsAmapKey;
 
@@ -377,24 +379,25 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
         //方案二：Cookie的Path作用域为短链接的标识（shortUri），判断是否是携带了该Cookie，得知是否是第一次访问。个人认为第二种方法更好。
         //贴一个Cookie的作用域链接Cookie · 语雀 《Cookie》
         Cookie[] cookies = request.getCookies();
-        String uv = UUID.fastUUID().toString();
         //有flag标识
         AtomicBoolean uvFirstFlag = new AtomicBoolean();
         Date date = new Date();
         try {
+            AtomicReference<String> uv =  new AtomicReference<>(UUID.fastUUID().toString());
             Runnable addResponseCookieTask = () -> {
-                Cookie uvCookie = new Cookie("uv", uv);
+                Cookie uvCookie = new Cookie("uv", uv.get());
                 uvCookie.setMaxAge(60 * 60 * 24 * 30);//该cookie有效期30天
                 uvCookie.setPath(StringUtil.substring(fullShortUrl, fullShortUrl.indexOf("/"), fullShortUrl.length()));
                 response.addCookie(uvCookie);
                 uvFirstFlag.set(Boolean.TRUE);
-                stringRedisTemplate.opsForSet().add("short-link:stats:uv" + fullShortUrl, uv);
+                stringRedisTemplate.opsForSet().add("short-link:stats:uv" + fullShortUrl, uv.get());
             };
             if (ArrayUtil.isNotEmpty(cookies)) {
                 Arrays.stream(cookies).filter(each -> Objects.equals(each.getName(), "uv"))
                         .findFirst()
                         .map(Cookie::getValue)
                         .ifPresentOrElse(each -> {
+                            uv.set(each);
                             Long uvAdded = stringRedisTemplate.opsForSet().add("short-link:stats:uv" + fullShortUrl, each);
                             //added表示成功添加的元素的数量
                             uvFirstFlag.set(uvAdded != null && uvAdded > 0L);
@@ -436,12 +439,14 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
             String localeResultStr = HttpUtil.get(AMOP_REMOTE_URL, localeGetParam);
             JSONObject localeResultObj = JSON.parseObject(localeResultStr);
             String infoCode = localeResultObj.getString("infocode");
+            String actualProvince = "未知";
+            String actualCity = "未知";
             if (StrUtil.isNotBlank(infoCode) && StrUtil.equals(infoCode, "10000")) {
                 String province = localeResultObj.getString("province");
                 boolean unknownProvinceFlag = StrUtil.equals(province, "[]");
                 LinkLocaleStatsDO linkLocaleStatsDO = LinkLocaleStatsDO.builder()
-                        .province(unknownProvinceFlag ? "未知" : province)
-                        .city(unknownProvinceFlag ? "未知" : localeResultObj.getString("city"))
+                        .province(actualProvince = unknownProvinceFlag ? "未知" : province)
+                        .city(actualCity = unknownProvinceFlag ? "未知" : localeResultObj.getString("city"))
                         .adcode(unknownProvinceFlag ? "未知" : localeResultObj.getString("adcode"))
                         .cnt(1)
                         .fullShortUrl(fullShortUrl)
@@ -477,18 +482,22 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
                     .delFlag(0)
                     .build();
             linkBrowserStatsMapper.shortLinkStats(linkBrowserStatsDO);
-
+            String device = LinkUtil.getDevice(request);
+            String network = LinkUtil.getNetwork(request);
             LinkAccessLogsDO linkAccessLogsDO = LinkAccessLogsDO.builder()
                     .ip(ip)
-                    .user(uv)
+                    .user(uv.get())
                     .gid(gid)
+                    .locale(StrUtil.join("-","中国",actualProvince,actualCity))
+                    .device(device)
+                    .network(network)
                     .os(os)
                     .fullShortUrl(fullShortUrl)
                     .browser(browser)
                     .build();
             linkAccessLogsMapper.insert(linkAccessLogsDO);
             LinkDeviceStatsDO linkDeviceStatsDO = LinkDeviceStatsDO.builder()
-                    .device(LinkUtil.getDevice(((HttpServletRequest) request)))
+                    .device(device)
                     .cnt(1)
                     .gid(gid)
                     .fullShortUrl(fullShortUrl)
@@ -498,7 +507,17 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
                     .delFlag(0)
                     .build();
             linkDeviceStatsMapper.shortLinkStats(linkDeviceStatsDO);
-
+            LinkNetworkStatsDO linkNetworkStatsDO = LinkNetworkStatsDO.builder()
+                    .network(network)
+                    .cnt(1)
+                    .gid(gid)
+                    .fullShortUrl(fullShortUrl)
+                    .date(new Date())
+                    .createTime(date)
+                    .updateTime(date)
+                    .delFlag(0)
+                    .build();
+            linkNetworkStatsMapper.shortLinkStats(linkNetworkStatsDO);
 
 
         } catch (Throwable ex) {

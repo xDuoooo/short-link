@@ -3,6 +3,7 @@ package com.nageoffer.shortlink.project.dao.entity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.nageoffer.shortlink.project.common.database.BaseDO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,7 +22,7 @@ import java.util.Date;
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
-public class LinkBrowserStatsDO implements Serializable {
+public class LinkBrowserStatsDO extends BaseDO implements Serializable {
     /**
      * ID
      */
@@ -58,23 +59,6 @@ public class LinkBrowserStatsDO implements Serializable {
     @TableField(value = "browser")
     private String browser;
 
-    /**
-     * 创建时间
-     */
-    @TableField(value = "create_time")
-    private Date createTime;
-
-    /**
-     * 修改时间
-     */
-    @TableField(value = "update_time")
-    private Date updateTime;
-
-    /**
-     * 删除标识 0：未删除 1：已删除
-     */
-    @TableField(value = "del_flag")
-    private Integer delFlag;
 
     @Serial
     @TableField(exist = false)
