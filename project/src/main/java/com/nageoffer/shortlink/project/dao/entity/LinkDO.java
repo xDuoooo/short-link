@@ -101,6 +101,25 @@ public class LinkDO extends BaseDO implements Serializable {
     @TableField(value = "favicon")
     private String favicon;
 
+    /**
+     * pv汇总
+     */
+    @TableField(value = "total_pv")
+    private String totalPv;
+
+    /**
+     * uv汇总
+     */
+    @TableField(value = "total_uv")
+    private String totalUv;
+
+    /**
+     * uip汇总
+     */
+    @TableField(value = "totalUip")
+    private String totalUip;
+
+
     @Serial
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

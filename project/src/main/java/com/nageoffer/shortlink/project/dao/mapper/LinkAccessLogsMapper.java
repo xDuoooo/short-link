@@ -2,11 +2,14 @@ package com.nageoffer.shortlink.project.dao.mapper;
 
 import com.nageoffer.shortlink.project.dao.entity.LinkAccessLogsDO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.nageoffer.shortlink.project.dto.req.SelectUvTypeByUserReqDTO;
 import com.nageoffer.shortlink.project.dto.req.ShortLinkStatsReqDTO;
+import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
 * @author Duo
@@ -25,7 +28,8 @@ public interface LinkAccessLogsMapper extends BaseMapper<LinkAccessLogsDO> {
      */
 
     HashMap<String, Object> findUvTypeCntByShortLink(@Param("param") ShortLinkStatsReqDTO param);
-
+    @MapKey("user")
+    List<Map<String, Object>> selectUvTypeByUser(SelectUvTypeByUserReqDTO selectUvTypeByUserReqDTO);
 }
 
 
