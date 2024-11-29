@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nageoffer.shortlink.project.dao.mapper.LinkStatsTodayMapper">
+
+
+    <insert id="shortLinkTodayState" parameterType="com.nageoffer.shortlink.project.dao.entity.LinkStatsTodayDO">
+        INSERT INTO
+        t_link_stats_today (
+        full_short_url,
+        gid,
+        date,
+        today_uv,
+        today_pv,
+        today_uip,
+        create_time,
+        update_time,
+        del_flag)
+        VALUES(
+        #{param.fullShortUrl},
+        #{param.gid},
+        #{param.date},
+        #{param.todayUv},
+        #{param.todayPv},
+        #{param.todayUip},
+        #{param.createTime},
+        #{param.updateTime},
+        #{param.delFlag}
+        )
+        ON DUPLICATE KEY UPDATE
+        today_uv = today_uv + #{param.todayUv},
+        today_pv = today_pv + #{param.todayPv},
+        today_uip = today_uip + #{param.todayUip},
+        update_time = #{param.updateTime};
+    </insert>
+</mapper>
+

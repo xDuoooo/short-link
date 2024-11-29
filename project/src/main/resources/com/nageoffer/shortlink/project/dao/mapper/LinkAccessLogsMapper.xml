@@ -37,7 +37,7 @@
         AND gid = #{param.gid}
         GROUP BY
         user
-        ) AS user_counts;`
+        ) AS user_counts;
     </select>
     <select id="selectUvTypeByUser" resultType="java.util.Map">
         SELECT

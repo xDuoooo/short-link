@@ -2,6 +2,7 @@ package com.nageoffer.shortlink.project.dao.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.nageoffer.shortlink.project.dao.entity.LinkStatsTodayDO;
+import org.apache.ibatis.annotations.Param;
 
 /**
 * @author Duo
@@ -11,4 +12,5 @@ import com.nageoffer.shortlink.project.dao.entity.LinkStatsTodayDO;
 */
 public interface LinkStatsTodayMapper extends BaseMapper<LinkStatsTodayDO> {
 
+    void shortLinkTodayState(@Param("param") LinkStatsTodayDO linkStatsTodayDO);
 }

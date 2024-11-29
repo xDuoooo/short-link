@@ -105,20 +105,37 @@ public class LinkDO extends BaseDO implements Serializable {
      * pv汇总
      */
     @TableField(value = "total_pv")
-    private String totalPv;
+    private Integer totalPv;
 
     /**
      * uv汇总
      */
     @TableField(value = "total_uv")
-    private String totalUv;
+    private Integer totalUv;
 
     /**
      * uip汇总
      */
-    @TableField(value = "totalUip")
-    private String totalUip;
+    @TableField(value = "total_uip")
+    private Integer totalUip;
 
+    /**
+     * 今日PV
+     */
+    @TableField(exist = false)
+    private Integer todayPv;
+
+    /**
+     * 今日UV
+     */
+    @TableField(exist = false)
+    private Integer todayUv;
+
+    /**
+     * 今日UIP
+     */
+    @TableField(exist = false)
+    private Integer todayUip;
 
     @Serial
     @TableField(exist = false)

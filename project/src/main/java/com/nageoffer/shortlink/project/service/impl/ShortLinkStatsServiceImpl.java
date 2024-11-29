@@ -44,6 +44,15 @@ public class ShortLinkStatsServiceImpl implements ShortLinkStatsService {
                     .date(linkAccessStatsDO.getDate()).build();
             shortLinkStatsAccessDailyRespDTOList.add(shortLinkStatsAccessDailyRespDTO);
         }
+        //封装pv uv uip
+        Integer pv = 0;
+        Integer uv = 0;
+        Integer uip = 0;
+        for (LinkAccessStatsDO linkAccessStatsDO : linkAccessStatsDOS) {
+            pv += linkAccessStatsDO.getPv();
+            uv += linkAccessStatsDO.getUv();
+            uip += linkAccessStatsDO.getUip();
+        }
 
 
         //封装访问地区数量及其占比
@@ -59,7 +68,7 @@ public class ShortLinkStatsServiceImpl implements ShortLinkStatsService {
         //封装按小时统计的数据
         List<LinkAccessStatsDO> listHourStatsByShortLinkDO = linkAccessStatsMapper.listHourStatsByShortLink(shortLinkStatsReqDTO);
         List<Integer> hourStats = new ArrayList<>();
-        for(int i = 0 ; i < 24 ; i++){
+        for (int i = 0; i < 24; i++) {
             AtomicInteger hour = new AtomicInteger(i);
             int hourCnt = listHourStatsByShortLinkDO.stream()
                     .filter(each -> Objects.equals(each.getHour(), hour.get()))
@@ -81,7 +90,7 @@ public class ShortLinkStatsServiceImpl implements ShortLinkStatsService {
         //封装星期day统计量
         List<LinkAccessStatsDO> listWeekdayStatsByShortLinkDO = linkAccessStatsMapper.listWeekdayStatsByShortLink(shortLinkStatsReqDTO);
         List<Integer> weekdayStats = new ArrayList<>();
-        for(int i = 1 ; i < 8 ; i++){
+        for (int i = 1; i < 8; i++) {
             AtomicInteger weekday = new AtomicInteger(i);
             int weekdayCnt = listWeekdayStatsByShortLinkDO.stream()
                     .filter(each -> Objects.equals(each.getWeekday(), weekday.get()))
@@ -96,7 +105,7 @@ public class ShortLinkStatsServiceImpl implements ShortLinkStatsService {
         int browserSum = linkBrowserStatsDOList.stream().mapToInt(LinkBrowserStatsDO::getCnt).sum();
         List<ShortLinkStatsBrowserRespDTO> shortLinkStatsBrowserRespDTOList = new ArrayList<>();
         linkBrowserStatsDOList.forEach(
-                x-> {
+                x -> {
                     double ratio = (double) x.getCnt() / browserSum;
                     double actualRatio = Math.round(ratio * 100.0) / 100.0;
                     ShortLinkStatsBrowserRespDTO shortLinkStatsBrowserRespDTO = ShortLinkStatsBrowserRespDTO.builder().browser(x.getBrowser()).cnt(x.getCnt()).ratio(actualRatio).build();
@@ -108,7 +117,7 @@ public class ShortLinkStatsServiceImpl implements ShortLinkStatsService {
         int osSum = linkOsStatsDOList.stream().mapToInt(LinkOsStatsDO::getCnt).sum();
         List<ShortLinkStatsOsRespDTO> shortLinkStatsOsrespDTOList = new ArrayList<>();
         linkOsStatsDOList.forEach(
-                x-> {
+                x -> {
                     double ratio = (double) x.getCnt() / osSum;
                     double actualRatio = Math.round(ratio * 100.0) / 100.0;
                     ShortLinkStatsOsRespDTO shortLinkStatsOsRespDTO = ShortLinkStatsOsRespDTO.builder().os(x.getOs()).cnt(x.getCnt()).ratio(actualRatio).build();
@@ -142,7 +151,7 @@ public class ShortLinkStatsServiceImpl implements ShortLinkStatsService {
         int deviceSum = linkDeviceStatsDOList.stream().mapToInt(LinkDeviceStatsDO::getCnt).sum();
         List<ShortLinkStatsDeviceRespDTO> shortLinkStatsDeviceRespDTOList = new ArrayList<>();
         linkDeviceStatsDOList.forEach(
-                x-> {
+                x -> {
                     double ratio = (double) x.getCnt() / deviceSum;
                     double actualRatio = Math.round(ratio * 100.0) / 100.0;
                     ShortLinkStatsDeviceRespDTO shortLinkStatsDeviceRespDTO = ShortLinkStatsDeviceRespDTO.builder().device(x.getDevice()).cnt(x.getCnt()).ratio(actualRatio).build();
@@ -156,7 +165,7 @@ public class ShortLinkStatsServiceImpl implements ShortLinkStatsService {
         int networkSum = linkNetworkStatsDOList.stream().mapToInt(LinkNetworkStatsDO::getCnt).sum();
         List<ShortLinkStatsNetworkRespDTO> shortLinkStatsNetworkRespDTOList = new ArrayList<>();
         linkNetworkStatsDOList.forEach(
-                x-> {
+                x -> {
                     double ratio = (double) x.getCnt() / networkSum;
                     double actualRatio = Math.round(ratio * 100.0) / 100.0;
                     ShortLinkStatsNetworkRespDTO shortLinkStatsNetworkRespDTO = ShortLinkStatsNetworkRespDTO.builder().network(x.getNetwork()).cnt(x.getCnt()).ratio(actualRatio).build();
@@ -174,6 +183,9 @@ public class ShortLinkStatsServiceImpl implements ShortLinkStatsService {
                 .browserStats(shortLinkStatsBrowserRespDTOList)
                 .networkStats(shortLinkStatsNetworkRespDTOList)
                 .deviceStats(shortLinkStatsDeviceRespDTOList)
+                .pv(pv)
+                .uip(uip)
+                .uv(uv)
                 .build();
 
 
@@ -187,17 +199,17 @@ public class ShortLinkStatsServiceImpl implements ShortLinkStatsService {
                 .between(LinkAccessLogsDO::getCreateTime, requestParam.getStartDate(), requestParam.getEndDate())
                 .eq(LinkAccessLogsDO::getDelFlag, 0)
                 .orderByDesc(LinkAccessLogsDO::getCreateTime);
-        IPage<LinkAccessLogsDO> linkAccessLogsDOIPage = linkAccessLogsMapper.selectPage(requestParam,queryWrapper);
+        IPage<LinkAccessLogsDO> linkAccessLogsDOIPage = linkAccessLogsMapper.selectPage(requestParam, queryWrapper);
         IPage<ShortLinkStatsAccessRecordRespDTO> actualResult = linkAccessLogsDOIPage.convert(each -> BeanUtil.toBean(each, ShortLinkStatsAccessRecordRespDTO.class));
         List<String> userAccessLogsList = actualResult.getRecords().stream()
                 .map(ShortLinkStatsAccessRecordRespDTO::getUser)
                 .toList();
         SelectUvTypeByUserReqDTO selectUvTypeByUserReqDTO = BeanUtil.toBean(requestParam, SelectUvTypeByUserReqDTO.class);
         selectUvTypeByUserReqDTO.setUserAccessLogsList(userAccessLogsList);
-        List<Map<String,Object>> uvTypeList = linkAccessLogsMapper.selectUvTypeByUser(selectUvTypeByUserReqDTO);
+        List<Map<String, Object>> uvTypeList = linkAccessLogsMapper.selectUvTypeByUser(selectUvTypeByUserReqDTO);
         actualResult.getRecords().forEach(
-                eachResult ->{
-                    String uvType = uvTypeList.stream().filter(eachType-> Objects.equals(eachType.get("user"),eachResult.getUser()))
+                eachResult -> {
+                    String uvType = uvTypeList.stream().filter(eachType -> Objects.equals(eachType.get("user"), eachResult.getUser()))
                             .findFirst().map(item -> item.get("uvType").toString())
                             .orElse("旧访客");
                     eachResult.setUvType(uvType);

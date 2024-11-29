@@ -82,10 +82,16 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
     private final LinkLocaleStatsMapper linkLocaleStatsMapper;
 
     private final LinkOsStatsMapper linkOsStatsMapper;
+
     private final LinkBrowserStatsMapper linkBrowserStatsMapper;
+
     private final LinkAccessLogsMapper linkAccessLogsMapper;
+
     private final LinkDeviceStatsMapper linkDeviceStatsMapper;
+
     private final LinkNetworkStatsMapper linkNetworkStatsMapper;
+
+    private final LinkStatsTodayMapper linkStatsTodayMapper;
     @Value("${short-link.stats.locale.amap-key}")
     private String statsAmapKey;
 
@@ -107,6 +113,9 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
                 .shortUri(shortLinkSuffix)
                 .favicon(getFavicon(shortLinkCreateReqDTO.getOriginUrl()))
                 .enableStatus(1)
+                .totalPv(0)
+                .totalUip(0)
+                .totalUv(0)
                 .fullShortUrl(fullShortUrl)
                 .build();
         LinkGoToDO linkGoToDO = LinkGoToDO.builder()
@@ -142,11 +151,8 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
     @Override
     public IPage<ShortLinkPageRespDTO> pageShortLink(ShortLinkPageReqDTO shortLinkPageReqDTO) {
 
-        LambdaQueryWrapper<LinkDO> lambdaQueryWrapper = Wrappers.lambdaQuery(LinkDO.class)
-                .eq(LinkDO::getGid, shortLinkPageReqDTO.getGid())
-                .eq(LinkDO::getEnableStatus, 1)
-                .eq(BaseDO::getDelFlag, 0);
-        IPage<LinkDO> resultPage = baseMapper.selectPage(shortLinkPageReqDTO, lambdaQueryWrapper);
+
+        IPage<LinkDO> resultPage = baseMapper.pageLink(shortLinkPageReqDTO);
         return resultPage.convert(each -> {
             ShortLinkPageRespDTO bean = BeanUtil.toBean(each, ShortLinkPageRespDTO.class);
             bean.setDomain("http://" + bean.getDomain());
@@ -383,7 +389,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
         AtomicBoolean uvFirstFlag = new AtomicBoolean();
         Date date = new Date();
         try {
-            AtomicReference<String> uv =  new AtomicReference<>(UUID.fastUUID().toString());
+            AtomicReference<String> uv = new AtomicReference<>(UUID.fastUUID().toString());
             Runnable addResponseCookieTask = () -> {
                 Cookie uvCookie = new Cookie("uv", uv.get());
                 uvCookie.setMaxAge(60 * 60 * 24 * 30);//该cookie有效期30天
@@ -452,7 +458,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
                         .fullShortUrl(fullShortUrl)
                         .country("中国")
                         .gid(gid)
-                        .date(new Date()).build();
+                        .date(date).build();
                 linkLocaleStatsDO.setCreateTime(date);
                 linkLocaleStatsDO.setUpdateTime(date);
                 linkLocaleStatsDO.setDelFlag(0);
@@ -488,7 +494,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
                     .ip(ip)
                     .user(uv.get())
                     .gid(gid)
-                    .locale(StrUtil.join("-","中国",actualProvince,actualCity))
+                    .locale(StrUtil.join("-", "中国", actualProvince, actualCity))
                     .device(device)
                     .network(network)
                     .os(os)
@@ -501,7 +507,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
                     .cnt(1)
                     .gid(gid)
                     .fullShortUrl(fullShortUrl)
-                    .date(new Date())
+                    .date(date)
                     .createTime(date)
                     .updateTime(date)
                     .delFlag(0)
@@ -512,13 +518,26 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
                     .cnt(1)
                     .gid(gid)
                     .fullShortUrl(fullShortUrl)
-                    .date(new Date())
+                    .date(date)
                     .createTime(date)
                     .updateTime(date)
                     .delFlag(0)
                     .build();
             linkNetworkStatsMapper.shortLinkStats(linkNetworkStatsDO);
+            LinkStatsTodayDO linkStatsTodayDO = LinkStatsTodayDO.builder()
+                    .todayPv(1)
+                    .todayUv(uvFirstFlag.get() ? 1 : 0)
+                    .todayUip(uipFirstFlag ? 1 : 0)
+                    .gid(gid)
+                    .fullShortUrl(fullShortUrl)
+                    .createTime(date)
+                    .updateTime(date)
+                    .delFlag(0)
+                    .date(date)
+                    .build();
+            linkStatsTodayMapper.shortLinkTodayState(linkStatsTodayDO);
 
+            linkMapper.incrementStats(gid, fullShortUrl, 1, uvFirstFlag.get() ? 1 : 0, uipFirstFlag ? 1 : 0);
 
         } catch (Throwable ex) {
             log.error("短链接访问量统计异常", ex);

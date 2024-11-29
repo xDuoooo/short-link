@@ -39,7 +39,7 @@ public class LinkStatsTodayDO extends BaseDO implements Serializable {
      * 短链接
      */
     @TableField(value = "full_short_url")
-    private String full_short_url;
+    private String fullShortUrl;
 
     /**
      * 日期
@@ -51,19 +51,19 @@ public class LinkStatsTodayDO extends BaseDO implements Serializable {
      * 今日PV
      */
     @TableField(value = "today_pv")
-    private Integer today_pv;
+    private Integer todayPv;
 
     /**
      * 今日UV
      */
     @TableField(value = "today_uv")
-    private Integer today_uv;
+    private Integer todayUv;
 
     /**
      * 今日IP数
      */
     @TableField(value = "today_uip")
-    private Integer today_uip;
+    private Integer todayUip;
 
 
     @Serial
