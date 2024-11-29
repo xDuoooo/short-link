@@ -44,7 +44,19 @@
         GROUP BY
         os
     </select>
-
+    <select id="listGroupOsStatsByShortLink"
+            resultType="com.nageoffer.shortlink.project.dao.entity.LinkOsStatsDO">
+        SELECT
+        os,
+        SUM(cnt) AS cnt
+        FROM
+        t_link_os_stats
+        WHERE
+        gid = #{requestParam.gid}
+        AND date BETWEEN #{requestParam.startDate} AND #{requestParam.endDate}
+        GROUP BY
+        os
+    </select>
 
 
 </mapper>

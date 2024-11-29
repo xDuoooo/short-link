@@ -2,6 +2,7 @@ package com.nageoffer.shortlink.project.dao.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.nageoffer.shortlink.project.dao.entity.LinkBrowserStatsDO;
+import com.nageoffer.shortlink.project.dto.req.ShortLinkGroupStatsReqDTO;
 import com.nageoffer.shortlink.project.dto.req.ShortLinkStatsReqDTO;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -29,6 +30,12 @@ public interface LinkBrowserStatsMapper extends BaseMapper<LinkBrowserStatsDO> {
      */
     List<LinkBrowserStatsDO> listBrowserStatsByShortLink(@Param("requestParam") ShortLinkStatsReqDTO requestParam);
 
+    /**
+     * 统计一组短链接的浏览器访问量
+     * @param shortLinkGroupStatsReqDTO
+     * @return
+     */
+    List<LinkBrowserStatsDO> listGroupBrowserStatsByShortLink(@Param("requestParam") ShortLinkGroupStatsReqDTO shortLinkGroupStatsReqDTO);
 }
 
 

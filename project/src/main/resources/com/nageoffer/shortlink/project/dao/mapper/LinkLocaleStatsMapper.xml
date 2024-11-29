@@ -37,7 +37,7 @@
         cnt = cnt + #{cnt},
         update_time = #{updateTime};
     </insert>
-    <select id="getOneLinkLocaleCntBetweenDateGroupByProvince"
+    <select id="getOneLinkLocaleCntBetweenDateByProvince"
             resultType="com.nageoffer.shortlink.project.dto.resp.ShortLinkStatsLocaleCNRespDTO">
         SELECT
         full_short_url,
@@ -51,6 +51,19 @@
         AND date BETWEEN #{startDate} AND #{endDate}
         GROUP BY
         full_short_url, gid, province
+    </select>
+    <select id="getGroupLinkLocaleCntBetweenDateByProvince"
+            resultType="com.nageoffer.shortlink.project.dto.resp.ShortLinkStatsLocaleCNRespDTO">
+        SELECT
+        SUM(cnt) AS cnt
+        FROM
+        t_link_locale_stats
+        WHERE
+        gid = #{gid}
+        AND del_flag = 0
+        AND date BETWEEN #{startDate} AND #{endDate}
+        GROUP BY
+        gid, province
     </select>
 
 

@@ -58,6 +58,39 @@
         GROUP BY
         user;
     </select>
+    <select id="listGroupTopIpByShortLink" resultType="java.util.HashMap">
+        SELECT
+        ip,
+        COUNT(ip) AS count
+        FROM
+        t_link_access_logs
+        WHERE
+        gid = #{gid}
+        AND create_time BETWEEN #{startDate} AND #{endDate}
+        GROUP BY
+        gid, ip
+        ORDER BY
+        count DESC
+        LIMIT 5;
+
+    </select>
+    <select id="findGroupUvTypeCntByShortLink" resultType="java.util.HashMap">
+        SELECT
+        SUM(old_user) AS oldUserCnt,
+        SUM(new_user) AS newUserCnt
+        FROM (
+        SELECT
+        CASE WHEN COUNT(DISTINCT DATE(create_time)) > 1 THEN 1 ELSE 0 END AS old_user,
+        CASE WHEN COUNT(DISTINCT DATE(create_time)) = 1 AND MAX(create_time) &gt;= #{param.startDate} and
+        MAX(create_time) &lt;= #{param.endDate} THEN 1 ELSE 0 END AS new_user
+        FROM
+        t_link_access_logs
+        WHERE
+        gid = #{param.gid}
+        GROUP BY
+        user
+        ) AS user_counts;
+    </select>
 
 </mapper>
 

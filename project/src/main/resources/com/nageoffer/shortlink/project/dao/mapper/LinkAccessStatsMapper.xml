@@ -59,5 +59,25 @@
         AND date BETWEEN #{startDate} and #{endDate} GROUP BY full_short_url, gid, weekday
 
     </select>
+    <select id="getGroupLinkBaseDateBetweenDate"
+            resultType="com.nageoffer.shortlink.project.dao.entity.LinkAccessStatsDO">
+        select date,sum(pv) as pv,sum(uv) as uv , sum(uip) as uip from t_link_access_stats where gid =
+        #{gid} and date between #{startDate} and #{endDate} group by date;
+
+    </select>
+    <select id="listGroupHourStatsByShortLink"
+            resultType="com.nageoffer.shortlink.project.dao.entity.LinkAccessStatsDO">
+        SELECT hour,SUM(pv) AS pv
+        FROM t_link_access_stats WHERE gid = #{gid}
+        AND date BETWEEN #{startDate} and #{endDate} GROUP BY gid, hour
+    </select>
+    <select id="listGroupWeekdayStatsByShortLink"
+            resultType="com.nageoffer.shortlink.project.dao.entity.LinkAccessStatsDO">
+        SELECT weekday,SUM(pv) AS pv
+        FROM t_link_access_stats WHERE gid = #{gid}
+        AND date BETWEEN #{startDate} and #{endDate} GROUP BY gid, weekday
+
+
+    </select>
 
 </mapper>

@@ -2,6 +2,7 @@ package com.nageoffer.shortlink.project.dao.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.nageoffer.shortlink.project.dao.entity.LinkLocaleStatsDO;
+import com.nageoffer.shortlink.project.dto.req.ShortLinkGroupStatsReqDTO;
 import com.nageoffer.shortlink.project.dto.req.ShortLinkStatsReqDTO;
 import com.nageoffer.shortlink.project.dto.resp.ShortLinkStatsLocaleCNRespDTO;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,8 +23,21 @@ public interface LinkLocaleStatsMapper extends BaseMapper<LinkLocaleStatsDO> {
      */
     void shortLinkStats(@RequestParam("linkBrowserStatsDO") LinkLocaleStatsDO linkLocaleStatsDO);
 
+    /**
+     * 获取一个短链接指定日期的地区访问监控数据
+     * @param shortLinkStatsReqDTO
+     * @return
+     */
+    List<ShortLinkStatsLocaleCNRespDTO> getOneLinkLocaleCntBetweenDateByProvince(ShortLinkStatsReqDTO shortLinkStatsReqDTO);
 
-    List<ShortLinkStatsLocaleCNRespDTO> getOneLinkLocaleCntBetweenDateGroupByProvince(ShortLinkStatsReqDTO shortLinkStatsReqDTO);
+    /**
+     * 获取一组短链接指定日期的地区访问监控数据
+     * @param shortLinkGroupStatsReqDTO
+     * @return
+     */
+    List<ShortLinkStatsLocaleCNRespDTO> getGroupLinkLocaleCntBetweenDateByProvince(ShortLinkGroupStatsReqDTO shortLinkGroupStatsReqDTO);
+
+
 }
 
 

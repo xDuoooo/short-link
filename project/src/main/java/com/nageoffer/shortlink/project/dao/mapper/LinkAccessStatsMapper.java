@@ -2,6 +2,7 @@ package com.nageoffer.shortlink.project.dao.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.nageoffer.shortlink.project.dao.entity.LinkAccessStatsDO;
+import com.nageoffer.shortlink.project.dto.req.ShortLinkGroupStatsReqDTO;
 import com.nageoffer.shortlink.project.dto.req.ShortLinkStatsReqDTO;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -27,6 +28,12 @@ public interface LinkAccessStatsMapper extends BaseMapper<LinkAccessStatsDO> {
      * @return
      */
     List<LinkAccessStatsDO> getOneLinkBaseDateBetweenDate(ShortLinkStatsReqDTO shortLinkStatsReqDTO);
+    /**
+     * 获取一组短链接指定日期的基础数据
+     * @param shortLinkGroupStatsReqDTO
+     * @return
+     */
+    List<LinkAccessStatsDO> getGroupLinkBaseDateBetweenDate(ShortLinkGroupStatsReqDTO shortLinkGroupStatsReqDTO);
 
     /**
      * 根据短链接获取指定日期内小时基础监控数据
@@ -37,6 +44,14 @@ public interface LinkAccessStatsMapper extends BaseMapper<LinkAccessStatsDO> {
      * 根据短链接获取指定日期weekday基础监控数据
      */
     List<LinkAccessStatsDO> listWeekdayStatsByShortLink(ShortLinkStatsReqDTO requestParam);
+    /**
+     * 根据一组短链接获取指定日期内小时基础监控数据
+     */
+    List<LinkAccessStatsDO> listGroupHourStatsByShortLink(ShortLinkGroupStatsReqDTO shortLinkGroupStatsReqDTO);
+    /**
+     * 根据一组短链接获取指定日期weekday基础监控数据
+     */
+    List<LinkAccessStatsDO> listGroupWeekdayStatsByShortLink(ShortLinkGroupStatsReqDTO shortLinkGroupStatsReqDTO);
 }
 
 

@@ -2,6 +2,7 @@ package com.nageoffer.shortlink.project.dao.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.nageoffer.shortlink.project.dao.entity.LinkOsStatsDO;
+import com.nageoffer.shortlink.project.dto.req.ShortLinkGroupStatsReqDTO;
 import com.nageoffer.shortlink.project.dto.req.ShortLinkStatsReqDTO;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,6 +23,8 @@ public interface LinkOsStatsMapper extends BaseMapper<LinkOsStatsDO> {
     void shortLinkStats(@RequestParam("linkBrowserStatsDO") LinkOsStatsDO linkOsStatsDO);
 
     List<LinkOsStatsDO> listOsStatsByShortLink(@Param("requestParam") ShortLinkStatsReqDTO shortLinkStatsReqDTO);
+
+    List<LinkOsStatsDO> listGroupOsStatsByShortLink(@Param("requestParam") ShortLinkGroupStatsReqDTO shortLinkGroupStatsReqDTO);
 }
 
 
