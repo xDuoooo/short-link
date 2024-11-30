@@ -36,7 +36,7 @@ public class UserTransmitFilter implements Filter {
 
     @SneakyThrows
     @Override
-    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
+    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) {
         HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
         String requestURI = httpServletRequest.getRequestURI();
         if (!IGNORE_URI.contains(requestURI)) {
@@ -69,7 +69,7 @@ public class UserTransmitFilter implements Filter {
         }
     }
 
-    private void returnJson(HttpServletResponse response, String json) throws Exception {
+    private void returnJson(HttpServletResponse response, String json) {
         PrintWriter writer = null;
         response.setCharacterEncoding("UTF-8");
         response.setContentType("text/html; charset=utf-8");

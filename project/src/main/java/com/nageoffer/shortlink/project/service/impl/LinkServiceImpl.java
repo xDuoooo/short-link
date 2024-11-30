@@ -95,6 +95,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
     private final LinkStatsTodayMapper linkStatsTodayMapper;
 
     private final GotoDomainWhiteListConfiguration gotoDomainWhiteListConfiguration;
+
     @Value("${short-link.stats.locale.amap-key}")
     private String statsAmapKey;
 
