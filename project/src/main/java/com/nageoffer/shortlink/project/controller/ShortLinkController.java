@@ -3,9 +3,11 @@ package com.nageoffer.shortlink.project.controller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.nageoffer.shortlink.project.common.convention.result.Result;
 import com.nageoffer.shortlink.project.common.convention.result.Results;
+import com.nageoffer.shortlink.project.dto.req.ShortLinkBatchCreateReqDTO;
 import com.nageoffer.shortlink.project.dto.req.ShortLinkCreateReqDTO;
 import com.nageoffer.shortlink.project.dto.req.ShortLinkPageReqDTO;
 import com.nageoffer.shortlink.project.dto.req.ShortLinkUpdateReqDTO;
+import com.nageoffer.shortlink.project.dto.resp.ShortLinkBatchCreateRespDTO;
 import com.nageoffer.shortlink.project.dto.resp.ShortLinkCreateRespDTO;
 import com.nageoffer.shortlink.project.dto.resp.ShortLinkGroupCountQueryRespDTO;
 import com.nageoffer.shortlink.project.dto.resp.ShortLinkPageRespDTO;
@@ -28,50 +30,59 @@ public class ShortLinkController {
      * 短网址跳转
      */
     @GetMapping("/{short-uri}")
-    public void restoreUrl(@PathVariable("short-uri") String shortUri, HttpServletRequest request, HttpServletResponse response){
-
-        linkService.restoreUrl(shortUri,request,response);
-
+    public void restoreUrl(@PathVariable("short-uri") String shortUri, HttpServletRequest request, HttpServletResponse response) {
+        linkService.restoreUrl(shortUri, request, response);
     }
-
 
 
     /**
      * 创建短链接
+     *
      * @return
      */
     @PostMapping("/create")
-    public Result<ShortLinkCreateRespDTO> createShortLink(@RequestBody ShortLinkCreateReqDTO shortLinkCreateReqDTO){
+    public Result<ShortLinkCreateRespDTO> createShortLink(@RequestBody ShortLinkCreateReqDTO shortLinkCreateReqDTO) {
         return Results.success(linkService.createShortLink(shortLinkCreateReqDTO));
 
     }
 
     /**
+     * 批量创建短链接
+     */
+    @PostMapping("/create/batch")
+    public Result<ShortLinkBatchCreateRespDTO> batchCreateShortLink(@RequestBody ShortLinkBatchCreateReqDTO requestParam) {
+        return Results.success(linkService.batchCreateShortLink(requestParam));
+    }
+
+    /**
      * 修改短链接
+     *
      * @param requestParam
      * @return
      */
     @PostMapping("/update")
-    public Result<Void> updateShortLink(@RequestBody ShortLinkUpdateReqDTO requestParam){
+    public Result<Void> updateShortLink(@RequestBody ShortLinkUpdateReqDTO requestParam) {
         linkService.updateShortLink(requestParam);
         return Results.success();
     }
 
     /**
      * 分页查询短链接请求
+     *
      * @return
      */
     @GetMapping("/page")
-    public Result<IPage<ShortLinkPageRespDTO>> pageShortLink(ShortLinkPageReqDTO shortLinkPageReqDTO){
+    public Result<IPage<ShortLinkPageRespDTO>> pageShortLink(ShortLinkPageReqDTO shortLinkPageReqDTO) {
         return Results.success(linkService.pageShortLink(shortLinkPageReqDTO));
     }
 
     /**
      * 查询短链接分组下短链接数量
+     *
      * @return
      */
     @GetMapping("/count")
-    public Result<List<ShortLinkGroupCountQueryRespDTO>> groupShortLinkCount(@RequestParam List<String> gids){
+    public Result<List<ShortLinkGroupCountQueryRespDTO>> groupShortLinkCount(@RequestParam List<String> gids) {
         return Results.success(linkService.listGroupShortLinkCount(gids));
 
     }

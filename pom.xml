@@ -30,6 +30,7 @@
         <redisson.version>3.21.3</redisson.version>
         <guava.version>30.0-jre</guava.version>
         <jsoup.version>1.17.2</jsoup.version>
+        <easyexcle.version>4.0.3</easyexcle.version>
     </properties>
 
     <dependencies>
@@ -68,6 +69,11 @@
                 <groupId>com.baomidou</groupId>
                 <artifactId>mybatis-plus-boot-starter</artifactId>
                 <version>${mybatis-plus.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>easyexcel</artifactId>
+                <version>${easyexcle.version}</version>
             </dependency>
 
             <dependency>

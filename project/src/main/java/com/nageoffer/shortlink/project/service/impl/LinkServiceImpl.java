@@ -15,17 +15,18 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.nageoffer.shortlink.project.common.convention.exception.ClientException;
 import com.nageoffer.shortlink.project.common.convention.exception.ServiceException;
 import com.nageoffer.shortlink.project.common.database.BaseDO;
 import com.nageoffer.shortlink.project.common.enums.ValidateTypeEnum;
+import com.nageoffer.shortlink.project.config.GotoDomainWhiteListConfiguration;
 import com.nageoffer.shortlink.project.dao.entity.*;
 import com.nageoffer.shortlink.project.dao.mapper.*;
+import com.nageoffer.shortlink.project.dto.req.ShortLinkBatchCreateReqDTO;
 import com.nageoffer.shortlink.project.dto.req.ShortLinkCreateReqDTO;
 import com.nageoffer.shortlink.project.dto.req.ShortLinkPageReqDTO;
 import com.nageoffer.shortlink.project.dto.req.ShortLinkUpdateReqDTO;
-import com.nageoffer.shortlink.project.dto.resp.ShortLinkCreateRespDTO;
-import com.nageoffer.shortlink.project.dto.resp.ShortLinkGroupCountQueryRespDTO;
-import com.nageoffer.shortlink.project.dto.resp.ShortLinkPageRespDTO;
+import com.nageoffer.shortlink.project.dto.resp.*;
 import com.nageoffer.shortlink.project.service.LinkService;
 import com.nageoffer.shortlink.project.util.HashUtil;
 import com.nageoffer.shortlink.project.util.LinkUtil;
@@ -92,18 +93,24 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
     private final LinkNetworkStatsMapper linkNetworkStatsMapper;
 
     private final LinkStatsTodayMapper linkStatsTodayMapper;
+
+    private final GotoDomainWhiteListConfiguration gotoDomainWhiteListConfiguration;
     @Value("${short-link.stats.locale.amap-key}")
     private String statsAmapKey;
 
+    @Value("${short-link.domain.default}")
+    private String defaultDomain;
+
     @Override
     public ShortLinkCreateRespDTO createShortLink(ShortLinkCreateReqDTO shortLinkCreateReqDTO) {
+        verificationWhitelist(shortLinkCreateReqDTO.getOriginUrl());
         String shortLinkSuffix = generateSuffix(shortLinkCreateReqDTO);
-        String fullShortUrl = StrBuilder.create(shortLinkCreateReqDTO.getDomain())
+        String fullShortUrl = StrBuilder.create(defaultDomain)
                 .append("/")
                 .append(shortLinkSuffix)
                 .toString();
         LinkDO shortLinkDO = LinkDO.builder()
-                .domain(shortLinkCreateReqDTO.getDomain())
+                .domain(defaultDomain)
                 .originUrl(shortLinkCreateReqDTO.getOriginUrl())
                 .gid(shortLinkCreateReqDTO.getGid())
                 .createdType(shortLinkCreateReqDTO.getCreatedType())
@@ -169,7 +176,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateShortLink(ShortLinkUpdateReqDTO requestParam) {
-
+        verificationWhitelist(requestParam.getOriginUrl());
         LambdaQueryWrapper<LinkDO> lambdaQueryWrapper = Wrappers.lambdaQuery(LinkDO.class)
                 .eq(LinkDO::getFullShortUrl, requestParam.getFullShortUrl())
                 .eq(BaseDO::getDelFlag, 0)
@@ -211,6 +218,10 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
             baseMapper.insert(linkDO);
 
 
+        }
+        if (!Objects.equals(requestParam.getValidDateType(),linkDO.getValidDateType()) || !Objects.equals(requestParam.getValidDate(),new Date())){
+            stringRedisTemplate.delete(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, linkDO.getFullShortUrl()));
+            stringRedisTemplate.delete(String.format(GOTO_SHORT_LINK_KEY, linkDO.getFullShortUrl()));
         }
 
 
@@ -316,6 +327,35 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
 
     }
 
+    @Override
+    public ShortLinkBatchCreateRespDTO batchCreateShortLink(ShortLinkBatchCreateReqDTO requestParam) {
+        List<String> originUrls = requestParam.getOriginUrls();
+        List<String> describes = requestParam.getDescribes();
+        List<ShortLinkBaseInfoRespDTO> result = new ArrayList<>();
+        for (int i = 0; i < originUrls.size(); i++) {
+            ShortLinkCreateReqDTO shortLinkCreateReqDTO = BeanUtil.toBean(requestParam, ShortLinkCreateReqDTO.class);
+            shortLinkCreateReqDTO.setOriginUrl(originUrls.get(i));
+            shortLinkCreateReqDTO.setDescribe(describes.get(i));
+            try {
+                ShortLinkCreateRespDTO shortLink = createShortLink(shortLinkCreateReqDTO);
+                ShortLinkBaseInfoRespDTO linkBaseInfoRespDTO = ShortLinkBaseInfoRespDTO.builder()
+                        .fullShortUrl(shortLink.getFullShortUrl())
+                        .originUrl(shortLink.getOriginUrl())
+                        .describe(describes.get(i))
+                        .build();
+                result.add(linkBaseInfoRespDTO);
+            } catch (Throwable ex) {
+                log.error("批量创建短链接失败，原始参数：{}", originUrls.get(i));
+            }
+        }
+        return ShortLinkBatchCreateRespDTO.builder()
+                .total(result.size())
+                .baseLinkInfos(result)
+                .build();
+
+
+    }
+
     //短链接后缀，只放在布隆过滤器中
     private String generateSuffix(ShortLinkCreateReqDTO shortLinkCreateReqDTO) {
         int customGenerateCount = 0;
@@ -331,7 +371,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
             //在下一步 redis 中判断是否 存在 冲突
             //这里 如果不存在 就 一定   ！！在布隆过滤器中！！  不存在
             //但是如果多个相同的uri 到这个位置  有可能 都会放行!!!!!!!!!!!!!!!!!!! 存的是 域名+ 短链接
-            if (!shortUriCreateCachePenetrationBloomFilter.contains(shortLinkCreateReqDTO.getDomain() + "/" + shortUri)) {
+            if (!shortUriCreateCachePenetrationBloomFilter.contains(defaultDomain + "/" + shortUri)) {
                 break;
             }
             customGenerateCount++;
@@ -541,6 +581,21 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
 
         } catch (Throwable ex) {
             log.error("短链接访问量统计异常", ex);
+        }
+
+    }
+    private void verificationWhitelist(String originUrl) {
+        Boolean enable = gotoDomainWhiteListConfiguration.getEnable();
+        if (enable == null || !enable) {
+            return;
+        }
+        String domain = LinkUtil.extractDomain(originUrl);
+        if (StrUtil.isBlank(domain)) {
+            throw new ClientException("跳转链接填写错误");
+        }
+        List<String> details = gotoDomainWhiteListConfiguration.getDetails();
+        if (!details.contains(domain)) {
+            throw new ClientException("演示环境为避免恶意攻击，请生成以下网站跳转链接：" + gotoDomainWhiteListConfiguration.getNames());
         }
     }
 }

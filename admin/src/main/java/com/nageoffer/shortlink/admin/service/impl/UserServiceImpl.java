@@ -1,6 +1,7 @@
 package com.nageoffer.shortlink.admin.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.UUID;
 import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -27,6 +28,7 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -99,6 +101,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
 
     @Override
     public UserLoginRespDTO login(UserLoginReqDTO userLoginReqDTO) {
+
+
         //TODO 后续有时间完善  判断是否登录 使用token
         LambdaQueryWrapper<UserDO> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(UserDO::getUsername, userLoginReqDTO.getUsername()).eq(UserDO::getDelFlag, 0);
@@ -109,13 +113,28 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
         if (!userDO.getPassword().equals(userLoginReqDTO.getPassword())) {
             throw new ClientException("密码错误");
         }
-        Boolean hasLogin = stringRedisTemplate.hasKey("login_" + userLoginReqDTO.getUsername());
-        if (hasLogin != null && hasLogin) {
-            throw new ClientException("用户已登录");
+        //已经校验过了身份正确性
+
+        //如果存在登录信息则取第一个返回
+        Map<Object ,Object> hasLoginMap = stringRedisTemplate.opsForHash().entries("login_" + userLoginReqDTO.getUsername());
+        if (CollUtil.isNotEmpty(hasLoginMap)) {
+            String token = hasLoginMap.keySet().stream()
+                    .findFirst()
+                    .map(Object::toString)
+                    .orElseThrow(() -> new ClientException("用户登录错误"));
+            return new UserLoginRespDTO(token);
         }
+        /**
+         * Hash
+         * Key：login_用户名
+         * Value：
+         *  Key：token标识
+         *  Val：JSON 字符串（用户信息）
+         */
+
+        //如果不存在登录信息就创造新的token返回
         String uuid = UUID.randomUUID().toString();
         stringRedisTemplate.opsForHash().put("login_" + userLoginReqDTO.getUsername(), uuid, JSON.toJSONString(userDO));
-        //TODO 这里暂时设置30days
         stringRedisTemplate.expire("login_" + userLoginReqDTO.getUsername(), 30L, TimeUnit.DAYS);
         return new UserLoginRespDTO(uuid);
     }

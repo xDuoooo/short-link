@@ -24,3 +24,14 @@ short-link:
   stats:
     locale:
       amap-key: f4f8f283d183514f765a116f78ba2268
+  domain:
+    default: nurl.ink
+  goto-domain:
+    white-list:
+      enable: true
+      names: '拿个offer,知乎,掘金,博客园'
+      details:
+        - nageoffer.com
+        - zhihu.com
+        - juejin.cn
+        - cnblogs.com

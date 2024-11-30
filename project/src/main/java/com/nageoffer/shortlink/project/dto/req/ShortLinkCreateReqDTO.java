@@ -3,7 +3,10 @@ package com.nageoffer.shortlink.project.dto.req;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.nageoffer.shortlink.project.common.database.BaseDO;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.Date;
 
@@ -11,6 +14,9 @@ import java.util.Date;
  * 短链接创建请求对象
  */
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class ShortLinkCreateReqDTO {
 
     /**
