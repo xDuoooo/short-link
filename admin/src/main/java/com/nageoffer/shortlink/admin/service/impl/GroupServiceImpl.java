@@ -74,7 +74,7 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO>
             String gid;
             do {
                 gid = RandomIncludeUpperAndLowerAndNumberUtil.generate(6);
-            } while (!hasGid(username, gid));
+            } while (hasGid(username, gid));
             GroupDO groupDO = GroupDO.builder()
                     .gid(gid)
                     .sortOrder(0)

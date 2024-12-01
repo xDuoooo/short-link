@@ -16,7 +16,7 @@ import java.util.List;
 * @createDate 2024-11-26 23:49:41
 * @Entity generator.dto/entity.t_link_browser_stats
 */
-public interface LinkDeviceStatsMapper extends BaseMapper<LinkBrowserStatsDO> {
+public interface LinkDeviceStatsMapper extends BaseMapper<LinkDeviceStatsDO> {
     /**
      * 记录基础访问监控数据
      * @param linkDeviceStatsDO

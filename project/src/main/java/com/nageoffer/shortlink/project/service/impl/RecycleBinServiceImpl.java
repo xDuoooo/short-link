@@ -87,11 +87,17 @@ public class RecycleBinServiceImpl extends ServiceImpl<LinkMapper, LinkDO> imple
      */
     @Override
     public void removeRecycleBin(RecycleBinRemoveReqDTO recycleBinRemoveReqDTO) {
-        LambdaUpdateWrapper<LinkDO> lambdaUpdateWrapper = Wrappers.lambdaUpdate(LinkDO.class)
-                .eq(LinkDO::getGid, recycleBinRemoveReqDTO.getGid())
+        LambdaUpdateWrapper<LinkDO> updateWrapper = Wrappers.lambdaUpdate(LinkDO.class)
                 .eq(LinkDO::getFullShortUrl, recycleBinRemoveReqDTO.getFullShortUrl())
-                .eq(LinkDO::getEnableStatus, 0)
+                .eq(LinkDO::getGid, recycleBinRemoveReqDTO.getGid())
+                .eq(LinkDO::getEnableStatus, 1)
+                .eq(LinkDO::getDelTime, 0L)
                 .eq(LinkDO::getDelFlag, 0);
-        baseMapper.delete(lambdaUpdateWrapper);
+        baseMapper.delete(updateWrapper);
+        LinkDO delShortLinkDO = LinkDO.builder()
+                .delTime(System.currentTimeMillis())
+                .build();
+        delShortLinkDO.setDelFlag(1);
+        baseMapper.update(delShortLinkDO, updateWrapper);
     }
 }

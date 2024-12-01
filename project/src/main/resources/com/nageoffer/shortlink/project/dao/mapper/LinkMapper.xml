@@ -14,7 +14,7 @@
         <foreach collection="list" open="(" close=")" separator="," item="each">
             #{each}
         </foreach>
-        and enable_status=1
+        and enable_status=1 and del_flag = 1 and del_time = 0
         group by gid
     </select>
 

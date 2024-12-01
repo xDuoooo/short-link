@@ -24,7 +24,11 @@ public class ShortLinkUpdateReqDTO {
      */
     @TableField(value = "gid")
     private String gid;
-
+    /**
+     * 原始分组标识
+     */
+    @TableField
+    private String originGid;
     /**
      * 有效期类型 0：永久有效 1：用户自定义
      */

@@ -13,4 +13,9 @@ public class ShortLinkConstant {
      * 高德获取ip地址信息接口地址
      */
     public static final String AMOP_REMOTE_URL = "https://restapi.amap.com/v3/ip";
+
+    /**
+     * 独立访客量
+     */
+    public static final String UV = "uv";
 }
