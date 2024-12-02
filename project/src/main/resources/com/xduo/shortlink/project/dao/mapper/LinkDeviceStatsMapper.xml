@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xduo.shortlink.project.dao.mapper.LinkDeviceStatsMapper">
+
+
+    <insert id="shortLinkStats" parameterType="com.xduo.shortlink.project.dao.entity.LinkDeviceStatsDO">
+        INSERT INTO
+        t_link_device_stats (
+        full_short_url,
+        gid,
+        date,
+        cnt,
+        device,
+        create_time,
+        update_time,
+        del_flag
+        )
+        VALUES (
+        #{fullShortUrl},
+        #{gid},
+        #{date},
+        #{cnt},
+        #{device},
+        #{createTime},
+        #{updateTime},
+        #{delFlag}
+        )
+        ON DUPLICATE KEY UPDATE
+        cnt = cnt + #{cnt},
+        update_time = #{updateTime};
+    </insert>
+    <select id="listDeviceStatsByShortLink"
+            resultType="com.xduo.shortlink.project.dao.entity.LinkDeviceStatsDO">
+        SELECT
+        device,
+        SUM(cnt) AS cnt
+        FROM
+        t_link_device_stats
+        WHERE
+        full_short_url = #{requestParam.fullShortUrl}
+        AND gid = #{requestParam.gid}
+        AND date BETWEEN #{requestParam.startDate} AND #{requestParam.endDate}
+        GROUP BY
+        device
+
+    </select>
+    <select id="listGroupDeviceStatsByShortLink"
+            resultType="com.xduo.shortlink.project.dao.entity.LinkDeviceStatsDO">
+
+        SELECT
+        device,
+        SUM(cnt) AS cnt
+        FROM
+        t_link_device_stats
+        WHERE
+        gid = #{requestParam.gid}
+        AND date BETWEEN #{requestParam.startDate} AND #{requestParam.endDate}
+        GROUP BY
+        device
+    </select>
+
+</mapper>
+
