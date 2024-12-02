@@ -109,6 +109,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
     private String defaultDomain;
 
     @Override
+    @Transactional
     public ShortLinkCreateRespDTO createShortLink(ShortLinkCreateReqDTO shortLinkCreateReqDTO) {
         verificationWhitelist(shortLinkCreateReqDTO.getOriginUrl());
         String shortLinkSuffix = generateSuffix(shortLinkCreateReqDTO);
@@ -143,13 +144,8 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
 
         } catch (DuplicateKeyException ex) {
 
-            LambdaQueryWrapper<LinkDO> queryWrapper = Wrappers.lambdaQuery(LinkDO.class)
-                    .eq(LinkDO::getFullShortUrl, fullShortUrl);
-            LinkDO hasShortLinkDO = baseMapper.selectOne(queryWrapper);
-            if (hasShortLinkDO != null) {
                 log.warn("短链接：{} 重复入库", fullShortUrl);
-                throw new ServiceException("短链接生成重复");
-            }
+                throw new ServiceException("短链接生成重复:" + fullShortUrl);
         }
         stringRedisTemplate.opsForValue().set(String.format(GOTO_SHORT_LINK_KEY, fullShortUrl), shortLinkCreateReqDTO.getOriginUrl(), LinkUtil.getLinkCacheValidDate(shortLinkCreateReqDTO.getValidDate()), TimeUnit.MILLISECONDS);
         shortUriCreateCachePenetrationBloomFilter.add(fullShortUrl);
@@ -511,7 +507,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
                 throw new ServiceException("短链接频繁生成，请稍后重试。");
             }
             String originUrl = shortLinkCreateReqDTO.getOriginUrl();
-            originUrl += System.currentTimeMillis();
+            originUrl += UUID.randomUUID().toString();
             //注意 这一步可能会存在冲突
             shortUri = HashUtil.hashToBase62(originUrl);
             //在下一步 redis 中判断是否 存在 冲突
@@ -574,7 +570,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
             addResponseCookieTask.run();
         }
         String remoteAddr = LinkUtil.getIp(request);
-        Long uvAdded = stringRedisTemplate.opsForSet().add("short-link:stats:uip" + fullShortUrl, remoteAddr);
+        Long uvAdded = stringRedisTemplate.opsForSet().add(STATS_UV_KEY_PREFIX + fullShortUrl, remoteAddr);
         boolean uipFirstFlag = uvAdded != null && uvAdded > 0L;
         String os = LinkUtil.getOs(request);
         String browser = LinkUtil.getBrowser(request);

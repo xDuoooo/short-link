@@ -31,6 +31,8 @@ import org.springframework.stereotype.Service;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import static com.nageoffer.shortlink.admin.common.constant.RedisCacheConstants.USER_LOGIN_KEY;
+
 /**
  * 用户接口实现层
  */
@@ -41,6 +43,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
     private final RedissonClient redissonClient;
     private final StringRedisTemplate stringRedisTemplate;
     private final GroupService groupService;
+
     @Override
     public UserRespDTO getUserByUsername(String username) {
         LambdaQueryWrapper<UserDO> lambdaQueryWrapper = new LambdaQueryWrapper<>();
@@ -77,7 +80,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
 
                 }
                 userRegisterCachePenetrationBloomFilter.add(registerReqDto.getUsername());
-                groupService.saveGroup(registerReqDto.getUsername(),"默认分组");
+                groupService.saveGroup(registerReqDto.getUsername(), "默认分组");
             }
         } finally {
             lock.unlock();
@@ -116,7 +119,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
         //已经校验过了身份正确性
 
         //如果存在登录信息则取第一个返回
-        Map<Object ,Object> hasLoginMap = stringRedisTemplate.opsForHash().entries("login_" + userLoginReqDTO.getUsername());
+        Map<Object, Object> hasLoginMap = stringRedisTemplate.opsForHash().entries(USER_LOGIN_KEY + userLoginReqDTO.getUsername());
         if (CollUtil.isNotEmpty(hasLoginMap)) {
             String token = hasLoginMap.keySet().stream()
                     .findFirst()
@@ -134,21 +137,21 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
 
         //如果不存在登录信息就创造新的token返回
         String uuid = UUID.randomUUID().toString();
-        stringRedisTemplate.opsForHash().put("login_" + userLoginReqDTO.getUsername(), uuid, JSON.toJSONString(userDO));
+        stringRedisTemplate.opsForHash().put(USER_LOGIN_KEY + userLoginReqDTO.getUsername(), uuid, JSON.toJSONString(userDO));
         stringRedisTemplate.expire("login_" + userLoginReqDTO.getUsername(), 30L, TimeUnit.DAYS);
         return new UserLoginRespDTO(uuid);
     }
 
     @Override
     public Boolean checkLogin(String username, String token) {
-        Object redisToken = stringRedisTemplate.opsForHash().get("login_" + username, token);
+        Object redisToken = stringRedisTemplate.opsForHash().get(USER_LOGIN_KEY + username, token);
         return redisToken != null;
     }
 
     @Override
     public void logout(String username, String token) {
         if (checkLogin(username, token)) {
-            stringRedisTemplate.opsForHash().delete("login_" + username, token);
+            stringRedisTemplate.opsForHash().delete(USER_LOGIN_KEY + username, token);
             return;
         }
         throw new ClientException("用户Token不存在或用户未登录");
