@@ -27,7 +27,7 @@ public class ShortLinkStatsController {
      * @return
      */
     @GetMapping("/api/short-link/v1/stats")
-    public Result<ShortLinkStatsRespDTO> getOneShortLinkStats(@RequestBody ShortLinkStatsReqDTO shortLinkStatsReqDTO){
+    public Result<ShortLinkStatsRespDTO> getOneShortLinkStats(ShortLinkStatsReqDTO shortLinkStatsReqDTO){
         return Results.success(shortLinkStatsService.getOneShortLinkStats(shortLinkStatsReqDTO));
     }
     /**
@@ -36,7 +36,7 @@ public class ShortLinkStatsController {
      * @return
      */
     @GetMapping("/api/short-link/admin/v1/stats/group")
-    public Result<ShortLinkStatsRespDTO> getGroupShortLinkStats(@RequestBody ShortLinkGroupStatsReqDTO shortLinkGroupStatsReqDTO){
+    public Result<ShortLinkStatsRespDTO> getGroupShortLinkStats(ShortLinkGroupStatsReqDTO shortLinkGroupStatsReqDTO){
         return Results.success(shortLinkStatsService.getGroupShortLinkStats(shortLinkGroupStatsReqDTO));
     }
 

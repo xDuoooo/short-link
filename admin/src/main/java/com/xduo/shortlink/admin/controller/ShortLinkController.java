@@ -1,6 +1,6 @@
 package com.xduo.shortlink.admin.controller;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.xduo.shortlink.admin.common.convention.result.Result;
 import com.xduo.shortlink.admin.common.convention.result.Results;
 import com.xduo.shortlink.admin.remote.dto.ShortLinkActualRemoteService;
@@ -57,8 +57,8 @@ public class ShortLinkController {
      * 分页查询短链接
      */
     @GetMapping("/api/short-link/admin/v1/page")
-    public Result<Page<ShortLinkPageRespDTO>> pageShortLink(ShortLinkPageReqDTO requestParam) {
-        return shortLinkActualRemoteService.pageShortLink(requestParam.getGid(), requestParam.getOrderTag(), requestParam.getCurrent(), requestParam.getSize());
+    public Result<IPage<ShortLinkPageRespDTO>> pageShortLink(ShortLinkPageReqDTO requestParam) {
+        return Results.success(shortLinkActualRemoteService.pageShortLink(requestParam).getData());
     }
 
 

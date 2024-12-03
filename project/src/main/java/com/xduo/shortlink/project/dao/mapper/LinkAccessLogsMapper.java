@@ -30,7 +30,6 @@ public interface LinkAccessLogsMapper extends BaseMapper<LinkAccessLogsDO> {
      */
     HashMap<String, Object> findUvTypeCntByShortLink(@Param("param") ShortLinkStatsReqDTO param);
 
-    @MapKey("user")
     List<Map<String, Object>> selectUvTypeByUser(SelectUvTypeByUserReqDTO selectUvTypeByUserReqDTO);
 
     /**

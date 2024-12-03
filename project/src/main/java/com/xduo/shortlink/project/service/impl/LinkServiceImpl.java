@@ -218,11 +218,12 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
                         .eq(LinkDO::getGid, selectedOne.getGid())
                         .eq(LinkDO::getDelFlag, 0)
                         .eq(LinkDO::getDelTime, 0L)
+                        .set(LinkDO::getDelFlag, 1)
                         .eq(LinkDO::getEnableStatus, 1);
                 LinkDO delShortLinkDO = LinkDO.builder()
                         .delTime(System.currentTimeMillis())
+                        .delFlag(1)
                         .build();
-                delShortLinkDO.setDelFlag(1);
                 baseMapper.update(delShortLinkDO, linkUpdateWrapper);
 
 

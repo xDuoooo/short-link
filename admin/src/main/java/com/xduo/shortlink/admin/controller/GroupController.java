@@ -80,12 +80,5 @@ public class GroupController {
         return Results.success();
     }
 
-    /**
-     * 查询短链接分组下短链接数量
-     */
-    @GetMapping("/api/short-link/admin/v1/count")
-    public Result<List<ShortLinkGroupCountQueryRespDTO>> pageShortLink(@RequestParam List<String> requestParam) {
-        return shortLinkRemoteService.listGroupShortLinkCount(requestParam);
-    }
 
 }

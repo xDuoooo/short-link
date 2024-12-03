@@ -77,8 +77,8 @@ public class ShortLinkController {
      *
      * @return
      */
-    @GetMapping("/page")
-    public Result<IPage<ShortLinkPageRespDTO>> pageShortLink(ShortLinkPageReqDTO shortLinkPageReqDTO) {
+    @PostMapping("/page")
+    public Result<IPage<ShortLinkPageRespDTO>> pageShortLink(@RequestBody ShortLinkPageReqDTO shortLinkPageReqDTO) {
         return Results.success(linkService.pageShortLink(shortLinkPageReqDTO));
     }
 
@@ -88,7 +88,7 @@ public class ShortLinkController {
      * @return
      */
     @GetMapping("/count")
-    public Result<List<ShortLinkGroupCountQueryRespDTO>> groupShortLinkCount(@RequestParam List<String> gids) {
+    public Result<List<ShortLinkGroupCountQueryRespDTO>> groupShortLinkCount(@RequestParam("gids") List<String> gids) {
         return Results.success(linkService.listGroupShortLinkCount(gids));
 
     }

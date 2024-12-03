@@ -1,7 +1,6 @@
 package com.xduo.shortlink.admin.remote.dto.resp;
 
-import com.xduo.shortlink.project.dto.resp.ShortLinkStatsBrowserRespDTO;
-import com.xduo.shortlink.project.dto.resp.ShortLinkStatsLocaleCNRespDTO;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

@@ -9,9 +9,12 @@ import com.xduo.shortlink.project.dao.mapper.*;
 import com.xduo.shortlink.project.dto.req.*;
 import com.xduo.shortlink.project.dto.resp.*;
 import com.xduo.shortlink.project.service.ShortLinkStatsService;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -374,16 +377,24 @@ public class ShortLinkStatsServiceImpl implements ShortLinkStatsService {
                 .toList();
         SelectUvTypeByUserReqDTO selectUvTypeByUserReqDTO = BeanUtil.toBean(requestParam, SelectUvTypeByUserReqDTO.class);
         selectUvTypeByUserReqDTO.setUserAccessLogsList(userAccessLogsList);
+        //每一个map 中 key 列名 value 值
         List<Map<String, Object>> uvTypeList = linkAccessLogsMapper.selectUvTypeByUser(selectUvTypeByUserReqDTO);
-        actualResult.getRecords().forEach(
-                eachResult -> {
-                    String uvType = uvTypeList.stream().filter(eachType -> Objects.equals(eachType.get("user"), eachResult.getUser()))
-                            .findFirst().map(item -> item.get("uvType").toString())
-                            .orElse("旧访客");
-                    eachResult.setUvType(uvType);
+        for (Map<String, Object> uvType : uvTypeList) {
+            LocalDateTime createTime = (LocalDateTime) uvType.get("create_time");
+            String user = uvType.get("user").toString();
+            for (ShortLinkStatsAccessRecordRespDTO record : actualResult.getRecords()) {
+                Date date = record.getCreateTime();
+                // 将Date转换为LocalDateTime
+                LocalDateTime dateAsLocalDateTime = date.toInstant()
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDateTime();
+                if(record.getUser().equals(user) && dateAsLocalDateTime.isEqual(createTime)){
+                    record.setUvType(uvType.get("uvType").toString());
+                    break;
                 }
-        );
+            }
 
+        }
         return actualResult;
     }
 
