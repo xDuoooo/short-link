@@ -35,7 +35,7 @@ public class ShortLinkStatsController {
      * @param shortLinkGroupStatsReqDTO
      * @return
      */
-    @GetMapping("/api/short-link/admin/v1/stats/group")
+    @GetMapping("/api/short-link/v1/stats/group")
     public Result<ShortLinkStatsRespDTO> getGroupShortLinkStats(ShortLinkGroupStatsReqDTO shortLinkGroupStatsReqDTO){
         return Results.success(shortLinkStatsService.getGroupShortLinkStats(shortLinkGroupStatsReqDTO));
     }
