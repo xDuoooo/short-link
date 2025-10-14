@@ -61,5 +61,12 @@ public class ShortLinkController {
         return Results.success(shortLinkActualRemoteService.pageShortLink(requestParam).getData());
     }
 
+    /**
+     * 查询短链接分组下短链接数量
+     */
+    @GetMapping("/api/short-link/admin/v1/count")
+    public Result<List<ShortLinkGroupCountQueryRespDTO>> groupShortLinkCount(@RequestParam("gids") List<String> gids) {
+        return shortLinkActualRemoteService.listGroupShortLinkCount(gids);
+    }
 
 }

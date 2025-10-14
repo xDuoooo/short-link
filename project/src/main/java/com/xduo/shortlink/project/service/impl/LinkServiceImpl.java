@@ -105,12 +105,16 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
     public ShortLinkCreateRespDTO createShortLink(ShortLinkCreateReqDTO shortLinkCreateReqDTO) {
         verificationWhitelist(shortLinkCreateReqDTO.getOriginUrl());
         String shortLinkSuffix = generateSuffix(shortLinkCreateReqDTO);
-        String fullShortUrl = StrBuilder.create(defaultDomain)
+        // 使用前端传递的domain参数，如果为空则使用默认域名
+        String domain = StrUtil.isNotBlank(shortLinkCreateReqDTO.getDomain()) 
+                ? shortLinkCreateReqDTO.getDomain() 
+                : defaultDomain;
+        String fullShortUrl = StrBuilder.create(domain)
                 .append("/")
                 .append(shortLinkSuffix)
                 .toString();
         LinkDO shortLinkDO = LinkDO.builder()
-                .domain(defaultDomain)
+                .domain(domain)
                 .originUrl(shortLinkCreateReqDTO.getOriginUrl())
                 .gid(shortLinkCreateReqDTO.getGid())
                 .createdType(shortLinkCreateReqDTO.getCreatedType())
@@ -143,7 +147,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
         shortUriCreateCachePenetrationBloomFilter.add(fullShortUrl);
 
         return ShortLinkCreateRespDTO.builder()
-                .fullShortUrl("http://" + shortLinkDO.getFullShortUrl())
+                .fullShortUrl(shortLinkDO.getFullShortUrl())
                 .originUrl(shortLinkDO.getOriginUrl()).build();
     }
 

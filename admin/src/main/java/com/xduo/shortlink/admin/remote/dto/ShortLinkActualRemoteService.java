@@ -17,7 +17,7 @@ import java.util.List;
 /**
  * feign调用short-link-project远程接口
  */
-@FeignClient(value = "short-link-project", url = "${aggregation.remote-url:}")
+@FeignClient(value = "short-link-project")
 public interface ShortLinkActualRemoteService {
 
     /**

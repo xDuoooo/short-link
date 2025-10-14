@@ -68,9 +68,18 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO>
             do {
                 gid = RandomIncludeUpperAndLowerAndNumberUtil.generate(6);
             } while (hasGid(username, gid));
+            // 获取当前用户的最大sortOrder，新分组排在最后
+            LambdaQueryWrapper<GroupDO> maxSortWrapper = Wrappers.lambdaQuery(GroupDO.class)
+                    .eq(GroupDO::getUsername, username)
+                    .eq(BaseDO::getDelFlag, 0)
+                    .orderByDesc(GroupDO::getSortOrder)
+                    .last("LIMIT 1");
+            GroupDO maxSortGroup = baseMapper.selectOne(maxSortWrapper);
+            int newSortOrder = maxSortGroup != null ? maxSortGroup.getSortOrder() + 1 : 1;
+            
             GroupDO groupDO = GroupDO.builder()
                     .gid(gid)
-                    .sortOrder(0)
+                    .sortOrder(newSortOrder)
                     .username(username)
                     .name(groupName)
                     .build();
@@ -89,7 +98,8 @@ public class GroupServiceImpl extends ServiceImpl<GroupMapper, GroupDO>
         LambdaQueryWrapper<GroupDO> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(GroupDO::getUsername,UserContext.getUsername())
                 .eq(BaseDO::getDelFlag,0)
-                .orderByDesc(GroupDO::getSortOrder,BaseDO::getUpdateTime);
+                .orderByAsc(GroupDO::getSortOrder)
+                .orderByDesc(BaseDO::getUpdateTime);
         List<GroupDO> groupDOs = baseMapper.selectList(lambdaQueryWrapper);
         Result<List<ShortLinkGroupCountQueryRespDTO>> gidsGroups = shortLinkActualRemoteService.listGroupShortLinkCount(groupDOs.stream().map(GroupDO::getGid).toList());
         List<ShortLinkGroupCountQueryRespDTO> data = gidsGroups.getData();
