@@ -300,6 +300,10 @@ const GroupShortLinks: React.FC = () => {
           layout="vertical"
           onFinish={handleSubmit}
         >
+          <Form.Item name="gid" style={{ display: 'none' }}>
+            <Input />
+          </Form.Item>
+          
           <Form.Item
             name="originUrl"
             label="原始链接"
@@ -403,6 +407,10 @@ const GroupShortLinks: React.FC = () => {
           layout="vertical"
           onFinish={handleBatchSubmit}
         >
+          <Form.Item name="gid" style={{ display: 'none' }}>
+            <Input />
+          </Form.Item>
+          
           <Form.Item
             name="originUrls"
             label="原始链接列表"
