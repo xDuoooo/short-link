@@ -58,7 +58,7 @@ interface ShortLinkFormData {
 
 interface BatchCreateFormData {
   gid: string;
-  originUrls: string[];
+  originUrls: string;
   domain: string;
   createdType: number;
   validDateType: number;
@@ -78,20 +78,75 @@ const ShortLinkManagement: React.FC = () => {
   const { groups } = useSelector((state: RootState) => state.group);
 
   useEffect(() => {
+    console.log('组件初始化，开始加载分组数据');
     dispatch(fetchGroups());
     dispatch(fetchShortLinks({ current: 1, size: 10 }));
   }, [dispatch]);
 
+  // 当分组数据加载完成后，如果模态框是打开的，自动设置默认分组
+  useEffect(() => {
+    console.log('分组数据变化:', groups);
+    if (isModalVisible && groups.length > 0) {
+      console.log('模态框打开，自动设置默认分组:', groups[0].gid);
+      form.setFieldsValue({ gid: groups[0].gid });
+      // 强制触发表单验证
+      form.validateFields(['gid']);
+    }
+  }, [isModalVisible, groups, form]);
+
+  // 当批量创建模态框打开时，自动设置默认分组
+  useEffect(() => {
+    if (isBatchModalVisible && groups.length > 0) {
+      console.log('批量创建模态框打开，自动设置默认分组:', groups[0].gid);
+      batchForm.setFieldsValue({ gid: groups[0].gid });
+      // 强制触发表单验证
+      batchForm.validateFields(['gid']);
+    }
+  }, [isBatchModalVisible, groups, batchForm]);
+
   const handleCreate = () => {
     setEditingLink(null);
-    form.resetFields();
     setActiveTab('single');
     setIsModalVisible(true);
+    
+    // 重置表单并设置默认值
+    form.resetFields();
+    
+    // 使用 setTimeout 确保表单重置完成后再设置默认值
+    setTimeout(() => {
+      if (groups.length > 0) {
+        console.log('立即设置默认分组:', groups[0].gid);
+        form.setFieldsValue({ 
+          gid: groups[0].gid,
+          validDateType: 0 
+        });
+        // 验证设置是否成功
+        setTimeout(() => {
+          const currentValues = form.getFieldsValue();
+          console.log('表单设置后的值:', currentValues);
+        }, 50);
+      } else {
+        console.warn('没有可用的分组数据');
+      }
+    }, 100);
   };
 
   const handleBatchCreate = () => {
-    batchForm.resetFields();
     setIsBatchModalVisible(true);
+    
+    // 重置表单并设置默认值
+    batchForm.resetFields();
+    
+    // 使用 setTimeout 确保表单重置完成后再设置默认值
+    setTimeout(() => {
+      if (groups.length > 0) {
+        console.log('批量创建立即设置默认分组:', groups[0].gid);
+        batchForm.setFieldsValue({ 
+          gid: groups[0].gid,
+          validDateType: 0 
+        });
+      }
+    }, 100);
   };
 
   const handleEdit = (record: any) => {
@@ -128,11 +183,43 @@ const ShortLinkManagement: React.FC = () => {
 
   const handleSubmit = async (values: ShortLinkFormData) => {
     try {
+      console.log('=== 表单提交调试信息 ===');
+      console.log('表单提交数据:', values);
+      console.log('gid字段值:', values.gid);
+      console.log('gid字段类型:', typeof values.gid);
+      console.log('表单当前值:', form.getFieldsValue());
+      console.log('分组数据:', groups);
+      console.log('当前选中的分组:', groups.find(g => g.gid === values.gid));
+      
+      // 验证gid是否存在，如果不存在则使用第一个分组
+      let gid = values.gid;
+      if (!gid && groups.length > 0) {
+        gid = groups[0].gid;
+        console.log('gid为空，使用默认分组:', gid);
+      }
+      
+      if (!gid) {
+        console.error('gid字段为空且没有可用分组，无法提交');
+        message.error('请先创建分组');
+        return;
+      }
+      
+      // 确保gid字段存在且有效
+      if (!gid || gid.trim() === '') {
+        message.error('请选择分组');
+        return;
+      }
+      
       const formData = {
         ...values,
+        gid: gid, // 确保gid字段存在
         createdType: 1, // 控制台创建
         validDate: values.validDate ? dayjs(values.validDate).format('YYYY-MM-DD HH:mm:ss') : '',
       };
+      console.log('处理后的数据:', formData);
+      console.log('最终发送的数据包含gid:', !!formData.gid);
+      console.log('gid值:', formData.gid);
+      console.log('=== 调试信息结束 ===');
 
       if (editingLink) {
         await dispatch(updateShortLink({
@@ -147,23 +234,52 @@ const ShortLinkManagement: React.FC = () => {
       setIsModalVisible(false);
       form.resetFields();
     } catch (error) {
+      console.error('提交错误:', error); // 调试信息
       message.error(editingLink ? '更新失败' : '创建失败');
     }
   };
 
   const handleBatchSubmit = async (values: BatchCreateFormData) => {
     try {
+      console.log('=== 批量创建表单提交调试信息 ===');
+      console.log('表单提交数据:', values);
+      console.log('gid字段值:', values.gid);
+      console.log('分组数据:', groups);
+      
+      // 验证gid是否存在
+      if (!values.gid || values.gid.trim() === '') {
+        message.error('请选择分组');
+        return;
+      }
+      
+      // 处理原始链接列表
+      const originUrls = values.originUrls
+        .split('\n')
+        .map((url: string) => url.trim())
+        .filter((url: string) => url.length > 0);
+      
+      if (originUrls.length === 0) {
+        message.error('请输入至少一个原始链接');
+        return;
+      }
+      
       const formData = {
         ...values,
+        originUrls,
         createdType: 1, // 控制台创建
         validDate: values.validDate ? dayjs(values.validDate).format('YYYY-MM-DD HH:mm:ss') : '',
       };
+      
+      console.log('批量创建处理后的数据:', formData);
+      console.log('gid值:', formData.gid);
+      console.log('=== 批量创建调试信息结束 ===');
 
       await dispatch(batchCreateShortLink(formData)).unwrap();
       message.success('批量创建成功');
       setIsBatchModalVisible(false);
       batchForm.resetFields();
     } catch (error) {
+      console.error('批量创建错误:', error);
       message.error('批量创建失败');
     }
   };
@@ -292,6 +408,9 @@ const ShortLinkManagement: React.FC = () => {
           form={form}
           layout="vertical"
           onFinish={handleSubmit}
+          initialValues={{
+            validDateType: 0,
+          }}
         >
           <Form.Item
             name="gid"
@@ -388,6 +507,9 @@ const ShortLinkManagement: React.FC = () => {
           form={batchForm}
           layout="vertical"
           onFinish={handleBatchSubmit}
+          initialValues={{
+            validDateType: 0,
+          }}
         >
           <Form.Item
             name="gid"
@@ -565,6 +687,9 @@ const ShortLinkManagement: React.FC = () => {
           form={batchForm}
           layout="vertical"
           onFinish={handleBatchSubmit}
+          initialValues={{
+            validDateType: 0,
+          }}
         >
           <Form.Item
             name="gid"

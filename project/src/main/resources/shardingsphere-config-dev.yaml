@@ -43,6 +43,81 @@ rules:
             shardingColumn: gid
             # 分片算法，对应 rules[0].shardingAlgorithms
             shardingAlgorithmName: link_stats_today_table_hash_mod
+      t_link_access_logs:
+        # 真实数据节点 - 扩展到64个分表
+        actualDataNodes: ds_0.t_link_access_logs_${0..63}
+        # 分表策略
+        tableStrategy:
+          standard:
+            shardingColumn: full_short_url
+            shardingAlgorithmName: link_access_logs_table_hash_mod
+      t_link_access_stats:
+        # 真实数据节点 - 扩展到32个分表
+        actualDataNodes: ds_0.t_link_access_stats_${0..31}
+        # 分表策略
+        tableStrategy:
+          standard:
+            shardingColumn: full_short_url
+            shardingAlgorithmName: link_access_stats_table_hash_mod
+      t_link_browser_stats:
+        # 真实数据节点
+        actualDataNodes: ds_0.t_link_browser_stats_${0..15}
+        # 分表策略
+        tableStrategy:
+          standard:
+            shardingColumn: full_short_url
+            shardingAlgorithmName: link_browser_stats_table_hash_mod
+      t_link_device_stats:
+        # 真实数据节点
+        actualDataNodes: ds_0.t_link_device_stats_${0..15}
+        # 分表策略
+        tableStrategy:
+          standard:
+            shardingColumn: full_short_url
+            shardingAlgorithmName: link_device_stats_table_hash_mod
+      t_link_locale_stats:
+        # 真实数据节点
+        actualDataNodes: ds_0.t_link_locale_stats_${0..15}
+        # 分表策略
+        tableStrategy:
+          standard:
+            shardingColumn: full_short_url
+            shardingAlgorithmName: link_locale_stats_table_hash_mod
+      t_link_network_stats:
+        # 真实数据节点
+        actualDataNodes: ds_0.t_link_network_stats_${0..15}
+        # 分表策略
+        tableStrategy:
+          standard:
+            shardingColumn: full_short_url
+            shardingAlgorithmName: link_network_stats_table_hash_mod
+      t_link_os_stats:
+        # 真实数据节点
+        actualDataNodes: ds_0.t_link_os_stats_${0..15}
+        # 分表策略
+        tableStrategy:
+          standard:
+            shardingColumn: full_short_url
+            shardingAlgorithmName: link_os_stats_table_hash_mod
+      t_user:
+        # 真实数据节点
+        actualDataNodes: ds_0.t_user_${0..15}
+        # 分表策略
+        tableStrategy:
+          standard:
+            shardingColumn: username
+            shardingAlgorithmName: user_table_hash_mod
+      t_group:
+        # 真实数据节点
+        actualDataNodes: ds_0.t_group_${0..15}
+        # 分表策略
+        tableStrategy:
+          standard:
+            shardingColumn: username
+            shardingAlgorithmName: group_table_hash_mod
+      t_group_unique:
+        # 真实数据节点 - 单表，不需要分片
+        actualDataNodes: ds_0.t_group_unique
     bindingTables:
       - t_link, t_link_stats_today
 
@@ -65,6 +140,42 @@ rules:
         # 根据分片键 Hash 分片
         type: HASH_MOD
         # 分片数量
+        props:
+          sharding-count: 16
+      link_access_logs_table_hash_mod:
+        type: HASH_MOD
+        props:
+          sharding-count: 64
+      link_access_stats_table_hash_mod:
+        type: HASH_MOD
+        props:
+          sharding-count: 32
+      link_browser_stats_table_hash_mod:
+        type: HASH_MOD
+        props:
+          sharding-count: 16
+      link_device_stats_table_hash_mod:
+        type: HASH_MOD
+        props:
+          sharding-count: 16
+      user_table_hash_mod:
+        type: HASH_MOD
+        props:
+          sharding-count: 16
+      group_table_hash_mod:
+        type: HASH_MOD
+        props:
+          sharding-count: 16
+      link_locale_stats_table_hash_mod:
+        type: HASH_MOD
+        props:
+          sharding-count: 16
+      link_network_stats_table_hash_mod:
+        type: HASH_MOD
+        props:
+          sharding-count: 16
+      link_os_stats_table_hash_mod:
+        type: HASH_MOD
         props:
           sharding-count: 16
 props:

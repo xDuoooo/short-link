@@ -32,6 +32,9 @@ rules:
             shardingColumn: username
             # 分片算法，对应 rules[0].shardingAlgorithms
             shardingAlgorithmName: group_table_hash_mod
+      t_group_unique:
+        # 真实数据节点 - 单表，不需要分片
+        actualDataNodes: ds_0.t_group_unique
     # 分片算法
     shardingAlgorithms:
       # 数据表分片算法

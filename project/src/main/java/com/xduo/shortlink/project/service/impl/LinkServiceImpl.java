@@ -103,6 +103,10 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
     @Override
     @Transactional
     public ShortLinkCreateRespDTO createShortLink(ShortLinkCreateReqDTO shortLinkCreateReqDTO) {
+        // 验证 gid 字段不能为空
+        if (shortLinkCreateReqDTO.getGid() == null || StrUtil.isBlank(shortLinkCreateReqDTO.getGid())) {
+            throw new ClientException("分组标识不能为空");
+        }
         verificationWhitelist(shortLinkCreateReqDTO.getOriginUrl());
         String shortLinkSuffix = generateSuffix(shortLinkCreateReqDTO);
         // 使用前端传递的domain参数，如果为空则使用默认域名
@@ -161,7 +165,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
         IPage<LinkDO> resultPage = baseMapper.pageLink(shortLinkPageReqDTO);
         return resultPage.convert(each -> {
             ShortLinkPageRespDTO bean = BeanUtil.toBean(each, ShortLinkPageRespDTO.class);
-            bean.setDomain("http://" + bean.getDomain());
+            bean.setDomain(bean.getDomain());
             return bean;
         });
     }
@@ -468,6 +472,10 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
 
     @Override
     public ShortLinkBatchCreateRespDTO batchCreateShortLink(ShortLinkBatchCreateReqDTO requestParam) {
+        // 验证 gid 字段不能为空
+        if (StrUtil.isBlank(requestParam.getGid())) {
+            throw new ClientException("分组标识不能为空");
+        }
         List<String> originUrls = requestParam.getOriginUrls();
         List<String> describes = requestParam.getDescribes();
         List<ShortLinkBaseInfoRespDTO> result = new ArrayList<>();

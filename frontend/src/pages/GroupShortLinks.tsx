@@ -304,7 +304,7 @@ const GroupShortLinks: React.FC = () => {
             name="originUrl"
             label="原始链接"
             rules={[
-              { required: true, message: '请输入原始链接!' },
+              { required: true, message: '请输入原始2链接!' },
               { type: 'url', message: '请输入正确的URL!' },
             ]}
           >
