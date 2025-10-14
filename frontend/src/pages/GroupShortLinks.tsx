@@ -349,12 +349,16 @@ const GroupShortLinks: React.FC = () => {
             label="有效期"
             dependencies={['validDateType']}
           >
-            <DatePicker
-              showTime
-              placeholder="请选择有效期"
-              style={{ width: '100%' }}
-              disabled={form.getFieldValue('validDateType') === 0}
-            />
+            <Form.Item shouldUpdate={(prevValues, currentValues) => prevValues.validDateType !== currentValues.validDateType} noStyle>
+              {({ getFieldValue }) => (
+                <DatePicker
+                  showTime
+                  placeholder="请选择有效期"
+                  style={{ width: '100%' }}
+                  disabled={getFieldValue('validDateType') === 0}
+                />
+              )}
+            </Form.Item>
           </Form.Item>
 
           <Form.Item
