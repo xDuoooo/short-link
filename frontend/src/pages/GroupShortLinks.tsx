@@ -193,7 +193,16 @@ const GroupShortLinks: React.FC = () => {
       render: (text: string) => (
         <div>
           <div style={{ fontWeight: 500, marginBottom: 4 }}>
-            {text}
+            <a 
+              href={text} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              style={{ color: '#1890ff', textDecoration: 'none' }}
+              onMouseEnter={(e) => (e.target as HTMLElement).style.textDecoration = 'underline'}
+              onMouseLeave={(e) => (e.target as HTMLElement).style.textDecoration = 'none'}
+            >
+              {text}
+            </a>
           </div>
           <Button
             type="link"
@@ -262,14 +271,6 @@ const GroupShortLinks: React.FC = () => {
             onClick={() => handleEdit(record)}
           >
             编辑
-          </Button>
-          <Button
-            type="link"
-            icon={<EyeOutlined />}
-            href={record.fullShortUrl}
-            target="_blank"
-          >
-            访问
           </Button>
           <Popconfirm
             title="确定要删除这个短链接吗？"
