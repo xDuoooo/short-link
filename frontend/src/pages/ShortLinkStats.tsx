@@ -50,7 +50,7 @@ const ShortLinkStats: React.FC = () => {
     dayjs(),
   ]);
   const [activeTab, setActiveTab] = useState('overview');
-  const [includeRecycle, setIncludeRecycle] = useState<boolean>(false);
+  const [includeRecycle, setIncludeRecycle] = useState<boolean>(true);
 
   const dispatch = useDispatch<AppDispatch>();
   const { statsData, accessRecords, loading } = useSelector((state: RootState) => state.stats);
@@ -93,15 +93,15 @@ const ShortLinkStats: React.FC = () => {
       });
       
       if (selectedShortLink) {
-        // 获取单个短链接统计
+        // 获取单个短链接统计 - 概览始终包含所有数据
         dispatch(getShortLinkStats({
           fullShortUrl: selectedShortLink,
           gid: selectedGroup,
           startDate: dateRange[0].format('YYYY-MM-DD'),
           endDate: dateRange[1].format('YYYY-MM-DD'),
-          includeRecycle: includeRecycle,
+          includeRecycle: true,
         }));
-        // 获取单个短链接访问记录
+        // 获取单个短链接访问记录 - 历史记录可选择是否包含回收站
         dispatch(getShortLinkAccessRecords({
           fullShortUrl: selectedShortLink,
           gid: selectedGroup,
@@ -112,14 +112,14 @@ const ShortLinkStats: React.FC = () => {
           includeRecycle: includeRecycle,
         }));
       } else {
-        // 获取分组统计
+        // 获取分组统计 - 概览始终包含所有数据
         dispatch(getGroupShortLinkStats({
           gid: selectedGroup,
           startDate: dateRange[0].format('YYYY-MM-DD'),
           endDate: dateRange[1].format('YYYY-MM-DD'),
-          includeRecycle: includeRecycle,
+          includeRecycle: true,
         }));
-        // 获取分组访问记录
+        // 获取分组访问记录 - 历史记录可选择是否包含回收站
         dispatch(getGroupShortLinkAccessRecords({
           gid: selectedGroup,
           startDate: dateRange[0].format('YYYY-MM-DD'),
@@ -156,15 +156,15 @@ const ShortLinkStats: React.FC = () => {
   const handleRefresh = () => {
     if (selectedGroup && dateRange[0] && dateRange[1]) {
       if (selectedShortLink) {
-        // 刷新单个短链接统计数据
+        // 刷新单个短链接统计数据 - 概览始终包含所有数据
         dispatch(getShortLinkStats({
           fullShortUrl: selectedShortLink,
           gid: selectedGroup,
           startDate: dateRange[0].format('YYYY-MM-DD'),
           endDate: dateRange[1].format('YYYY-MM-DD'),
-          includeRecycle: includeRecycle,
+          includeRecycle: true,
         }));
-        // 刷新单个短链接访问记录
+        // 刷新单个短链接访问记录 - 历史记录可选择是否包含回收站
         dispatch(getShortLinkAccessRecords({
           fullShortUrl: selectedShortLink,
           gid: selectedGroup,
@@ -175,14 +175,14 @@ const ShortLinkStats: React.FC = () => {
           includeRecycle: includeRecycle,
         }));
       } else {
-        // 刷新分组统计数据
+        // 刷新分组统计数据 - 概览始终包含所有数据
         dispatch(getGroupShortLinkStats({
           gid: selectedGroup,
           startDate: dateRange[0].format('YYYY-MM-DD'),
           endDate: dateRange[1].format('YYYY-MM-DD'),
-          includeRecycle: includeRecycle,
+          includeRecycle: true,
         }));
-        // 刷新分组访问记录
+        // 刷新分组访问记录 - 历史记录可选择是否包含回收站
         dispatch(getGroupShortLinkAccessRecords({
           gid: selectedGroup,
           startDate: dateRange[0].format('YYYY-MM-DD'),
@@ -550,27 +550,7 @@ const ShortLinkStats: React.FC = () => {
           </Row>
 
           <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
-            <Col xs={24} lg={8}>
-              <Card title="新老访客统计">
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ marginBottom: 16 }}>
-                    <Statistic
-                      title="新访客"
-                      value={statsData?.uvTypeStats?.find(item => item.uvType === 'newUser')?.cnt || 0}
-                      valueStyle={{ color: '#52c41a' }}
-                    />
-                  </div>
-                  <div>
-                    <Statistic
-                      title="老访客"
-                      value={statsData?.uvTypeStats?.find(item => item.uvType === 'oldUser')?.cnt || 0}
-                      valueStyle={{ color: '#1890ff' }}
-                    />
-                  </div>
-                </div>
-              </Card>
-            </Col>
-            <Col xs={24} lg={8}>
+            <Col xs={24} lg={12}>
               <Card title="地区分布">
                 <div style={{ textAlign: 'center' }}>
                   {statsData?.localeCnStats && statsData.localeCnStats.length > 0 ? (
@@ -596,7 +576,7 @@ const ShortLinkStats: React.FC = () => {
                 </div>
               </Card>
             </Col>
-            <Col xs={24} lg={8}>
+            <Col xs={24} lg={12}>
               <Card title="访问质量">
                 <div style={{ textAlign: 'center' }}>
                   <div style={{ marginBottom: 16 }}>
@@ -721,23 +701,28 @@ const ShortLinkStats: React.FC = () => {
               />
             </div>
           </Col>
-          <Col xs={24} sm={8} md={6}>
-            <div>
-              <label style={{ display: 'block', marginBottom: 8, fontWeight: 500 }}>
-                包含回收站
-              </label>
-              <Switch
-                checked={includeRecycle}
-                onChange={setIncludeRecycle}
-                checkedChildren="是"
-                unCheckedChildren="否"
-              />
-              <div style={{ fontSize: 12, color: '#666', marginTop: 4 }}>
-                是否包含已移入回收站的短链接
-              </div>
-            </div>
-          </Col>
         </Row>
+        
+        {activeTab === 'records' && (
+          <Row style={{ marginTop: 16 }}>
+            <Col xs={24} sm={8} md={6}>
+              <div>
+                <label style={{ display: 'block', marginBottom: 8, fontWeight: 500 }}>
+                  包含回收站
+                </label>
+                <Switch
+                  checked={includeRecycle}
+                  onChange={setIncludeRecycle}
+                  checkedChildren="是"
+                  unCheckedChildren="否"
+                />
+                <div style={{ fontSize: 12, color: '#666', marginTop: 4 }}>
+                  是否包含已移入回收站的短链接
+                </div>
+              </div>
+            </Col>
+          </Row>
+        )}
       </Card>
 
       {loading ? (
