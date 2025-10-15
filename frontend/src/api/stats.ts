@@ -14,6 +14,7 @@ export interface StatsData {
     uip: number;
   }>;
   hourStats?: number[];
+  weekdayStats?: number[];
   deviceStats?: Array<{
     device: string;
     cnt: number;
@@ -26,6 +27,20 @@ export interface StatsData {
   }>;
   osStats?: Array<{
     os: string;
+    cnt: number;
+    ratio: number;
+  }>;
+  networkStats?: Array<{
+    network: string;
+    cnt: number;
+    ratio: number;
+  }>;
+  uvTypeStats?: Array<{
+    uvType: string;
+    cnt: number;
+  }>;
+  localeCnStats?: Array<{
+    locale: string;
     cnt: number;
     ratio: number;
   }>;

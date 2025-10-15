@@ -275,6 +275,208 @@ const ShortLinkStats: React.FC = () => {
               </Card>
             </Col>
           </Row>
+          <Row gutter={[16, 16]}>
+            <Col xs={24} lg={12}>
+              <Card title="访问趋势" className="chart-container">
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={statsData?.daily || []}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" />
+                    <YAxis />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="pv" stroke="#1890ff" name="访问量" />
+                    <Line type="monotone" dataKey="uv" stroke="#52c41a" name="独立访客" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </Card>
+            </Col>
+            <Col xs={24} lg={12}>
+              <Card title="设备分布" className="chart-container">
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={statsData?.deviceStats || []}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ device, ratio }) => `${device} ${(ratio * 100).toFixed(0)}%`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="cnt"
+                    >
+                      {(statsData?.deviceStats || []).map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </Card>
+            </Col>
+          </Row>
+
+          <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+            <Col xs={24} lg={8}>
+              <Card title="浏览器分布" className="chart-container">
+                <ResponsiveContainer width="100%" height={250}>
+                  <PieChart>
+                    <Pie
+                      data={statsData?.browserStats || []}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ browser, ratio }) => `${browser} ${(ratio * 100).toFixed(0)}%`}
+                      outerRadius={60}
+                      fill="#8884d8"
+                      dataKey="cnt"
+                    >
+                      {(statsData?.browserStats || []).map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </Card>
+            </Col>
+            <Col xs={24} lg={8}>
+              <Card title="操作系统分布" className="chart-container">
+                <ResponsiveContainer width="100%" height={250}>
+                  <PieChart>
+                    <Pie
+                      data={statsData?.osStats || []}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ os, ratio }) => `${os} ${(ratio * 100).toFixed(0)}%`}
+                      outerRadius={60}
+                      fill="#8884d8"
+                      dataKey="cnt"
+                    >
+                      {(statsData?.osStats || []).map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </Card>
+            </Col>
+            <Col xs={24} lg={8}>
+              <Card title="网络类型分布" className="chart-container">
+                <ResponsiveContainer width="100%" height={250}>
+                  <PieChart>
+                    <Pie
+                      data={statsData?.networkStats || []}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ network, ratio }) => `${network} ${(ratio * 100).toFixed(0)}%`}
+                      outerRadius={60}
+                      fill="#8884d8"
+                      dataKey="cnt"
+                    >
+                      {(statsData?.networkStats || []).map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </Card>
+            </Col>
+          </Row>
+
+          <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+            <Col xs={24} lg={12}>
+              <Card title="24小时访问分布" className="chart-container">
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={statsData?.hourStats?.map((cnt, hour) => ({ hour: `${hour}:00`, cnt })) || []}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="hour" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="cnt" fill="#1890ff" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </Card>
+            </Col>
+            <Col xs={24} lg={12}>
+              <Card title="星期访问分布" className="chart-container">
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={statsData?.weekdayStats?.map((cnt, day) => ({ 
+                    day: ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][day], 
+                    cnt 
+                  })) || []}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="day" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="cnt" fill="#52c41a" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </Card>
+            </Col>
+          </Row>
+
+          <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+            <Col xs={24} lg={8}>
+              <Card title="新老访客统计">
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ marginBottom: 16 }}>
+                    <Statistic
+                      title="新访客"
+                      value={statsData?.uvTypeStats?.find(item => item.uvType === 'newUser')?.cnt || 0}
+                      valueStyle={{ color: '#52c41a' }}
+                    />
+                  </div>
+                  <div>
+                    <Statistic
+                      title="老访客"
+                      value={statsData?.uvTypeStats?.find(item => item.uvType === 'oldUser')?.cnt || 0}
+                      valueStyle={{ color: '#1890ff' }}
+                    />
+                  </div>
+                </div>
+              </Card>
+            </Col>
+            <Col xs={24} lg={8}>
+              <Card title="地区分布">
+                <div style={{ textAlign: 'center' }}>
+                  {statsData?.localeCnStats?.map((item, index) => (
+                    <div key={index} style={{ marginBottom: 8 }}>
+                      <Statistic
+                        title={item.locale || '未知地区'}
+                        value={item.cnt}
+                        suffix={`${(item.ratio * 100).toFixed(1)}%`}
+                        valueStyle={{ color: COLORS[index % COLORS.length] }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            </Col>
+            <Col xs={24} lg={8}>
+              <Card title="访问质量">
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ marginBottom: 16 }}>
+                    <Statistic
+                      title="平均每IP访问量"
+                      value={statsData?.uip ? (statsData.pv / statsData.uip).toFixed(2) : 0}
+                      valueStyle={{ color: '#fa8c16' }}
+                    />
+                  </div>
+                  <div>
+                    <Statistic
+                      title="平均每用户访问量"
+                      value={statsData?.uv ? (statsData.pv / statsData.uv).toFixed(2) : 0}
+                      valueStyle={{ color: '#eb2f96' }}
+                    />
+                  </div>
+                </div>
+              </Card>
+            </Col>
+          </Row>
         </div>
       ),
     },
