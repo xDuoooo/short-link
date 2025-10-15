@@ -11,9 +11,6 @@
         COUNT(ip) AS count
         FROM
         t_link_access_logs lal
-        <if test="includeRecycle == null or includeRecycle == false">
-            inner join t_link l on lal.full_short_url = l.full_short_url and lal.gid = l.gid and l.del_flag = 0
-        </if>
         WHERE
         lal.full_short_url = #{fullShortUrl}
         AND lal.gid = #{gid}
@@ -65,9 +62,6 @@
         COUNT(ip) AS count
         FROM
         t_link_access_logs lal
-        <if test="includeRecycle == null or includeRecycle == false">
-            inner join t_link l on lal.full_short_url = l.full_short_url and lal.gid = l.gid and l.del_flag = 0
-        </if>
         WHERE
         lal.gid = #{gid}
         AND lal.create_time BETWEEN #{startDate} AND #{endDate}

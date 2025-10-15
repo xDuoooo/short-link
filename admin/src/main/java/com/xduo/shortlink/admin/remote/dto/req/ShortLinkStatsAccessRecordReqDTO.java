@@ -33,4 +33,9 @@ public class ShortLinkStatsAccessRecordReqDTO {
      * 是否包含回收站短链接
      */
     private Boolean includeRecycle;
+
+    /**
+     * 用户名
+     */
+    private String username;
 }

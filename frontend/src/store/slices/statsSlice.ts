@@ -164,10 +164,12 @@ const statsSlice = createSlice({
       })
       .addCase(getShortLinkStats.fulfilled, (state, action) => {
         state.loading = false;
+        console.log('单个短链接统计数据获取成功:', action.payload);
         state.statsData = action.payload || null;
       })
       .addCase(getShortLinkStats.rejected, (state, action) => {
         state.loading = false;
+        console.error('单个短链接统计数据获取失败:', action.error);
         state.error = action.error.message || '获取统计数据失败';
       })
       // Get Group Short Link Stats
@@ -177,10 +179,12 @@ const statsSlice = createSlice({
       })
       .addCase(getGroupShortLinkStats.fulfilled, (state, action) => {
         state.loading = false;
+        console.log('分组统计数据获取成功:', action.payload);
         state.statsData = action.payload || null;
       })
       .addCase(getGroupShortLinkStats.rejected, (state, action) => {
         state.loading = false;
+        console.error('分组统计数据获取失败:', action.error);
         state.error = action.error.message || '获取分组统计数据失败';
       })
       // Get Short Link Access Records

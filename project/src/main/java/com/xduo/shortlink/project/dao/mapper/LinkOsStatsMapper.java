@@ -24,6 +24,8 @@ public interface LinkOsStatsMapper extends BaseMapper<LinkOsStatsDO> {
 
     List<LinkOsStatsDO> listOsStatsByShortLink(@Param("requestParam") ShortLinkStatsReqDTO shortLinkStatsReqDTO);
 
+    List<LinkOsStatsDO> listOsStatsByShortLinkOptimized(@Param("requestParam") ShortLinkStatsReqDTO shortLinkStatsReqDTO, @Param("username") String username);
+
     List<LinkOsStatsDO> listGroupOsStatsByShortLink(@Param("requestParam") ShortLinkGroupStatsReqDTO shortLinkGroupStatsReqDTO);
 }
 

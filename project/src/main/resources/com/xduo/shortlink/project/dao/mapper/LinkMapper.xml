@@ -18,7 +18,7 @@
         group by gid
     </select>
 
-    <!-- 分页查询短链接 -->
+    <!-- 分页查询短链接 - 优化版本 -->
     <select id="pageLink" parameterType="com.xduo.shortlink.project.dto.req.ShortLinkPageReqDTO"
 resultType="com.xduo.shortlink.project.dao.entity.LinkDO">
         SELECT t.*,
@@ -44,22 +44,71 @@ resultType="com.xduo.shortlink.project.dao.entity.LinkDO">
         </if>
         <choose>
             <when test="orderTag == 'todayPv'">
-                ORDER BY todayPv DESC
+                ORDER BY todayPv DESC, t.create_time DESC
             </when>
             <when test="orderTag == 'todayUv'">
-                ORDER BY todayUv DESC
+                ORDER BY todayUv DESC, t.create_time DESC
             </when>
             <when test="orderTag == 'todayUip'">
-                ORDER BY todayUip DESC
+                ORDER BY todayUip DESC, t.create_time DESC
             </when>
             <when test="orderTag == 'totalPv'">
-                ORDER BY t.total_pv DESC
+                ORDER BY t.total_pv DESC, t.create_time DESC
             </when>
             <when test="orderTag == 'totalUv'">
-                ORDER BY t.total_uv DESC
+                ORDER BY t.total_uv DESC, t.create_time DESC
             </when>
             <when test="orderTag == 'totalUip'">
-                ORDER BY t.total_uip DESC
+                ORDER BY t.total_uip DESC, t.create_time DESC
+            </when>
+            <otherwise>
+                ORDER BY t.create_time DESC
+            </otherwise>
+        </choose>
+    </select>
+
+    <!-- 优化的分页查询短链接 - 当有gid过滤时使用 -->
+    <select id="pageLinkOptimized" parameterType="com.xduo.shortlink.project.dto.req.ShortLinkPageReqDTO"
+resultType="com.xduo.shortlink.project.dao.entity.LinkDO">
+        SELECT t.*,
+        COALESCE(s.today_pv, 0) AS todayPv,
+        COALESCE(s.today_uv, 0) AS todayUv,
+        COALESCE(s.today_uip, 0) AS todayUip
+        FROM t_link t
+        LEFT JOIN t_link_stats_today s ON t.gid = s.gid
+        AND t.full_short_url = s.full_short_url
+        AND s.date = CURDATE()
+    WHERE t.del_flag = 0
+        <choose>
+            <when test="includeRecycle != null and includeRecycle == true">
+                <!-- 包含回收站：显示所有状态的短链接 -->
+            </when>
+            <otherwise>
+                <!-- 不包含回收站：只显示启用状态的短链接 -->
+                AND t.enable_status = 1
+            </otherwise>
+        </choose>
+        <if test="gid != null and gid != ''">
+            AND t.gid = #{gid}
+        </if>
+        <choose>
+            <when test="orderTag == 'todayPv'">
+                ORDER BY todayPv DESC, t.create_time DESC
+            </when>
+            <when test="orderTag == 'todayUv'">
+                ORDER BY todayUv DESC, t.create_time DESC
+            </when>
+            <when test="orderTag == 'todayUip'">
+                ORDER BY todayUip DESC, t.create_time DESC
+            </when>
+            <when test="orderTag == 'totalPv'">
+                ORDER BY t.total_pv DESC, t.create_time DESC
+            </when>
+            <when test="orderTag == 'totalUv'">
+                ORDER BY t.total_uv DESC, t.create_time DESC
+            </when>
+            <when test="orderTag == 'totalUip'">
+                ORDER BY t.total_uip DESC, t.create_time DESC
             </when>
             <otherwise>
                 ORDER BY t.create_time DESC

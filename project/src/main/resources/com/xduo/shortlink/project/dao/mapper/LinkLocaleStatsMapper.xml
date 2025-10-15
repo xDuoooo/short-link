@@ -44,9 +44,6 @@
         SUM(lls.cnt) AS cnt
         FROM
         t_link_locale_stats lls
-        <if test="includeRecycle == null or includeRecycle == false">
-            inner join t_link l on lls.full_short_url = l.full_short_url and lls.gid = l.gid and l.del_flag = 0
-        </if>
         WHERE
         lls.gid = #{gid}
         AND lls.full_short_url = #{fullShortUrl}
@@ -61,9 +58,6 @@
         SUM(cnt) AS cnt
         FROM
         t_link_locale_stats lls
-        <if test="includeRecycle == null or includeRecycle == false">
-            inner join t_link l on lls.full_short_url = l.full_short_url and lls.gid = l.gid and l.del_flag = 0
-        </if>
         WHERE
         lls.gid = #{gid}
         AND lls.del_flag = 0

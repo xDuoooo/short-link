@@ -139,6 +139,10 @@ const shortLinkSlice = createSlice({
     setIncludeRecycle: (state, action: PayloadAction<boolean>) => {
       state.includeRecycle = action.payload;
     },
+    clearShortLinks: (state) => {
+      state.shortLinks = [];
+      state.total = 0;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -195,5 +199,5 @@ const shortLinkSlice = createSlice({
   },
 });
 
-export const { clearError, setCurrentPage, setPageSize, setIncludeRecycle } = shortLinkSlice.actions;
+export const { clearError, setCurrentPage, setPageSize, setIncludeRecycle, clearShortLinks } = shortLinkSlice.actions;
 export default shortLinkSlice.reducer;

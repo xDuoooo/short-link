@@ -24,6 +24,8 @@ public interface LinkDeviceStatsMapper extends BaseMapper<LinkDeviceStatsDO> {
 
     List<LinkDeviceStatsDO> listDeviceStatsByShortLink(@Param("requestParam") ShortLinkStatsReqDTO shortLinkStatsReqDTO);
 
+    List<LinkDeviceStatsDO> listDeviceStatsByShortLinkOptimized(@Param("requestParam") ShortLinkStatsReqDTO shortLinkStatsReqDTO, @Param("username") String username);
+
     List<LinkDeviceStatsDO> listGroupDeviceStatsByShortLink(@Param("requestParam") ShortLinkGroupStatsReqDTO shortLinkGroupStatsReqDTO);
 }
 

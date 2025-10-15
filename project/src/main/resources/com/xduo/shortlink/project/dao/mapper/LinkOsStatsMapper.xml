@@ -47,6 +47,22 @@
         GROUP BY
         los.os
     </select>
+    <select id="listOsStatsByShortLinkOptimized" resultType="com.xduo.shortlink.project.dao.entity.LinkOsStatsDO">
+        SELECT
+        os,
+        SUM(cnt) AS cnt
+        FROM
+        t_link_os_stats los
+        <if test="requestParam.includeRecycle == null or requestParam.includeRecycle == false">
+            inner join t_link l on los.full_short_url = l.full_short_url and los.gid = l.gid and l.del_flag = 0 and l.username = #{username}
+        </if>
+        WHERE
+        los.full_short_url = #{requestParam.fullShortUrl}
+        AND los.gid = #{requestParam.gid}
+        AND los.date BETWEEN #{requestParam.startDate} AND #{requestParam.endDate}
+        GROUP BY
+        los.os
+    </select>
     <select id="listGroupOsStatsByShortLink"
             resultType="com.xduo.shortlink.project.dao.entity.LinkOsStatsDO">
         SELECT
@@ -54,9 +70,6 @@
         SUM(cnt) AS cnt
         FROM
         t_link_os_stats los
-        <if test="requestParam.includeRecycle == null or requestParam.includeRecycle == false">
-            inner join t_link l on los.full_short_url = l.full_short_url and los.gid = l.gid and l.del_flag = 0
-        </if>
         WHERE
         los.gid = #{requestParam.gid}
         AND los.date BETWEEN #{requestParam.startDate} AND #{requestParam.endDate}

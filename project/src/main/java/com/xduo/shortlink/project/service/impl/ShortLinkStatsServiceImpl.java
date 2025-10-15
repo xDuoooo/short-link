@@ -50,7 +50,12 @@ public class ShortLinkStatsServiceImpl implements ShortLinkStatsService {
     @Override
     public ShortLinkStatsRespDTO getOneShortLinkStats(ShortLinkStatsReqDTO shortLinkStatsReqDTO) {
         //封装每天访问数据
-        List<LinkAccessStatsDO> linkAccessStatsDOS = linkAccessStatsMapper.getOneLinkBaseDateBetweenDate(shortLinkStatsReqDTO);
+        List<LinkAccessStatsDO> linkAccessStatsDOS;
+        if (shortLinkStatsReqDTO.getUsername() != null) {
+            linkAccessStatsDOS = linkAccessStatsMapper.getOneLinkBaseDateBetweenDateOptimized(shortLinkStatsReqDTO, shortLinkStatsReqDTO.getUsername());
+        } else {
+            linkAccessStatsDOS = linkAccessStatsMapper.getOneLinkBaseDateBetweenDate(shortLinkStatsReqDTO);
+        }
         List<ShortLinkStatsAccessDailyRespDTO> shortLinkStatsAccessDailyRespDTOList = new ArrayList<>();
         for (LinkAccessStatsDO linkAccessStatsDO : linkAccessStatsDOS) {
             ShortLinkStatsAccessDailyRespDTO shortLinkStatsAccessDailyRespDTO = ShortLinkStatsAccessDailyRespDTO.builder()
@@ -82,7 +87,12 @@ public class ShortLinkStatsServiceImpl implements ShortLinkStatsService {
             shortLinkStatsLocaleCNRespDTO.setRatio(actualRatio);
         }
         //封装按小时统计的数据
-        List<LinkAccessStatsDO> listHourStatsByShortLinkDO = linkAccessStatsMapper.listHourStatsByShortLink(shortLinkStatsReqDTO);
+        List<LinkAccessStatsDO> listHourStatsByShortLinkDO;
+        if (shortLinkStatsReqDTO.getUsername() != null) {
+            listHourStatsByShortLinkDO = linkAccessStatsMapper.listHourStatsByShortLinkOptimized(shortLinkStatsReqDTO, shortLinkStatsReqDTO.getUsername());
+        } else {
+            listHourStatsByShortLinkDO = linkAccessStatsMapper.listHourStatsByShortLink(shortLinkStatsReqDTO);
+        }
         List<Integer> hourStats = new ArrayList<>();
         for (int i = 0; i < 24; i++) {
             AtomicInteger hour = new AtomicInteger(i);
@@ -108,7 +118,12 @@ public class ShortLinkStatsServiceImpl implements ShortLinkStatsService {
             }
         });
         //封装星期day统计量
-        List<LinkAccessStatsDO> listWeekdayStatsByShortLinkDO = linkAccessStatsMapper.listWeekdayStatsByShortLink(shortLinkStatsReqDTO);
+        List<LinkAccessStatsDO> listWeekdayStatsByShortLinkDO;
+        if (shortLinkStatsReqDTO.getUsername() != null) {
+            listWeekdayStatsByShortLinkDO = linkAccessStatsMapper.listWeekdayStatsByShortLinkOptimized(shortLinkStatsReqDTO, shortLinkStatsReqDTO.getUsername());
+        } else {
+            listWeekdayStatsByShortLinkDO = linkAccessStatsMapper.listWeekdayStatsByShortLink(shortLinkStatsReqDTO);
+        }
         List<Integer> weekdayStats = new ArrayList<>();
         for (int i = 1; i < 8; i++) {
             AtomicInteger weekday = new AtomicInteger(i);
@@ -133,7 +148,12 @@ public class ShortLinkStatsServiceImpl implements ShortLinkStatsService {
                 }
         );
         //封装操作系统统计量
-        List<LinkOsStatsDO> linkOsStatsDOList = linkOsStatsMapper.listOsStatsByShortLink(shortLinkStatsReqDTO);
+        List<LinkOsStatsDO> linkOsStatsDOList;
+        if (shortLinkStatsReqDTO.getUsername() != null) {
+            linkOsStatsDOList = linkOsStatsMapper.listOsStatsByShortLinkOptimized(shortLinkStatsReqDTO, shortLinkStatsReqDTO.getUsername());
+        } else {
+            linkOsStatsDOList = linkOsStatsMapper.listOsStatsByShortLink(shortLinkStatsReqDTO);
+        }
         int osSum = linkOsStatsDOList.stream().mapToInt(LinkOsStatsDO::getCnt).sum();
         List<ShortLinkStatsOsRespDTO> shortLinkStatsOsrespDTOList = new ArrayList<>();
         linkOsStatsDOList.forEach(
@@ -167,7 +187,12 @@ public class ShortLinkStatsServiceImpl implements ShortLinkStatsService {
                 .build();
         uvTypeStats.add(oldUvRespDTO);
         //封装设备类型统计量
-        List<LinkDeviceStatsDO> linkDeviceStatsDOList = linkDeviceStatsMapper.listDeviceStatsByShortLink(shortLinkStatsReqDTO);
+        List<LinkDeviceStatsDO> linkDeviceStatsDOList;
+        if (shortLinkStatsReqDTO.getUsername() != null) {
+            linkDeviceStatsDOList = linkDeviceStatsMapper.listDeviceStatsByShortLinkOptimized(shortLinkStatsReqDTO, shortLinkStatsReqDTO.getUsername());
+        } else {
+            linkDeviceStatsDOList = linkDeviceStatsMapper.listDeviceStatsByShortLink(shortLinkStatsReqDTO);
+        }
         int deviceSum = linkDeviceStatsDOList.stream().mapToInt(LinkDeviceStatsDO::getCnt).sum();
         List<ShortLinkStatsDeviceRespDTO> shortLinkStatsDeviceRespDTOList = new ArrayList<>();
         linkDeviceStatsDOList.forEach(
@@ -473,9 +498,26 @@ public class ShortLinkStatsServiceImpl implements ShortLinkStatsService {
         
         // 如果includeRecycle为false或null，只查询有效短链接的访问日志
         if (requestParam.getIncludeRecycle() == null || !requestParam.getIncludeRecycle()) {
-            // 使用EXISTS子查询优化性能，避免先查询所有短链接再IN查询
-            queryWrapper.exists("SELECT 1 FROM t_link l WHERE l.gid = {0} AND l.full_short_url = {1} AND l.del_flag = 0 AND l.enable_status = 1", 
-                    requestParam.getGid(), "t_link_access_logs.full_short_url");
+            // 优化：先查询有效的短链接列表，然后使用IN查询避免EXISTS子查询导致的跨分片问题
+            LambdaQueryWrapper<LinkDO> linkQueryWrapper = Wrappers.lambdaQuery(LinkDO.class)
+                    .eq(LinkDO::getGid, requestParam.getGid())
+                    .eq(LinkDO::getDelFlag, 0)
+                    .eq(LinkDO::getEnableStatus, 1)
+                    .select(LinkDO::getFullShortUrl);
+            List<LinkDO> validLinks = linkMapper.selectList(linkQueryWrapper);
+            
+            if (validLinks.isEmpty()) {
+                // 如果没有有效短链接，返回空结果
+                return new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(requestParam.getCurrent(), requestParam.getSize());
+            }
+            
+            // 提取有效短链接列表
+            List<String> validShortUrls = validLinks.stream()
+                    .map(LinkDO::getFullShortUrl)
+                    .toList();
+            
+            // 使用IN查询替代EXISTS子查询
+            queryWrapper.in(LinkAccessLogsDO::getFullShortUrl, validShortUrls);
         }
         
         // MyBatis-Plus逻辑删除会自动添加delFlag条件，无需手动添加

@@ -30,6 +30,14 @@ public interface LinkBrowserStatsMapper extends BaseMapper<LinkBrowserStatsDO> {
     List<LinkBrowserStatsDO> listBrowserStatsByShortLink(@Param("requestParam") ShortLinkStatsReqDTO requestParam);
 
     /**
+     * 统计单个短链接的浏览器访问量 - 优化版本（带username过滤）
+     * @param requestParam
+     * @param username
+     * @return
+     */
+    List<LinkBrowserStatsDO> listBrowserStatsByShortLinkOptimized(@Param("requestParam") ShortLinkStatsReqDTO requestParam, @Param("username") String username);
+
+    /**
      * 统计一组短链接的浏览器访问量
      * @param shortLinkGroupStatsReqDTO
      * @return

@@ -32,6 +32,11 @@ public interface LinkMapper extends BaseMapper<LinkDO> {
     );
 
     IPage<LinkDO> pageLink(ShortLinkPageReqDTO shortLinkPageReqDTO);
+
+    /**
+     * 优化的分页查询短链接 - 当有gid过滤时使用
+     */
+    IPage<LinkDO> pageLinkOptimized(ShortLinkPageReqDTO shortLinkPageReqDTO);
 }
 
 

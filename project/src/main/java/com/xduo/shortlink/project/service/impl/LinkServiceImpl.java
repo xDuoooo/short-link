@@ -144,7 +144,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
     }
 
     /**
-     * 分页查询短链接
+     * 分页查询短链接 - 优化版本
      */
     @Override
     public IPage<ShortLinkPageRespDTO> pageShortLink(ShortLinkPageReqDTO shortLinkPageReqDTO) {
@@ -159,7 +159,16 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
             shortLinkPageReqDTO.setSize(100L);
         }
 
-        IPage<LinkDO> resultPage = baseMapper.pageLink(shortLinkPageReqDTO);
+        // 根据是否有gid过滤选择查询方法
+        IPage<LinkDO> resultPage;
+        if (shortLinkPageReqDTO.getGid() != null && !shortLinkPageReqDTO.getGid().isEmpty()) {
+            // 有gid过滤时使用优化查询，可以路由到特定分片
+            resultPage = baseMapper.pageLinkOptimized(shortLinkPageReqDTO);
+        } else {
+            // 无gid过滤时使用普通查询（需要扫描所有分片）
+            resultPage = baseMapper.pageLink(shortLinkPageReqDTO);
+        }
+        
         return resultPage.convert(each -> {
             ShortLinkPageRespDTO bean = BeanUtil.toBean(each, ShortLinkPageRespDTO.class);
             bean.setDomain(bean.getDomain());

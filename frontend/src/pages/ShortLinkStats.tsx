@@ -32,7 +32,7 @@ import {
   getGroupShortLinkAccessRecords,
   clearStatsData,
 } from '../store/slices/statsSlice';
-import { fetchShortLinks } from '../store/slices/shortLinkSlice';
+import { fetchShortLinks, clearShortLinks } from '../store/slices/shortLinkSlice';
 import { fetchGroups } from '../store/slices/groupSlice';
 import dayjs from 'dayjs';
 
@@ -57,9 +57,15 @@ const ShortLinkStats: React.FC = () => {
   const { shortLinks } = useSelector((state: RootState) => state.shortLink);
   const { groups } = useSelector((state: RootState) => state.group);
 
+  // 添加调试信息
+  useEffect(() => {
+    console.log('统计数据更新:', statsData);
+    console.log('访问记录更新:', accessRecords);
+    console.log('加载状态:', loading);
+  }, [statsData, accessRecords, loading]);
+
   useEffect(() => {
     dispatch(fetchGroups());
-    dispatch(fetchShortLinks({ current: 1, size: 100 }));
   }, [dispatch]);
 
   // 当分组数据加载完成后，自动选择第一个分组
@@ -69,8 +75,23 @@ const ShortLinkStats: React.FC = () => {
     }
   }, [groups, selectedGroup]);
 
+  // 当选中分组时，获取该分组的短链接数据
+  useEffect(() => {
+    if (selectedGroup) {
+      dispatch(fetchShortLinks({ gid: selectedGroup, current: 1, size: 100 }));
+    }
+  }, [dispatch, selectedGroup]);
+
   useEffect(() => {
     if (selectedGroup && dateRange[0] && dateRange[1]) {
+      console.log('获取统计数据，参数:', {
+        selectedGroup,
+        selectedShortLink,
+        startDate: dateRange[0].format('YYYY-MM-DD'),
+        endDate: dateRange[1].format('YYYY-MM-DD'),
+        includeRecycle
+      });
+      
       if (selectedShortLink) {
         // 获取单个短链接统计
         dispatch(getShortLinkStats({
@@ -115,6 +136,9 @@ const ShortLinkStats: React.FC = () => {
     setSelectedGroup(value);
     setSelectedShortLink('');
     dispatch(clearStatsData());
+    // 切换分组时先清空短链接数据，然后重新获取该分组的短链接数据
+    dispatch(clearShortLinks());
+    dispatch(fetchShortLinks({ gid: value, current: 1, size: 100 }));
   };
 
   const handleShortLinkChange = (value: string) => {
@@ -676,8 +700,8 @@ const ShortLinkStats: React.FC = () => {
                   全部
                 </Option>
                 {filteredShortLinks.map(link => (
-                  <Option key={link.gid} value={link.fullShortUrl}>
-                    {link.describe || link.fullShortUrl}
+                  <Option key={link.fullShortUrl} value={link.fullShortUrl}>
+                    {link.describe || link.shortUri}
                   </Option>
                 ))}
               </Select>

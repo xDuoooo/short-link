@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xduo.shortlink.project.dao.entity.LinkAccessStatsDO;
 import com.xduo.shortlink.project.dto.req.ShortLinkGroupStatsReqDTO;
 import com.xduo.shortlink.project.dto.req.ShortLinkStatsReqDTO;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
@@ -28,6 +29,14 @@ public interface LinkAccessStatsMapper extends BaseMapper<LinkAccessStatsDO> {
      * @return
      */
     List<LinkAccessStatsDO> getOneLinkBaseDateBetweenDate(ShortLinkStatsReqDTO shortLinkStatsReqDTO);
+
+    /**
+     * 获取指定日期的基础数据（优化版本，支持username路由）
+     * @param shortLinkStatsReqDTO
+     * @param username
+     * @return
+     */
+    List<LinkAccessStatsDO> getOneLinkBaseDateBetweenDateOptimized(ShortLinkStatsReqDTO shortLinkStatsReqDTO, @Param("username") String username);
     /**
      * 获取一组短链接指定日期的基础数据
      * @param shortLinkGroupStatsReqDTO
@@ -41,9 +50,19 @@ public interface LinkAccessStatsMapper extends BaseMapper<LinkAccessStatsDO> {
     List<LinkAccessStatsDO> listHourStatsByShortLink(ShortLinkStatsReqDTO shortLinkStatsReqDTO);
 
     /**
+     * 根据短链接获取指定日期内小时基础监控数据（优化版本）
+     */
+    List<LinkAccessStatsDO> listHourStatsByShortLinkOptimized(ShortLinkStatsReqDTO shortLinkStatsReqDTO, @Param("username") String username);
+
+    /**
      * 根据短链接获取指定日期weekday基础监控数据
      */
     List<LinkAccessStatsDO> listWeekdayStatsByShortLink(ShortLinkStatsReqDTO requestParam);
+
+    /**
+     * 根据短链接获取指定日期weekday基础监控数据（优化版本）
+     */
+    List<LinkAccessStatsDO> listWeekdayStatsByShortLinkOptimized(ShortLinkStatsReqDTO requestParam, @Param("username") String username);
     /**
      * 根据一组短链接获取指定日期内小时基础监控数据
      */

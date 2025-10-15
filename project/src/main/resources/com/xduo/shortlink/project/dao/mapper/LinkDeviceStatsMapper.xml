@@ -48,7 +48,7 @@
         GROUP BY
         lds.device
     </select>
-    <select id="listGroupDeviceStatsByShortLink"
+    <select id="listDeviceStatsByShortLinkOptimized"
             resultType="com.xduo.shortlink.project.dao.entity.LinkDeviceStatsDO">
         SELECT
         device,
@@ -56,8 +56,22 @@
         FROM
         t_link_device_stats lds
         <if test="requestParam.includeRecycle == null or requestParam.includeRecycle == false">
-            inner join t_link l on lds.full_short_url = l.full_short_url and lds.gid = l.gid and l.del_flag = 0
+            inner join t_link l on lds.full_short_url = l.full_short_url and lds.gid = l.gid and l.del_flag = 0 and l.username = #{username}
         </if>
+        WHERE
+        lds.full_short_url = #{requestParam.fullShortUrl}
+        AND lds.gid = #{requestParam.gid}
+        AND lds.date BETWEEN #{requestParam.startDate} AND #{requestParam.endDate}
+        GROUP BY
+        lds.device
+    </select>
+    <select id="listGroupDeviceStatsByShortLink"
+            resultType="com.xduo.shortlink.project.dao.entity.LinkDeviceStatsDO">
+        SELECT
+        device,
+        SUM(cnt) AS cnt
+        FROM
+        t_link_device_stats lds
         WHERE
         lds.gid = #{requestParam.gid}
         AND lds.date BETWEEN #{requestParam.startDate} AND #{requestParam.endDate}
