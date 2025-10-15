@@ -40,30 +40,36 @@
     <select id="getOneLinkLocaleCntBetweenDateByProvince"
             resultType="com.xduo.shortlink.project.dto.resp.ShortLinkStatsLocaleCNRespDTO">
         SELECT
-        full_short_url,
-        SUM(cnt) AS cnt
+        lls.full_short_url,
+        SUM(lls.cnt) AS cnt
         FROM
-        t_link_locale_stats
+        t_link_locale_stats lls
+        <if test="includeRecycle == null or includeRecycle == false">
+            inner join t_link l on lls.full_short_url = l.full_short_url and lls.gid = l.gid and l.del_flag = 0
+        </if>
         WHERE
-        gid = #{gid}
-        AND full_short_url = #{fullShortUrl}
-        AND del_flag = 0
-        AND date BETWEEN #{startDate} AND #{endDate}
+        lls.gid = #{gid}
+        AND lls.full_short_url = #{fullShortUrl}
+        AND lls.del_flag = 0
+        AND lls.date BETWEEN #{startDate} AND #{endDate}
         GROUP BY
-        full_short_url, gid, province
+        lls.full_short_url, lls.gid, lls.province
     </select>
     <select id="getGroupLinkLocaleCntBetweenDateByProvince"
             resultType="com.xduo.shortlink.project.dto.resp.ShortLinkStatsLocaleCNRespDTO">
         SELECT
         SUM(cnt) AS cnt
         FROM
-        t_link_locale_stats
+        t_link_locale_stats lls
+        <if test="includeRecycle == null or includeRecycle == false">
+            inner join t_link l on lls.full_short_url = l.full_short_url and lls.gid = l.gid and l.del_flag = 0
+        </if>
         WHERE
-        gid = #{gid}
-        AND del_flag = 0
-        AND date BETWEEN #{startDate} AND #{endDate}
+        lls.gid = #{gid}
+        AND lls.del_flag = 0
+        AND lls.date BETWEEN #{startDate} AND #{endDate}
         GROUP BY
-        gid, province
+        lls.gid, lls.province
     </select>
 
 

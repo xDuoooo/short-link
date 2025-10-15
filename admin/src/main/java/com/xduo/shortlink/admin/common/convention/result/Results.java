@@ -57,4 +57,13 @@ public final class Results {
                 .setCode(errorCode)
                 .setMessage(errorMessage);
     }
+
+    /**
+     * 通过 errorCode、errorMessage 构建失败响应（泛型版本）
+     */
+    public static <T> Result<T> failure(String errorCode, String errorMessage, Class<T> clazz) {
+        return new Result<T>()
+                .setCode(errorCode)
+                .setMessage(errorMessage);
+    }
 }

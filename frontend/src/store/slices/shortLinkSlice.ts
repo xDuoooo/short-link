@@ -33,6 +33,7 @@ export interface ShortLinkState {
   error: string | null;
   currentPage: number;
   pageSize: number;
+  includeRecycle: boolean;
 }
 
 const initialState: ShortLinkState = {
@@ -42,6 +43,7 @@ const initialState: ShortLinkState = {
   error: null,
   currentPage: 1,
   pageSize: 10,
+  includeRecycle: false,
 };
 
 export const fetchShortLinks = createAsyncThunk(
@@ -51,6 +53,7 @@ export const fetchShortLinks = createAsyncThunk(
     current?: number;
     size?: number;
     orderTag?: string;
+    includeRecycle?: boolean;
   }) => {
     const response = await shortLinkApi.getShortLinks(params);
     return response;
@@ -133,6 +136,9 @@ const shortLinkSlice = createSlice({
     setPageSize: (state, action: PayloadAction<number>) => {
       state.pageSize = action.payload;
     },
+    setIncludeRecycle: (state, action: PayloadAction<boolean>) => {
+      state.includeRecycle = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -189,5 +195,5 @@ const shortLinkSlice = createSlice({
   },
 });
 
-export const { clearError, setCurrentPage, setPageSize } = shortLinkSlice.actions;
+export const { clearError, setCurrentPage, setPageSize, setIncludeRecycle } = shortLinkSlice.actions;
 export default shortLinkSlice.reducer;

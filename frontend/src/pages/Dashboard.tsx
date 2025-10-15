@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Row, Col, Card, Statistic, Typography, Spin } from 'antd';
-import { LinkOutlined, TeamOutlined, EyeOutlined, UserOutlined } from '@ant-design/icons';
+import { LinkOutlined, TeamOutlined, EyeOutlined, FireOutlined, BarChartOutlined, TrophyOutlined } from '@ant-design/icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../store';
 import { fetchGroups } from '../store/slices/groupSlice';
@@ -43,9 +43,16 @@ const Dashboard: React.FC = () => {
   }, [groups, dispatch]);
 
   // 计算统计数据
-  // const totalClicks = (shortLinks || []).reduce((sum, link) => sum + (link.clickNum || 0), 0);
   const totalPv = (shortLinks || []).reduce((sum, link) => sum + (link.totalPv || 0), 0);
-  const totalUv = (shortLinks || []).reduce((sum, link) => sum + (link.totalUv || 0), 0);
+  const todayPv = (shortLinks || []).reduce((sum, link) => sum + (link.todayPv || 0), 0);
+  const activeShortLinks = (shortLinks || []).filter(link => (link.totalPv || 0) > 0).length;
+  const avgPvPerLink = shortLinkTotal > 0 ? Math.round(totalPv / shortLinkTotal) : 0;
+  
+  // 找出最热门的短链接
+  const topShortLink = (shortLinks || []).reduce((max, link) => 
+    (link.totalPv || 0) > (max.totalPv || 0) ? link : max, 
+    { totalPv: 0, describe: '暂无', fullShortUrl: '' }
+  );
 
   // 按短链接数量排序分组
   const sortedGroups = [...groups].sort((a, b) => {
@@ -102,11 +109,57 @@ const Dashboard: React.FC = () => {
         <Col xs={24} sm={12} lg={6}>
           <Card className="stats-card">
             <Statistic
-              title="独立访客"
-              value={totalUv}
-              prefix={<UserOutlined />}
+              title="今日访问量"
+              value={todayPv}
+              prefix={<BarChartOutlined />}
               valueStyle={{ color: '#fff' }}
             />
+          </Card>
+        </Col>
+      </Row>
+
+      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+        <Col xs={24} sm={12} lg={6}>
+          <Card className="stats-card">
+            <Statistic
+              title="活跃短链接"
+              value={activeShortLinks}
+              prefix={<FireOutlined />}
+              valueStyle={{ color: '#fff' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} lg={6}>
+          <Card className="stats-card">
+            <Statistic
+              title="平均访问量"
+              value={avgPvPerLink}
+              prefix={<TrophyOutlined />}
+              valueStyle={{ color: '#fff' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} lg={12}>
+          <Card className="stats-card">
+            <div style={{ color: '#fff' }}>
+              <div style={{ fontSize: 14, marginBottom: 8, opacity: 0.8 }}>
+                最热门短链接
+              </div>
+              <div style={{ fontSize: 16, fontWeight: 500 }}>
+                {topShortLink.totalPv > 0 ? (
+                  <>
+                    <div style={{ marginBottom: 4 }}>
+                      {topShortLink.describe || '无描述'}
+                    </div>
+                    <div style={{ fontSize: 12, opacity: 0.7 }}>
+                      {topShortLink.fullShortUrl} - {topShortLink.totalPv} 次访问
+                    </div>
+                  </>
+                ) : (
+                  <div style={{ opacity: 0.7 }}>暂无访问数据</div>
+                )}
+              </div>
+            </div>
           </Card>
         </Col>
       </Row>

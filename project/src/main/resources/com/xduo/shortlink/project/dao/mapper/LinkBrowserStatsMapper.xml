@@ -36,13 +36,16 @@
         browser,
         SUM(cnt) AS cnt
         FROM
-        t_link_browser_stats
+        t_link_browser_stats lbs
+        <if test="requestParam.includeRecycle == null or requestParam.includeRecycle == false">
+            inner join t_link l on lbs.full_short_url = l.full_short_url and lbs.gid = l.gid and l.del_flag = 0
+        </if>
         WHERE
-        full_short_url = #{requestParam.fullShortUrl}
-        AND gid = #{requestParam.gid}
-        AND date BETWEEN #{requestParam.startDate} AND #{requestParam.endDate}
+        lbs.full_short_url = #{requestParam.fullShortUrl}
+        AND lbs.gid = #{requestParam.gid}
+        AND lbs.date BETWEEN #{requestParam.startDate} AND #{requestParam.endDate}
         GROUP BY
-        browser
+        lbs.browser
     </select>
     <select id="listGroupBrowserStatsByShortLink"
             resultType="com.xduo.shortlink.project.dao.entity.LinkBrowserStatsDO">
@@ -50,13 +53,15 @@
         browser,
         SUM(cnt) AS cnt
         FROM
-        t_link_browser_stats
+        t_link_browser_stats lbs
+        <if test="requestParam.includeRecycle == null or requestParam.includeRecycle == false">
+            inner join t_link l on lbs.full_short_url = l.full_short_url and lbs.gid = l.gid and l.del_flag = 0
+        </if>
         WHERE
-        gid = #{requestParam.gid}
-        AND date BETWEEN #{requestParam.startDate} AND #{requestParam.endDate}
+        lbs.gid = #{requestParam.gid}
+        AND lbs.date BETWEEN #{requestParam.startDate} AND #{requestParam.endDate}
         GROUP BY
-        browser
-
+        lbs.browser
     </select>
 
 

@@ -11,6 +11,8 @@ import {
   Avatar,
   Space,
   Divider,
+  Upload,
+  Modal,
 } from 'antd';
 import {
   UserOutlined,
@@ -18,10 +20,13 @@ import {
   PhoneOutlined,
   EditOutlined,
   SaveOutlined,
+  CameraOutlined,
+  LoadingOutlined,
 } from '@ant-design/icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../store';
 import { getUserInfo, getActualUserInfo, updateUser } from '../store/slices/authSlice';
+import { authApi } from '../api/auth';
 
 const { Title } = Typography;
 
@@ -29,10 +34,12 @@ interface UserFormData {
   realName: string;
   phone: string;
   mail: string;
+  avatar?: string;
 }
 
 const UserProfile: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [form] = Form.useForm();
   const dispatch = useDispatch<AppDispatch>();
   const { user, loading } = useSelector((state: RootState) => state.auth);
@@ -43,6 +50,7 @@ const UserProfile: React.FC = () => {
         realName: user.realName,
         phone: user.phone,
         mail: user.mail,
+        avatar: user.avatar,
       });
     }
   }, [user, form]);
@@ -59,6 +67,7 @@ const UserProfile: React.FC = () => {
         realName: actualUserInfo.realName,
         phone: actualUserInfo.phone,
         mail: actualUserInfo.mail,
+        avatar: actualUserInfo.avatar,
       });
       
       setIsEditing(true);
@@ -75,6 +84,7 @@ const UserProfile: React.FC = () => {
         realName: user.realName,
         phone: user.phone,
         mail: user.mail,
+        avatar: user.avatar,
       });
     }
   };
@@ -98,6 +108,40 @@ const UserProfile: React.FC = () => {
     }
   };
 
+  const handleAvatarUpload = async (file: File) => {
+    if (!user) return false;
+    
+    setUploading(true);
+    try {
+      const response = await authApi.uploadAvatar(file, user.username);
+      form.setFieldsValue({ avatar: response.url });
+      
+      // 重新获取用户信息以确保数据同步
+      await dispatch(getActualUserInfo(user.username)).unwrap();
+      
+      message.success('头像上传成功');
+    } catch (error) {
+      message.error('头像上传失败');
+    } finally {
+      setUploading(false);
+    }
+    return false; // 阻止默认上传行为
+  };
+
+  const beforeUpload = (file: File) => {
+    const isImage = file.type.startsWith('image/');
+    if (!isImage) {
+      message.error('只能上传图片文件!');
+      return false;
+    }
+    const isLt2M = file.size / 1024 / 1024 < 2;
+    if (!isLt2M) {
+      message.error('图片大小不能超过 2MB!');
+      return false;
+    }
+    return true;
+  };
+
   return (
     <div>
       <Title level={2} style={{ marginBottom: 24 }}>
@@ -108,14 +152,39 @@ const UserProfile: React.FC = () => {
         <Col xs={24} lg={8}>
           <Card>
             <div style={{ textAlign: 'center' }}>
-              <Avatar
-                size={80}
-                icon={<UserOutlined />}
-                style={{ 
-                  backgroundColor: '#1890ff',
-                  marginBottom: 16,
-                }}
-              />
+              <div style={{ position: 'relative', display: 'inline-block' }}>
+                <Avatar
+                  size={80}
+                  src={user?.avatar}
+                  icon={<UserOutlined />}
+                  style={{ 
+                    backgroundColor: '#1890ff',
+                    marginBottom: 16,
+                  }}
+                />
+                {isEditing && (
+                  <Upload
+                    beforeUpload={beforeUpload}
+                    customRequest={({ file }) => handleAvatarUpload(file as File)}
+                    showUploadList={false}
+                    accept="image/*"
+                  >
+                    <Button
+                      type="primary"
+                      shape="circle"
+                      icon={uploading ? <LoadingOutlined /> : <CameraOutlined />}
+                      size="small"
+                      style={{
+                        position: 'absolute',
+                        bottom: 20,
+                        right: 0,
+                        zIndex: 1,
+                      }}
+                      loading={uploading}
+                    />
+                  </Upload>
+                )}
+              </div>
               <Title level={4} style={{ margin: 0 }}>
                 {user?.realName || user?.username}
               </Title>

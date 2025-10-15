@@ -10,113 +10,105 @@
         ip,
         COUNT(ip) AS count
         FROM
-        t_link_access_logs
+        t_link_access_logs lal
+        <if test="includeRecycle == null or includeRecycle == false">
+            inner join t_link l on lal.full_short_url = l.full_short_url and lal.gid = l.gid and l.del_flag = 0
+        </if>
         WHERE
-        full_short_url = #{fullShortUrl}
-        AND gid = #{gid}
-        AND create_time BETWEEN #{startDate} AND #{endDate}
+        lal.full_short_url = #{fullShortUrl}
+        AND lal.gid = #{gid}
+        AND lal.create_time BETWEEN #{startDate} AND #{endDate}
         GROUP BY
-        full_short_url, gid, ip
+        lal.full_short_url, lal.gid, lal.ip
         ORDER BY
         count DESC
         LIMIT 5;
     </select>
-    <select id="findUvTypeCntByShortLink" resultType="java.util.HashMap">
+    <!-- 简化查询：获取指定短链接在指定时间范围内的所有用户访问记录 -->
+    <select id="findUserAccessLogsByShortLink" resultType="java.util.HashMap">
         SELECT
-        COALESCE(SUM(CASE WHEN uvType = '新访客' THEN 1 ELSE 0 END), 0) AS newUserCnt,
-        COALESCE(SUM(CASE WHEN uvType = '老访客' THEN 1 ELSE 0 END), 0) AS oldUserCnt
-        FROM (
-            SELECT
-            user,
-            CASE
-            WHEN MIN(create_time) BETWEEN #{param.startDate} AND #{param.endDate} THEN '新访客'
-            ELSE '老访客'
-            END AS uvType
-            FROM t_link_access_logs
-            WHERE full_short_url = #{param.fullShortUrl}
-            AND gid = #{param.gid}
-            AND create_time BETWEEN #{param.startDate} AND #{param.endDate}
-            GROUP BY user
-        ) AS uv_stats
+        user,
+        MIN(create_time) as first_access_time,
+        MAX(create_time) as last_access_time
+        FROM t_link_access_logs
+        WHERE full_short_url = #{fullShortUrl}
+        AND gid = #{gid}
+        AND create_time BETWEEN #{startDate} AND #{endDate}
+        GROUP BY user
     </select>
-    <select id="selectUvTypeByUser" resultType="java.util.Map">
+    <!-- 简化查询：获取指定用户的访问记录 -->
+    <select id="selectUserAccessLogs" resultType="java.util.Map">
         SELECT
         user,
         create_time,
-        CASE
-        WHEN create_time = (SELECT MIN(create_time)
+        ip,
+        browser,
+        os,
+        device,
+        network,
+        locale
         FROM t_link_access_logs
-        WHERE user = t.user
-        AND full_short_url = #{fullShortUrl}
-        AND gid = #{gid}
-        AND create_time BETWEEN #{startDate} AND #{endDate}) THEN '新访客'
-        ELSE '老访客'
-        END AS uvType
-        FROM
-        t_link_access_logs t
-        WHERE
-        full_short_url = #{fullShortUrl}
+        WHERE full_short_url = #{fullShortUrl}
         AND gid = #{gid}
         AND create_time BETWEEN #{startDate} AND #{endDate}
-        AND user IN
-        <foreach item="item" index="index" collection="userAccessLogsList" open="(" separator="," close=")">
-            #{item}
-        </foreach>
+        <if test="userAccessLogsList != null and userAccessLogsList.size() &gt; 0">
+            AND user IN
+            <foreach item="item" index="index" collection="userAccessLogsList" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        ORDER BY create_time ASC
     </select>
     <select id="listGroupTopIpByShortLink" resultType="java.util.HashMap">
         SELECT
         ip,
         COUNT(ip) AS count
         FROM
-        t_link_access_logs
+        t_link_access_logs lal
+        <if test="includeRecycle == null or includeRecycle == false">
+            inner join t_link l on lal.full_short_url = l.full_short_url and lal.gid = l.gid and l.del_flag = 0
+        </if>
         WHERE
-        gid = #{gid}
-        AND create_time BETWEEN #{startDate} AND #{endDate}
+        lal.gid = #{gid}
+        AND lal.create_time BETWEEN #{startDate} AND #{endDate}
         GROUP BY
-        gid, ip
+        lal.gid, lal.ip
         ORDER BY
         count DESC
         LIMIT 5;
-
     </select>
-    <select id="findGroupUvTypeCntByShortLink" resultType="java.util.HashMap">
+    <!-- 简化查询：获取分组在指定时间范围内的所有用户访问记录 -->
+    <select id="findGroupUserAccessLogs" resultType="java.util.HashMap">
         SELECT
-        COALESCE(SUM(CASE WHEN uvType = '新访客' THEN 1 ELSE 0 END), 0) AS newUserCnt,
-        COALESCE(SUM(CASE WHEN uvType = '老访客' THEN 1 ELSE 0 END), 0) AS oldUserCnt
-        FROM (
-            SELECT
-            user,
-            CASE
-            WHEN MIN(create_time) BETWEEN #{param.startDate} AND #{param.endDate} THEN '新访客'
-            ELSE '老访客'
-            END AS uvType
-            FROM t_link_access_logs
-            WHERE gid = #{param.gid}
-            AND create_time BETWEEN #{param.startDate} AND #{param.endDate}
-            GROUP BY user
-        ) AS uv_stats
+        user,
+        MIN(create_time) as first_access_time,
+        MAX(create_time) as last_access_time
+        FROM t_link_access_logs
+        WHERE gid = #{gid}
+        AND create_time BETWEEN #{startDate} AND #{endDate}
+        GROUP BY user
     </select>
-    <select id="selectGroupUvTypeByUser" resultType="java.util.Map">
+    <!-- 简化查询：获取分组指定用户的访问记录 -->
+    <select id="selectGroupUserAccessLogs" resultType="java.util.Map">
         SELECT
         user,
         create_time,
-        CASE
-        WHEN create_time = (SELECT MIN(create_time)
+        ip,
+        browser,
+        os,
+        device,
+        network,
+        locale
         FROM t_link_access_logs
-        WHERE user = t.user
-        AND gid = #{gid}
-        AND create_time BETWEEN #{startDate} AND #{endDate}) THEN '新访客'
-        ELSE '老访客'
-        END AS uvType
-        FROM
-        t_link_access_logs t
-        WHERE
-        gid = #{gid}
+        WHERE gid = #{gid}
         AND create_time BETWEEN #{startDate} AND #{endDate}
-        AND user IN
-        <foreach item="item" index="index" collection="userAccessLogsList" open="(" separator="," close=")">
-            #{item}
-        </foreach>
+        <if test="userAccessLogsList != null and userAccessLogsList.size() &gt; 0">
+            AND user IN
+            <foreach item="item" index="index" collection="userAccessLogsList" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        ORDER BY create_time ASC
     </select>
 
 </mapper>

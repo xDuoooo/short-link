@@ -9,9 +9,11 @@ import com.xduo.shortlink.admin.dto.req.UserUpdateReqDTO;
 import com.xduo.shortlink.admin.dto.resp.UserActualRespDTO;
 import com.xduo.shortlink.admin.dto.resp.UserLoginRespDTO;
 import com.xduo.shortlink.admin.dto.resp.UserRespDTO;
+import com.xduo.shortlink.admin.service.MinIOService;
 import com.xduo.shortlink.admin.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +26,7 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private final MinIOService minIOService;
     /**
      * 根据用户名查询用户信息
      */
@@ -105,5 +108,36 @@ public class UserController {
         return Results.success();
     }
 
+    /**
+     * 上传头像
+     * @param file 头像文件
+     * @param username 用户名
+     * @return 头像上传结果
+     */
+    @PostMapping("/api/short-link/admin/v1/avatar/upload")
+    public Result<String> uploadAvatar(@RequestParam("file") MultipartFile file,
+                                      @RequestParam("username") String username) {
+        try {
+            // 生成唯一的文件名
+            String originalFilename = file.getOriginalFilename();
+            String extension = originalFilename != null && originalFilename.contains(".") 
+                ? originalFilename.substring(originalFilename.lastIndexOf(".")) 
+                : "";
+            String objectName = "avatars/" + username + "_" + System.currentTimeMillis() + extension;
+            
+            // 直接使用admin模块的MinIO服务
+            String avatarUrl = minIOService.uploadFile(file, objectName);
+            
+            // 上传成功后，更新用户信息中的头像字段
+            UserUpdateReqDTO userUpdateReqDTO = new UserUpdateReqDTO();
+            userUpdateReqDTO.setUsername(username);
+            userUpdateReqDTO.setAvatar(avatarUrl);
+            userService.update(userUpdateReqDTO);
+            
+            return Results.success(avatarUrl);
+        } catch (Exception e) {
+            return Results.failure("AVATAR_UPLOAD_FAILED", "头像上传失败: " + e.getMessage(), String.class);
+        }
+    }
 
 }

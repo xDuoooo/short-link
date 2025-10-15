@@ -85,6 +85,7 @@ export const getShortLinkStats = createAsyncThunk(
     gid: string;
     startDate: string;
     endDate: string;
+    includeRecycle?: boolean;
   }) => {
     const response = await statsApi.getShortLinkStats(params);
     return response;
@@ -97,6 +98,7 @@ export const getGroupShortLinkStats = createAsyncThunk(
     gid: string;
     startDate: string;
     endDate: string;
+    includeRecycle?: boolean;
   }) => {
     const response = await statsApi.getGroupShortLinkStats(params);
     return response;
@@ -112,6 +114,7 @@ export const getShortLinkAccessRecords = createAsyncThunk(
     endDate: string;
     current?: number;
     size?: number;
+    includeRecycle?: boolean;
   }) => {
     const response = await statsApi.getShortLinkAccessRecords(params);
     return response;
@@ -126,6 +129,7 @@ export const getGroupShortLinkAccessRecords = createAsyncThunk(
     endDate: string;
     current?: number;
     size?: number;
+    includeRecycle?: boolean;
   }) => {
     const response = await statsApi.getGroupShortLinkAccessRecords(params);
     return response;

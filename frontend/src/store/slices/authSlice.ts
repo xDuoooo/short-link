@@ -7,6 +7,7 @@ export interface User {
   realName: string;
   phone: string;
   mail: string;
+  avatar?: string;
   deletionTime: number;
   updateTime: string;
   createTime: string;
@@ -77,6 +78,7 @@ export const updateUser = createAsyncThunk(
     realName: string;
     phone: string;
     mail: string;
+    avatar?: string;
   }) => {
     await authApi.updateUser(userData);
   }
@@ -179,6 +181,7 @@ const authSlice = createSlice({
             realName: action.meta.arg.realName,
             phone: action.meta.arg.phone,
             mail: action.meta.arg.mail,
+            avatar: action.meta.arg.avatar,
           };
         }
       })

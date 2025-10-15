@@ -20,7 +20,7 @@
 
     <!-- 分页查询短链接 -->
     <select id="pageLink" parameterType="com.xduo.shortlink.project.dto.req.ShortLinkPageReqDTO"
-            resultType="com.xduo.shortlink.project.dao.entity.LinkDO">
+resultType="com.xduo.shortlink.project.dao.entity.LinkDO">
         SELECT t.*,
         COALESCE(s.today_pv, 0) AS todayPv,
         COALESCE(s.today_uv, 0) AS todayUv,
@@ -29,8 +29,16 @@
         LEFT JOIN t_link_stats_today s ON t.gid = s.gid
         AND t.full_short_url = s.full_short_url
         AND s.date = CURDATE()
-        WHERE t.enable_status = 1
-        AND t.del_flag = 0
+    WHERE t.del_flag = 0
+        <choose>
+            <when test="includeRecycle != null and includeRecycle == true">
+                <!-- 包含回收站：显示所有状态的短链接 -->
+            </when>
+            <otherwise>
+                <!-- 不包含回收站：只显示启用状态的短链接 -->
+                AND t.enable_status = 1
+            </otherwise>
+        </choose>
         <if test="gid != null and gid != ''">
             AND t.gid = #{gid}
         </if>

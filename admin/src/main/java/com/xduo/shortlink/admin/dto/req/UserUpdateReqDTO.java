@@ -35,4 +35,9 @@ public class UserUpdateReqDTO {
 
      */
     private String mail;
+
+    /**
+     * 头像URL
+     */
+    private String avatar;
 }

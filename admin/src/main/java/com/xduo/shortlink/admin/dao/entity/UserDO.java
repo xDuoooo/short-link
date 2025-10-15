@@ -50,6 +50,11 @@ public class UserDO extends BaseDO {
     private String mail;
 
     /**
+     * 头像URL
+     */
+    private String avatar;
+
+    /**
      * 注销时间戳
      */
     private Long deletionTime;

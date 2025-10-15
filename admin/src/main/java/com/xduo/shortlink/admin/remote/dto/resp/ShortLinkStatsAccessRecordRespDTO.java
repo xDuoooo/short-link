@@ -62,4 +62,13 @@ public class ShortLinkStatsAccessRecordRespDTO {
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date createTime;
+    /**
+     * 短链接描述
+     */
+    private String describe;
+
+    /**
+     * 原始链接
+     */
+    private String fullShortUrl;
 }

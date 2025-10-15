@@ -148,7 +148,16 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
      */
     @Override
     public IPage<ShortLinkPageRespDTO> pageShortLink(ShortLinkPageReqDTO shortLinkPageReqDTO) {
-
+        // 分页参数验证
+        if (shortLinkPageReqDTO.getCurrent() <= 0) {
+            shortLinkPageReqDTO.setCurrent(1L);
+        }
+        if (shortLinkPageReqDTO.getSize() <= 0) {
+            shortLinkPageReqDTO.setSize(10L);
+        }
+        if (shortLinkPageReqDTO.getSize() > 100) {
+            shortLinkPageReqDTO.setSize(100L);
+        }
 
         IPage<LinkDO> resultPage = baseMapper.pageLink(shortLinkPageReqDTO);
         return resultPage.convert(each -> {

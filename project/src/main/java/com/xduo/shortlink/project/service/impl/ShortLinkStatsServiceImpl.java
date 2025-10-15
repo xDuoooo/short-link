@@ -9,7 +9,7 @@ import com.xduo.shortlink.project.dao.mapper.*;
 import com.xduo.shortlink.project.dto.req.*;
 import com.xduo.shortlink.project.dto.resp.*;
 import com.xduo.shortlink.project.service.ShortLinkStatsService;
-import lombok.Data;
+import com.xduo.shortlink.project.service.ShortLinkUvStatsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -35,6 +35,10 @@ public class ShortLinkStatsServiceImpl implements ShortLinkStatsService {
     private final LinkBrowserStatsMapper linkBrowserStatsMapper;
 
     private final LinkOsStatsMapper linkOsStatsMapper;
+
+    private final ShortLinkUvStatsService shortLinkUvStatsService;
+    
+    private final LinkMapper linkMapper;
 
 
 
@@ -142,7 +146,7 @@ public class ShortLinkStatsServiceImpl implements ShortLinkStatsService {
         );
         //封装访客类型统计量
         List<ShortLinkStatsUvRespDTO> uvTypeStats = new ArrayList<>();
-        HashMap<String, Object> findUvTypeByShortLink = linkAccessLogsMapper.findUvTypeCntByShortLink(shortLinkStatsReqDTO);
+        Map<String, Object> findUvTypeByShortLink = shortLinkUvStatsService.getUvTypeCntByShortLink(shortLinkStatsReqDTO);
         int oldUserCnt = Integer.parseInt(findUvTypeByShortLink.get("oldUserCnt").toString());
         int newUserCnt = Integer.parseInt(findUvTypeByShortLink.get("newUserCnt").toString());
         int uvSum = oldUserCnt + newUserCnt;
@@ -306,7 +310,7 @@ public class ShortLinkStatsServiceImpl implements ShortLinkStatsService {
         );
         //封装访客类型统计量
         List<ShortLinkStatsUvRespDTO> uvTypeStats = new ArrayList<>();
-        HashMap<String, Object> findUvTypeByShortLink = linkAccessLogsMapper.findGroupUvTypeCntByShortLink(shortLinkGroupStatsReqDTO);
+        Map<String, Object> findUvTypeByShortLink = shortLinkUvStatsService.getGroupUvTypeCntByShortLink(shortLinkGroupStatsReqDTO);
         if (findUvTypeByShortLink == null) {
             findUvTypeByShortLink = new HashMap<>();
             findUvTypeByShortLink.put("oldUserCnt", 0);
@@ -377,21 +381,54 @@ public class ShortLinkStatsServiceImpl implements ShortLinkStatsService {
 
     @Override
     public IPage<ShortLinkStatsAccessRecordRespDTO> shortLinkStatsAccessRecord(ShortLinkStatsAccessRecordReqDTO requestParam) {
+        // 处理时间格式，确保查询范围包含完整的一天
+        String startDateTime = requestParam.getStartDate() + " 00:00:00";
+        String endDateTime = requestParam.getEndDate() + " 23:59:59";
+        
+        // 根据includeRecycle参数决定查询逻辑
+        if (requestParam.getIncludeRecycle() == null || !requestParam.getIncludeRecycle()) {
+            // 如果includeRecycle为false或null，首先检查短链接是否存在且未被删除
+            LambdaQueryWrapper<LinkDO> linkQueryWrapper = Wrappers.lambdaQuery(LinkDO.class)
+                    .eq(LinkDO::getGid, requestParam.getGid())
+                    .eq(LinkDO::getFullShortUrl, requestParam.getFullShortUrl())
+                    .eq(LinkDO::getDelFlag, 0);
+            LinkDO linkDO = linkMapper.selectOne(linkQueryWrapper);
+            if (linkDO == null) {
+                // 短链接不存在或已被删除，返回空结果
+                return new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(requestParam.getCurrent(), requestParam.getSize());
+            }
+        }
+        
         LambdaQueryWrapper<LinkAccessLogsDO> queryWrapper = Wrappers.lambdaQuery(LinkAccessLogsDO.class)
                 .eq(LinkAccessLogsDO::getGid, requestParam.getGid())
                 .eq(LinkAccessLogsDO::getFullShortUrl, requestParam.getFullShortUrl())
-                .between(LinkAccessLogsDO::getCreateTime, requestParam.getStartDate(), requestParam.getEndDate())
+                .between(LinkAccessLogsDO::getCreateTime, startDateTime, endDateTime)
                 .eq(LinkAccessLogsDO::getDelFlag, 0)
                 .orderByDesc(LinkAccessLogsDO::getCreateTime);
         IPage<LinkAccessLogsDO> linkAccessLogsDOIPage = linkAccessLogsMapper.selectPage(requestParam, queryWrapper);
-        IPage<ShortLinkStatsAccessRecordRespDTO> actualResult = linkAccessLogsDOIPage.convert(each -> BeanUtil.toBean(each, ShortLinkStatsAccessRecordRespDTO.class));
+        IPage<ShortLinkStatsAccessRecordRespDTO> actualResult = linkAccessLogsDOIPage.convert(each -> {
+            ShortLinkStatsAccessRecordRespDTO dto = BeanUtil.toBean(each, ShortLinkStatsAccessRecordRespDTO.class);
+            // 设置短链接
+            dto.setFullShortUrl(each.getFullShortUrl());
+            // 获取短链接描述信息
+            LinkDO linkDO = linkMapper.selectOne(Wrappers.lambdaQuery(LinkDO.class)
+                    .eq(LinkDO::getGid, each.getGid())
+                    .eq(LinkDO::getFullShortUrl, each.getFullShortUrl())
+                    .eq(LinkDO::getDelFlag, 0)
+                    .select(LinkDO::getDescribe, LinkDO::getOriginUrl));
+            if (linkDO != null) {
+                dto.setDescribe(linkDO.getDescribe());
+                dto.setOriginUrl(linkDO.getOriginUrl());
+            }
+            return dto;
+        });
         List<String> userAccessLogsList = actualResult.getRecords().stream()
                 .map(ShortLinkStatsAccessRecordRespDTO::getUser)
                 .toList();
         SelectUvTypeByUserReqDTO selectUvTypeByUserReqDTO = BeanUtil.toBean(requestParam, SelectUvTypeByUserReqDTO.class);
         selectUvTypeByUserReqDTO.setUserAccessLogsList(userAccessLogsList);
         //每一个map 中 key 列名 value 值
-        List<Map<String, Object>> uvTypeList = linkAccessLogsMapper.selectUvTypeByUser(selectUvTypeByUserReqDTO);
+        List<Map<String, Object>> uvTypeList = shortLinkUvStatsService.getUvTypeByUser(selectUvTypeByUserReqDTO);
         for (Map<String, Object> uvType : uvTypeList) {
             LocalDateTime createTime = (LocalDateTime) uvType.get("create_time");
             String user = uvType.get("user").toString();
@@ -413,19 +450,58 @@ public class ShortLinkStatsServiceImpl implements ShortLinkStatsService {
 
     @Override
     public IPage<ShortLinkStatsAccessRecordRespDTO> shortLinkGroupStatsAccessRecord(ShortLinkGroupStatsAccessRecordReqDTO requestParam) {
+        // 分页参数验证
+        if (requestParam.getCurrent() <= 0) {
+            requestParam.setCurrent(1L);
+        }
+        if (requestParam.getSize() <= 0) {
+            requestParam.setSize(10L);
+        }
+        if (requestParam.getSize() > 100) {
+            requestParam.setSize(100L);
+        }
+        
+        // 处理时间格式，确保查询范围包含完整的一天
+        String startDateTime = requestParam.getStartDate() + " 00:00:00";
+        String endDateTime = requestParam.getEndDate() + " 23:59:59";
+        
+        // 根据includeRecycle参数决定查询逻辑
         LambdaQueryWrapper<LinkAccessLogsDO> queryWrapper = Wrappers.lambdaQuery(LinkAccessLogsDO.class)
                 .eq(LinkAccessLogsDO::getGid, requestParam.getGid())
-                .between(LinkAccessLogsDO::getCreateTime, requestParam.getStartDate(), requestParam.getEndDate())
-                .eq(LinkAccessLogsDO::getDelFlag, 0)
+                .between(LinkAccessLogsDO::getCreateTime, startDateTime, endDateTime)
                 .orderByDesc(LinkAccessLogsDO::getCreateTime);
+        
+        // 如果includeRecycle为false或null，只查询有效短链接的访问日志
+        if (requestParam.getIncludeRecycle() == null || !requestParam.getIncludeRecycle()) {
+            // 使用EXISTS子查询优化性能，避免先查询所有短链接再IN查询
+            queryWrapper.exists("SELECT 1 FROM t_link l WHERE l.gid = {0} AND l.full_short_url = {1} AND l.del_flag = 0 AND l.enable_status = 1", 
+                    requestParam.getGid(), "t_link_access_logs.full_short_url");
+        }
+        
+        // MyBatis-Plus逻辑删除会自动添加delFlag条件，无需手动添加
         IPage<LinkAccessLogsDO> linkAccessLogsDOIPage = linkAccessLogsMapper.selectPage(requestParam, queryWrapper);
-        IPage<ShortLinkStatsAccessRecordRespDTO> actualResult = linkAccessLogsDOIPage.convert(each -> BeanUtil.toBean(each, ShortLinkStatsAccessRecordRespDTO.class));
+        IPage<ShortLinkStatsAccessRecordRespDTO> actualResult = linkAccessLogsDOIPage.convert(each -> {
+            ShortLinkStatsAccessRecordRespDTO dto = BeanUtil.toBean(each, ShortLinkStatsAccessRecordRespDTO.class);
+            // 设置短链接
+            dto.setFullShortUrl(each.getFullShortUrl());
+            // 获取短链接描述信息
+            LinkDO linkDO = linkMapper.selectOne(Wrappers.lambdaQuery(LinkDO.class)
+                    .eq(LinkDO::getGid, each.getGid())
+                    .eq(LinkDO::getFullShortUrl, each.getFullShortUrl())
+                    .eq(LinkDO::getDelFlag, 0)
+                    .select(LinkDO::getDescribe, LinkDO::getOriginUrl));
+            if (linkDO != null) {
+                dto.setDescribe(linkDO.getDescribe());
+                dto.setOriginUrl(linkDO.getOriginUrl());
+            }
+            return dto;
+        });
         List<String> userAccessLogsList = actualResult.getRecords().stream()
                 .map(ShortLinkStatsAccessRecordRespDTO::getUser)
                 .toList();
         SelectGroupUvTypeByUserReqDTO selectUvTypeByUserReqDTO = BeanUtil.toBean(requestParam, SelectGroupUvTypeByUserReqDTO.class);
         selectUvTypeByUserReqDTO.setUserAccessLogsList(userAccessLogsList);
-        List<Map<String, Object>> uvTypeList = linkAccessLogsMapper.selectGroupUvTypeByUser(selectUvTypeByUserReqDTO);
+        List<Map<String, Object>> uvTypeList = shortLinkUvStatsService.getGroupUvTypeByUser(selectUvTypeByUserReqDTO);
         actualResult.getRecords().forEach(
                 eachResult -> {
                     String uvType = uvTypeList.stream().filter(eachType -> Objects.equals(eachType.get("user"), eachResult.getUser()))

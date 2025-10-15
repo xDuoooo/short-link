@@ -26,24 +26,38 @@ public interface LinkAccessLogsMapper extends BaseMapper<LinkAccessLogsDO> {
     List<HashMap<String, Object>> listTopIpByShortLink(ShortLinkStatsReqDTO requestParam);
 
     /**
-     * 根据短链接获取指定日期内新旧访客数据
+     * 获取指定短链接的用户访问记录（简化查询，用于应用层处理UV类型判断）
      */
-    HashMap<String, Object> findUvTypeCntByShortLink(@Param("param") ShortLinkStatsReqDTO param);
+    List<HashMap<String, Object>> findUserAccessLogsByShortLink(
+            @Param("fullShortUrl") String fullShortUrl,
+            @Param("gid") String gid,
+            @Param("startDate") String startDate,
+            @Param("endDate") String endDate
+    );
 
-    List<Map<String, Object>> selectUvTypeByUser(SelectUvTypeByUserReqDTO selectUvTypeByUserReqDTO);
+    /**
+     * 获取指定用户的访问记录（简化查询）
+     */
+    List<Map<String, Object>> selectUserAccessLogs(SelectUvTypeByUserReqDTO selectUvTypeByUserReqDTO);
 
     /**
      * 根据一组短链接获取指定日期内高频访问IP数据
      */
     List<HashMap<String, Object>> listGroupTopIpByShortLink(ShortLinkGroupStatsReqDTO shortLinkGroupStatsReqDTO);
 
-    HashMap<String, Object> findGroupUvTypeCntByShortLink(@Param("param") ShortLinkGroupStatsReqDTO shortLinkGroupStatsReqDTO);
+    /**
+     * 获取分组在指定时间范围内的用户访问记录（简化查询）
+     */
+    List<HashMap<String, Object>> findGroupUserAccessLogs(
+            @Param("gid") String gid,
+            @Param("startDate") String startDate,
+            @Param("endDate") String endDate
+    );
 
     /**
-     * 根据一组短链接获取指定日期内新旧访客数据
+     * 获取分组指定用户的访问记录（简化查询）
      */
-    @MapKey("user")
-    List<Map<String, Object>> selectGroupUvTypeByUser(SelectGroupUvTypeByUserReqDTO selectGroupUvTypeByUserReqDTO);
+    List<Map<String, Object>> selectGroupUserAccessLogs(SelectGroupUvTypeByUserReqDTO selectGroupUvTypeByUserReqDTO);
 }
 
 

@@ -30,4 +30,9 @@ public class SelectGroupUvTypeByUserReqDTO {
      * user列表
      */
     private List<String> userAccessLogsList;
+
+    /**
+     * 是否包含回收站短链接
+     */
+    private Boolean includeRecycle;
 }

@@ -24,4 +24,9 @@ public class ShortLinkGroupStatsAccessRecordReqDTO extends Page<LinkAccessLogsDO
      * 结束日期
      */
     private String endDate;
+
+    /**
+     * 是否包含回收站短链接
+     */
+    private Boolean includeRecycle;
 }

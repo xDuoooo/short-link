@@ -38,4 +38,9 @@ public class UserRespDTO {
      */
     private String mail;
 
+    /**
+     * 头像URL
+     */
+    private String avatar;
+
 }

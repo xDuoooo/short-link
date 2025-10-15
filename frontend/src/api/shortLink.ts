@@ -94,6 +94,7 @@ export interface GetShortLinksRequest {
   current?: number;
   size?: number;
   orderTag?: string;
+  includeRecycle?: boolean;
 }
 
 export interface GroupCountResponse {

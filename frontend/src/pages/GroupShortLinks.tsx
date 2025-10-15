@@ -16,6 +16,9 @@ import {
   Tooltip,
   Tabs,
   Breadcrumb,
+  Switch,
+  Row,
+  Col,
 } from 'antd';
 import {
   PlusOutlined,
@@ -36,6 +39,7 @@ import {
   batchCreateShortLink,
   updateShortLink,
   getTitleByUrl,
+  setIncludeRecycle,
 } from '../store/slices/shortLinkSlice';
 import { shortLinkApi } from '../api/shortLink';
 import { saveToRecycleBin } from '../store/slices/recycleBinSlice';
@@ -131,6 +135,16 @@ const GroupShortLinks: React.FC = () => {
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
     message.success('已复制到剪贴板');
+  };
+
+
+
+  const handleTableChange = (pagination: any) => {
+    dispatch(fetchShortLinks({ 
+      current: pagination.current, 
+      size: pagination.pageSize, 
+      gid
+    }));
   };
 
 
@@ -283,6 +297,17 @@ const GroupShortLinks: React.FC = () => {
       render: (text: string) => text || '-',
     },
     {
+      title: '状态',
+      dataIndex: 'enableStatus',
+      key: 'enableStatus',
+      width: 80,
+      render: (status: number) => (
+        <Tag color={status === 1 ? 'green' : 'red'}>
+          {status === 1 ? '正常' : '回收站'}
+        </Tag>
+      ),
+    },
+    {
       title: '访问量',
       dataIndex: 'totalPv',
       key: 'totalPv',
@@ -314,27 +339,33 @@ const GroupShortLinks: React.FC = () => {
       width: 280,
       render: (_: any, record: any) => (
         <Space>
-          <Button
-            type="link"
-            icon={<EditOutlined />}
-            onClick={() => handleEdit(record)}
-          >
-            编辑
-          </Button>
-          <Popconfirm
-            title="确定要将这个短链接移到回收站吗？"
-            onConfirm={() => handleDelete(record)}
-            okText="确定"
-            cancelText="取消"
-          >
-            <Button
-              type="link"
-              danger
-              icon={<DeleteOutlined />}
-            >
-              移到回收站
-            </Button>
-          </Popconfirm>
+          {record.enableStatus === 1 ? (
+            <>
+              <Button
+                type="link"
+                icon={<EditOutlined />}
+                onClick={() => handleEdit(record)}
+              >
+                编辑
+              </Button>
+              <Popconfirm
+                title="确定要将这个短链接移到回收站吗？"
+                onConfirm={() => handleDelete(record)}
+                okText="确定"
+                cancelText="取消"
+              >
+                <Button
+                  type="link"
+                  danger
+                  icon={<DeleteOutlined />}
+                >
+                  移到回收站
+                </Button>
+              </Popconfirm>
+            </>
+          ) : (
+            <Tag color="red">已移入回收站</Tag>
+          )}
         </Space>
       ),
     },
@@ -611,6 +642,7 @@ const GroupShortLinks: React.FC = () => {
         </Space>
       </div>
 
+
       <Card className="table-container">
         <Table
           columns={columns}
@@ -625,6 +657,7 @@ const GroupShortLinks: React.FC = () => {
             showQuickJumper: true,
             showTotal: (total) => `共 ${total} 条记录`,
           }}
+          onChange={handleTableChange}
           size="middle"
         />
       </Card>

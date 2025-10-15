@@ -35,4 +35,9 @@ public class UserActualRespDTO {
      */
     private String mail;
 
+    /**
+     * 头像URL
+     */
+    private String avatar;
+
 }

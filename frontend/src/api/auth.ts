@@ -23,6 +23,7 @@ export interface UserInfo {
   realName: string;
   phone: string;
   mail: string;
+  avatar?: string;
   deletionTime: number;
   updateTime: string;
   createTime: string;
@@ -34,6 +35,7 @@ export interface UpdateUserRequest {
   realName: string;
   phone: string;
   mail: string;
+  avatar?: string;
 }
 
 export interface CheckLoginRequest {
@@ -79,5 +81,17 @@ export const authApi = {
     return api.get('/api/short-link/admin/v1/user/has-username', {
       params: { username },
     });
+  },
+
+  // 上传头像
+  uploadAvatar: (file: File, username: string): Promise<{ url: string }> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('username', username);
+    return api.post('/api/short-link/admin/v1/avatar/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    }).then(response => ({ url: response.data }));
   },
 };

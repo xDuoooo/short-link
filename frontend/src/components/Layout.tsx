@@ -147,6 +147,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               arrow
             >
               <Avatar 
+                src={user?.avatar}
                 style={{ 
                   backgroundColor: '#1890ff',
                   cursor: 'pointer'

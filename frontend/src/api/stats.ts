@@ -55,6 +55,8 @@ export interface AccessRecord {
   device: string;
   network: string;
   createTime: string;
+  describe?: string;
+  originUrl?: string;
 }
 
 export interface AccessRecordPageResponse {
@@ -69,12 +71,14 @@ export interface GetShortLinkStatsRequest {
   gid: string;
   startDate: string;
   endDate: string;
+  includeRecycle?: boolean;
 }
 
 export interface GetGroupShortLinkStatsRequest {
   gid: string;
   startDate: string;
   endDate: string;
+  includeRecycle?: boolean;
 }
 
 export interface GetShortLinkAccessRecordsRequest {
@@ -84,6 +88,7 @@ export interface GetShortLinkAccessRecordsRequest {
   endDate: string;
   current?: number;
   size?: number;
+  includeRecycle?: boolean;
 }
 
 export interface GetGroupShortLinkAccessRecordsRequest {
@@ -92,6 +97,7 @@ export interface GetGroupShortLinkAccessRecordsRequest {
   endDate: string;
   current?: number;
   size?: number;
+  includeRecycle?: boolean;
 }
 
 export const statsApi = {

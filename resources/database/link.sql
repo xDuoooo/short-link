@@ -488,6 +488,7 @@ CREATE TABLE `t_user_0`
     `real_name`     varchar(256) DEFAULT NULL COMMENT '真实姓名',
     `phone`         varchar(128) DEFAULT NULL COMMENT '手机号',
     `mail`          varchar(512) DEFAULT NULL COMMENT '邮箱',
+    `avatar`        varchar(512) DEFAULT NULL COMMENT '头像URL',
     `deletion_time` bigint(20) DEFAULT NULL COMMENT '注销时间戳',
     `create_time`   datetime     DEFAULT NULL COMMENT '创建时间',
     `update_time`   datetime     DEFAULT NULL COMMENT '修改时间',
