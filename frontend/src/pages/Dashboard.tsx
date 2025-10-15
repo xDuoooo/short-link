@@ -134,7 +134,18 @@ const Dashboard: React.FC = () => {
                     </div>
                     <div style={{ textAlign: 'right' }}>
                       <div style={{ color: '#1890ff', fontWeight: 500 }}>
-                        {link.clickNum} 次访问
+                        {link.totalPv > 0 ? (
+                          <div>
+                            <div>{link.totalPv} 次访问</div>
+                            {link.todayPv > 0 && (
+                              <div style={{ fontSize: 12, color: '#52c41a' }}>
+                                今日 {link.todayPv} 次
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div style={{ color: '#999' }}>暂无访问</div>
+                        )}
                       </div>
                       <div style={{ color: '#999', fontSize: 12 }}>
                         {new Date(link.createTime).toLocaleDateString()}

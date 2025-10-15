@@ -28,7 +28,6 @@ import com.xduo.shortlink.project.util.LinkUtil;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jodd.util.StringUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -452,11 +451,11 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
         Runnable addResponseCookieTask = () -> {
             Cookie uvCookie = new Cookie(UV, uv.get());
             uvCookie.setMaxAge(60 * 60 * 24 * 30);
-            uvCookie.setPath(StringUtil.substring(fullShortUrl, fullShortUrl.indexOf("/"), fullShortUrl.length()));
+            uvCookie.setPath("/");  // 设置Cookie路径为根路径，确保在所有页面都能访问
             response.addCookie(uvCookie);
-            uvFirstFlag.set(Boolean.TRUE);
             //TODO 后续可以考虑是否采用bitmap
-            stringRedisTemplate.opsForSet().add(String.format(STATS_UV_KEY_PREFIX, fullShortUrl), uv.get());
+            Long uvAdded = stringRedisTemplate.opsForSet().add(String.format(STATS_UV_KEY_PREFIX, fullShortUrl), uv.get());
+            uvFirstFlag.set(uvAdded != null && uvAdded > 0L);
         };
         if (ArrayUtil.isNotEmpty(cookies)) {
             Arrays.stream(cookies).filter(each -> Objects.equals(each.getName(), UV))
@@ -473,8 +472,8 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
             addResponseCookieTask.run();
         }
         String remoteAddr = LinkUtil.getIp(request);
-        Long uvAdded = stringRedisTemplate.opsForSet().add(STATS_UV_KEY_PREFIX + fullShortUrl, remoteAddr);
-        boolean uipFirstFlag = uvAdded != null && uvAdded > 0L;
+        Long uipAdded = stringRedisTemplate.opsForSet().add(STATS_UIP_KEY_PREFIX + fullShortUrl, remoteAddr);
+        boolean uipFirstFlag = uipAdded != null && uipAdded > 0L;
         String os = LinkUtil.getOs(request);
         String browser = LinkUtil.getBrowser(request);
         String device = LinkUtil.getDevice(request);
