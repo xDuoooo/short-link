@@ -12,8 +12,11 @@ const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 
+// 在开发环境中禁用StrictMode以避免重复请求
+const isDevelopment = process.env.NODE_ENV === 'development';
+
 root.render(
-  <React.StrictMode>
+  isDevelopment ? (
     <Provider store={store}>
       <BrowserRouter>
         <ConfigProvider locale={zhCN}>
@@ -21,5 +24,15 @@ root.render(
         </ConfigProvider>
       </BrowserRouter>
     </Provider>
-  </React.StrictMode>
+  ) : (
+    <React.StrictMode>
+      <Provider store={store}>
+        <BrowserRouter>
+          <ConfigProvider locale={zhCN}>
+            <App />
+          </ConfigProvider>
+        </BrowserRouter>
+      </Provider>
+    </React.StrictMode>
+  )
 );

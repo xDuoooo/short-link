@@ -119,7 +119,7 @@ const RecycleBin: React.FC = () => {
     }
     
     try {
-      const selectedRecords = shortLinks.filter(link => selectedRowKeys.includes(link.gid));
+      const selectedRecords = shortLinks.filter(link => selectedRowKeys.includes(link.fullShortUrl));
       for (const record of selectedRecords) {
         await dispatch(recoverFromRecycleBin({
           gid: record.gid,
@@ -150,7 +150,7 @@ const RecycleBin: React.FC = () => {
       okType: 'danger',
       onOk: async () => {
         try {
-          const selectedRecords = shortLinks.filter(link => selectedRowKeys.includes(link.gid));
+          const selectedRecords = shortLinks.filter(link => selectedRowKeys.includes(link.fullShortUrl));
           for (const record of selectedRecords) {
             await dispatch(removeFromRecycleBin({
               gid: record.gid,
@@ -245,10 +245,10 @@ const RecycleBin: React.FC = () => {
     },
     {
       title: '删除时间',
-      dataIndex: 'delTime',
-      key: 'delTime',
+      dataIndex: 'updateTime',
+      key: 'updateTime',
       width: 150,
-      render: (text: number) => text ? new Date(text).toLocaleString() : '-',
+      render: (text: string) => text ? new Date(text).toLocaleString() : '-',
     },
     {
       title: '状态',
@@ -265,7 +265,7 @@ const RecycleBin: React.FC = () => {
       title: '操作',
       key: 'action',
       width: 180,
-      fixed: 'right',
+      fixed: 'right' as const,
       render: (_: any, record: any) => (
         <Space>
           {record.delFlag !== 1 && (
@@ -303,7 +303,13 @@ const RecycleBin: React.FC = () => {
 
   // 计算统计数据
   const totalLinks = shortLinks.length;
-  const recoverableLinks = shortLinks.filter(link => link.delFlag !== 1).length;
+  const totalPv = shortLinks.reduce((sum, link) => sum + (link.totalPv || 0), 0);
+  const totalUv = shortLinks.reduce((sum, link) => sum + (link.totalUv || 0), 0);
+  
+  // 找到访问量最高的短链接
+  const topPvLink = shortLinks.length > 0 
+    ? shortLinks.reduce((max, link) => (link.totalPv || 0) > (max.totalPv || 0) ? link : max)
+    : null;
 
   return (
     <div>
@@ -336,22 +342,86 @@ const RecycleBin: React.FC = () => {
 
       {/* 统计卡片 */}
       <Row gutter={16} style={{ marginBottom: 24 }}>
-        <Col span={12}>
-          <Card>
+        <Col span={6}>
+          <Card style={{ height: '100%' }}>
             <Statistic
-              title="总数量"
+              title="回收站链接数"
               value={totalLinks}
               valueStyle={{ color: '#1890ff' }}
             />
           </Card>
         </Col>
-        <Col span={12}>
-          <Card>
+        <Col span={6}>
+          <Card style={{ height: '100%' }}>
             <Statistic
-              title="可恢复"
-              value={recoverableLinks}
+              title="总访问量"
+              value={totalPv}
               valueStyle={{ color: '#52c41a' }}
             />
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card style={{ height: '100%' }}>
+            <Statistic
+              title="总独立访客"
+              value={totalUv}
+              valueStyle={{ color: '#fa8c16' }}
+            />
+          </Card>
+        </Col>
+        <Col span={6}>
+          <Card style={{ height: '100%' }}>
+            <div style={{ 
+              textAlign: 'center', 
+              padding: '8px 0',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              height: '100%'
+            }}>
+              <div style={{ 
+                fontSize: '14px', 
+                color: '#666',
+                marginBottom: '8px',
+                fontWeight: '500'
+              }}>
+                访问量最高的短链接
+              </div>
+              {topPvLink && (
+                <div style={{
+                  background: '#f8f9fa',
+                  borderRadius: '6px',
+                  padding: '6px',
+                  border: '1px solid #e9ecef',
+                  maxHeight: '60px',
+                  overflow: 'hidden'
+                }}>
+                  <div style={{ 
+                    fontSize: '12px', 
+                    fontWeight: '600',
+                    color: '#495057',
+                    marginBottom: '2px',
+                    fontFamily: 'monospace'
+                  }}>
+                    {topPvLink.shortUri}
+                  </div>
+                  {topPvLink.describe && (
+                    <div style={{ 
+                      fontSize: '11px', 
+                      color: '#6c757d',
+                      lineHeight: '1.2',
+                      maxHeight: '20px',
+                      overflow: 'hidden',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 1,
+                      WebkitBoxOrient: 'vertical'
+                    }}>
+                      {topPvLink.describe}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </Card>
         </Col>
       </Row>
@@ -404,7 +474,7 @@ const RecycleBin: React.FC = () => {
         <Table
           columns={columns}
           dataSource={shortLinks}
-          rowKey="gid"
+          rowKey="fullShortUrl"
           loading={loading}
           rowSelection={rowSelection}
           pagination={{

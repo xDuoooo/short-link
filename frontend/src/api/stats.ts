@@ -1,4 +1,5 @@
 import api from './index';
+import { requestDeduplication } from '../utils/requestDeduplication';
 
 export interface StatsData {
   pv: number;
@@ -103,21 +104,41 @@ export interface GetGroupShortLinkAccessRecordsRequest {
 export const statsApi = {
   // 获取单个短链接统计数据
   getShortLinkStats: (params: GetShortLinkStatsRequest): Promise<StatsData> => {
-    return api.get('/api/short-link/admin/v1/stats', { params });
+    return requestDeduplication.deduplicateRequest(
+      'GET',
+      '/api/short-link/admin/v1/stats',
+      () => api.get('/api/short-link/admin/v1/stats', { params }),
+      params
+    );
   },
 
   // 获取分组短链接统计数据
   getGroupShortLinkStats: (params: GetGroupShortLinkStatsRequest): Promise<StatsData> => {
-    return api.get('/api/short-link/admin/v1/stats/group', { params });
+    return requestDeduplication.deduplicateRequest(
+      'GET',
+      '/api/short-link/admin/v1/stats/group',
+      () => api.get('/api/short-link/admin/v1/stats/group', { params }),
+      params
+    );
   },
 
   // 获取单个短链接访问记录
   getShortLinkAccessRecords: (params: GetShortLinkAccessRecordsRequest): Promise<AccessRecordPageResponse> => {
-    return api.get('/api/short-link/admin/v1/stats/access-record', { params });
+    return requestDeduplication.deduplicateRequest(
+      'GET',
+      '/api/short-link/admin/v1/stats/access-record',
+      () => api.get('/api/short-link/admin/v1/stats/access-record', { params }),
+      params
+    );
   },
 
   // 获取分组短链接访问记录
   getGroupShortLinkAccessRecords: (params: GetGroupShortLinkAccessRecordsRequest): Promise<AccessRecordPageResponse> => {
-    return api.get('/api/short-link/admin/v1/stats/access-record/group', { params });
+    return requestDeduplication.deduplicateRequest(
+      'GET',
+      '/api/short-link/admin/v1/stats/access-record/group',
+      () => api.get('/api/short-link/admin/v1/stats/access-record/group', { params }),
+      params
+    );
   },
 };

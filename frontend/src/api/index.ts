@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { requestDeduplication } from '../utils/requestDeduplication';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000';
 
@@ -28,6 +29,7 @@ api.interceptors.request.use(
       config.headers.token = token;
       config.headers.username = username;
     }
+    
     return config;
   },
   (error) => {

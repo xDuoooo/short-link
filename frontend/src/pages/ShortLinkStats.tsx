@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   Card,
   Row,
@@ -82,8 +82,20 @@ const ShortLinkStats: React.FC = () => {
     }
   }, [dispatch, selectedGroup]);
 
+  // 使用useRef来避免重复请求
+  const requestRef = useRef<string>('');
+  
   useEffect(() => {
     if (selectedGroup && dateRange[0] && dateRange[1]) {
+      const requestKey = `${selectedGroup}-${selectedShortLink}-${dateRange[0].format('YYYY-MM-DD')}-${dateRange[1].format('YYYY-MM-DD')}-${includeRecycle}`;
+      
+      // 如果请求参数没有变化，跳过请求
+      if (requestRef.current === requestKey) {
+        return;
+      }
+      
+      requestRef.current = requestKey;
+      
       console.log('获取统计数据，参数:', {
         selectedGroup,
         selectedShortLink,
@@ -100,6 +112,7 @@ const ShortLinkStats: React.FC = () => {
           startDate: dateRange[0].format('YYYY-MM-DD'),
           endDate: dateRange[1].format('YYYY-MM-DD'),
           includeRecycle: true,
+          requestKey: requestKey,
         }));
         // 获取单个短链接访问记录 - 历史记录可选择是否包含回收站
         dispatch(getShortLinkAccessRecords({
@@ -110,6 +123,7 @@ const ShortLinkStats: React.FC = () => {
           current: 1,
           size: 10,
           includeRecycle: includeRecycle,
+          requestKey: requestKey,
         }));
       } else {
         // 获取分组统计 - 概览始终包含所有数据
@@ -118,6 +132,7 @@ const ShortLinkStats: React.FC = () => {
           startDate: dateRange[0].format('YYYY-MM-DD'),
           endDate: dateRange[1].format('YYYY-MM-DD'),
           includeRecycle: true,
+          requestKey: requestKey,
         }));
         // 获取分组访问记录 - 历史记录可选择是否包含回收站
         dispatch(getGroupShortLinkAccessRecords({
@@ -127,6 +142,7 @@ const ShortLinkStats: React.FC = () => {
           current: 1,
           size: 10,
           includeRecycle: includeRecycle,
+          requestKey: requestKey,
         }));
       }
     }
