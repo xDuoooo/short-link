@@ -4,9 +4,31 @@ export interface StatsData {
   pv: number;
   uv: number;
   uip: number;
-  todayPv: number;
-  todayUv: number;
-  todayUip: number;
+  todayPv?: number;
+  todayUv?: number;
+  todayUip?: number;
+  daily?: Array<{
+    date: string;
+    pv: number;
+    uv: number;
+    uip: number;
+  }>;
+  hourStats?: number[];
+  deviceStats?: Array<{
+    device: string;
+    cnt: number;
+    ratio: number;
+  }>;
+  browserStats?: Array<{
+    browser: string;
+    cnt: number;
+    ratio: number;
+  }>;
+  osStats?: Array<{
+    os: string;
+    cnt: number;
+    ratio: number;
+  }>;
 }
 
 export interface AccessRecord {

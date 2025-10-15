@@ -80,10 +80,43 @@
 
     </select>
     <select id="findGroupUvTypeCntByShortLink" resultType="java.util.HashMap">
-        select * from t_link_access_logs
+        SELECT
+        COALESCE(SUM(CASE WHEN uvType = '新访客' THEN 1 ELSE 0 END), 0) AS newUserCnt,
+        COALESCE(SUM(CASE WHEN uvType = '老访客' THEN 1 ELSE 0 END), 0) AS oldUserCnt
+        FROM (
+            SELECT
+            user,
+            CASE
+            WHEN MIN(create_time) BETWEEN #{param.startDate} AND #{param.endDate} THEN '新访客'
+            ELSE '老访客'
+            END AS uvType
+            FROM t_link_access_logs
+            WHERE gid = #{param.gid}
+            AND create_time BETWEEN #{param.startDate} AND #{param.endDate}
+            GROUP BY user
+        ) AS uv_stats
     </select>
     <select id="selectGroupUvTypeByUser" resultType="java.util.Map">
-        select * from t_link_access_logs
+        SELECT
+        user,
+        create_time,
+        CASE
+        WHEN create_time = (SELECT MIN(create_time)
+        FROM t_link_access_logs
+        WHERE user = t.user
+        AND gid = #{gid}
+        AND create_time BETWEEN #{startDate} AND #{endDate}) THEN '新访客'
+        ELSE '老访客'
+        END AS uvType
+        FROM
+        t_link_access_logs t
+        WHERE
+        gid = #{gid}
+        AND create_time BETWEEN #{startDate} AND #{endDate}
+        AND user IN
+        <foreach item="item" index="index" collection="userAccessLogsList" open="(" separator="," close=")">
+            #{item}
+        </foreach>
     </select>
 
 </mapper>

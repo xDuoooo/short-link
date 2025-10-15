@@ -75,12 +75,29 @@ const ShortLinkStats: React.FC = () => {
           startDate: dateRange[0].format('YYYY-MM-DD'),
           endDate: dateRange[1].format('YYYY-MM-DD'),
         }));
+        // 获取单个短链接访问记录
+        dispatch(getShortLinkAccessRecords({
+          fullShortUrl: selectedShortLink,
+          gid: selectedGroup,
+          startDate: dateRange[0].format('YYYY-MM-DD'),
+          endDate: dateRange[1].format('YYYY-MM-DD'),
+          current: 1,
+          size: 10,
+        }));
       } else {
         // 获取分组统计
         dispatch(getGroupShortLinkStats({
           gid: selectedGroup,
           startDate: dateRange[0].format('YYYY-MM-DD'),
           endDate: dateRange[1].format('YYYY-MM-DD'),
+        }));
+        // 获取分组访问记录
+        dispatch(getGroupShortLinkAccessRecords({
+          gid: selectedGroup,
+          startDate: dateRange[0].format('YYYY-MM-DD'),
+          endDate: dateRange[1].format('YYYY-MM-DD'),
+          current: 1,
+          size: 10,
         }));
       }
     }
@@ -211,7 +228,7 @@ const ShortLinkStats: React.FC = () => {
               <Card>
                 <Statistic
                   title="今日访问"
-                  value={statsData?.todayPv || 0}
+                  value={statsData?.todayPv || statsData?.pv || 0}
                   prefix={<BarChartOutlined />}
                   valueStyle={{ color: '#eb2f96' }}
                 />
@@ -223,13 +240,7 @@ const ShortLinkStats: React.FC = () => {
             <Col xs={24} lg={12}>
               <Card title="访问趋势" className="chart-container">
                 <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={[
-                    { date: '2024-01-01', pv: 100, uv: 80 },
-                    { date: '2024-01-02', pv: 150, uv: 120 },
-                    { date: '2024-01-03', pv: 200, uv: 150 },
-                    { date: '2024-01-04', pv: 180, uv: 140 },
-                    { date: '2024-01-05', pv: 220, uv: 180 },
-                  ]}>
+                  <LineChart data={statsData?.daily || []}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="date" />
                     <YAxis />
@@ -245,24 +256,16 @@ const ShortLinkStats: React.FC = () => {
                 <ResponsiveContainer width="100%" height={300}>
                   <PieChart>
                     <Pie
-                      data={[
-                        { name: '桌面', value: 60 },
-                        { name: '移动端', value: 30 },
-                        { name: '平板', value: 10 },
-                      ]}
+                      data={statsData?.deviceStats || []}
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      label={({ device, ratio }) => `${device} ${(ratio * 100).toFixed(0)}%`}
                       outerRadius={80}
                       fill="#8884d8"
-                      dataKey="value"
+                      dataKey="cnt"
                     >
-                      {[
-                        { name: '桌面', value: 60 },
-                        { name: '移动端', value: 30 },
-                        { name: '平板', value: 10 },
-                      ].map((entry, index) => (
+                      {(statsData?.deviceStats || []).map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>

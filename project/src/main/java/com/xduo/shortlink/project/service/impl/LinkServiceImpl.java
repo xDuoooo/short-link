@@ -451,7 +451,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
         Runnable addResponseCookieTask = () -> {
             Cookie uvCookie = new Cookie(UV, uv.get());
             uvCookie.setMaxAge(60 * 60 * 24 * 30);
-            uvCookie.setPath("/");  // 设置Cookie路径为根路径，确保在所有页面都能访问
+            uvCookie.setPath(fullShortUrl.substring(fullShortUrl.lastIndexOf("/")));
             response.addCookie(uvCookie);
             //TODO 后续可以考虑是否采用bitmap
             Long uvAdded = stringRedisTemplate.opsForSet().add(String.format(STATS_UV_KEY_PREFIX, fullShortUrl), uv.get());
