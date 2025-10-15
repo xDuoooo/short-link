@@ -16,8 +16,15 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     dispatch(fetchGroups());
-    dispatch(fetchShortLinks({ current: 1, size: 10 }));
   }, [dispatch]);
+
+  // 当分组加载完成后，获取所有分组的短链接
+  useEffect(() => {
+    if (groups.length > 0) {
+      // 获取所有分组的短链接（不传gid参数），按创建时间排序
+      dispatch(fetchShortLinks({ current: 1, size: 10, orderTag: 'create_time' }));
+    }
+  }, [groups, dispatch]);
 
   // 获取分组短链接数量
   useEffect(() => {

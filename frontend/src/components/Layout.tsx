@@ -95,9 +95,24 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           borderBottom: '1px solid #f0f0f0',
           marginBottom: 16
         }}>
-          <Text strong style={{ color: '#1890ff', fontSize: collapsed ? 16 : 20 }}>
-            {collapsed ? '短链' : '短链接系统'}
-          </Text>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <svg 
+              width={collapsed ? 20 : 24} 
+              height={collapsed ? 20 : 24} 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="#1890ff" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+            >
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+            </svg>
+            <Text strong style={{ color: '#1890ff', fontSize: collapsed ? 16 : 20 }}>
+              {collapsed ? '短链' : '短链接系统'}
+            </Text>
+          </div>
         </div>
         <Menu
           mode="inline"

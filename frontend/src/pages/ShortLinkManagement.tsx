@@ -228,9 +228,13 @@ const ShortLinkManagement: React.FC = () => {
           originGid: editingLink.gid,
         })).unwrap();
         message.success('更新成功');
+        // 更新成功后刷新列表
+        await dispatch(fetchShortLinks({ gid, current: currentPage, size: pageSize }));
       } else {
         await dispatch(createShortLink(formData)).unwrap();
         message.success('创建成功');
+        // 创建成功后刷新列表
+        await dispatch(fetchShortLinks({ gid, current: currentPage, size: pageSize }));
       }
       setIsModalVisible(false);
       form.resetFields();
@@ -277,6 +281,8 @@ const ShortLinkManagement: React.FC = () => {
 
       await dispatch(batchCreateShortLink(formData)).unwrap();
       message.success('批量创建成功');
+      // 批量创建成功后刷新列表
+      await dispatch(fetchShortLinks({ gid: values.gid, current: currentPage, size: pageSize }));
       setIsBatchModalVisible(false);
       batchForm.resetFields();
     } catch (error) {

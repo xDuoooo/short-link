@@ -14,7 +14,7 @@
         <foreach collection="list" open="(" close=")" separator="," item="each">
             #{each}
         </foreach>
-        and enable_status=1 and del_flag = 1 and del_time = 0
+        and enable_status=1 and del_flag = 0
         group by gid
     </select>
 
@@ -29,9 +29,11 @@
         LEFT JOIN t_link_stats_today s ON t.gid = s.gid
         AND t.full_short_url = s.full_short_url
         AND s.date = CURDATE()
-        WHERE t.gid = #{gid}
-        AND t.enable_status = 1
+        WHERE t.enable_status = 1
         AND t.del_flag = 0
+        <if test="gid != null and gid != ''">
+            AND t.gid = #{gid}
+        </if>
         <choose>
             <when test="orderTag == 'todayPv'">
                 ORDER BY todayPv DESC

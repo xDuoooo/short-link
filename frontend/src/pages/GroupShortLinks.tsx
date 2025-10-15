@@ -578,9 +578,28 @@ const GroupShortLinks: React.FC = () => {
         alignItems: 'center',
         marginBottom: 24 
       }}>
-        <Title level={2} style={{ margin: 0 }}>
-          {groupName} - 短链接管理
-        </Title>
+        <div>
+          <Title level={2} style={{ margin: 0 }}>
+            {groupName} - 短链接管理
+          </Title>
+          <div style={{ 
+            marginTop: 8, 
+            color: '#666', 
+            fontSize: '14px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '16px'
+          }}>
+            <span>
+              <LinkOutlined style={{ marginRight: 4 }} />
+              共 {total} 个短链接
+            </span>
+            <span>
+              <EyeOutlined style={{ marginRight: 4 }} />
+              总访问量: {(shortLinks || []).reduce((sum, link) => sum + (link.totalPv || 0), 0)}
+            </span>
+          </div>
+        </div>
         <Space>
           <Button
             type="primary"

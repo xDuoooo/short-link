@@ -307,6 +307,11 @@ public class ShortLinkStatsServiceImpl implements ShortLinkStatsService {
         //封装访客类型统计量
         List<ShortLinkStatsUvRespDTO> uvTypeStats = new ArrayList<>();
         HashMap<String, Object> findUvTypeByShortLink = linkAccessLogsMapper.findGroupUvTypeCntByShortLink(shortLinkGroupStatsReqDTO);
+        if (findUvTypeByShortLink == null) {
+            findUvTypeByShortLink = new HashMap<>();
+            findUvTypeByShortLink.put("oldUserCnt", 0);
+            findUvTypeByShortLink.put("newUserCnt", 0);
+        }
         int oldUserCnt = Integer.parseInt(findUvTypeByShortLink.get("oldUserCnt").toString());
         int newUserCnt = Integer.parseInt(findUvTypeByShortLink.get("newUserCnt").toString());
         int uvSum = oldUserCnt + newUserCnt;
