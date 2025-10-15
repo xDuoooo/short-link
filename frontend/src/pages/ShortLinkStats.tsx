@@ -259,8 +259,12 @@ const ShortLinkStats: React.FC = () => {
                       data={statsData?.deviceStats || []}
                       cx="50%"
                       cy="50%"
-                      labelLine={false}
-                      label={({ device, ratio }) => `${device} ${(ratio * 100).toFixed(0)}%`}
+                      labelLine={true}
+                      label={({ device, ratio }) => {
+                        // 截断过长的设备名称
+                        const shortDevice = device.length > 10 ? device.substring(0, 10) + '...' : device;
+                        return `${shortDevice} ${(ratio * 100).toFixed(0)}%`;
+                      }}
                       outerRadius={80}
                       fill="#8884d8"
                       dataKey="cnt"
@@ -269,64 +273,33 @@ const ShortLinkStats: React.FC = () => {
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip />
+                    <Tooltip 
+                      formatter={(value, name, props) => [
+                        `${props.payload.device}: ${value} (${(props.payload.ratio * 100).toFixed(1)}%)`,
+                        '访问量'
+                      ]}
+                    />
                   </PieChart>
                 </ResponsiveContainer>
               </Card>
             </Col>
           </Row>
-          <Row gutter={[16, 16]}>
-            <Col xs={24} lg={12}>
-              <Card title="访问趋势" className="chart-container">
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={statsData?.daily || []}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis />
-                    <Tooltip />
-                    <Line type="monotone" dataKey="pv" stroke="#1890ff" name="访问量" />
-                    <Line type="monotone" dataKey="uv" stroke="#52c41a" name="独立访客" />
-                  </LineChart>
-                </ResponsiveContainer>
-              </Card>
-            </Col>
-            <Col xs={24} lg={12}>
-              <Card title="设备分布" className="chart-container">
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={statsData?.deviceStats || []}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ device, ratio }) => `${device} ${(ratio * 100).toFixed(0)}%`}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="cnt"
-                    >
-                      {(statsData?.deviceStats || []).map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
-              </Card>
-            </Col>
-          </Row>
-
           <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
             <Col xs={24} lg={8}>
               <Card title="浏览器分布" className="chart-container">
-                <ResponsiveContainer width="100%" height={250}>
+                <ResponsiveContainer width="100%" height={300}>
                   <PieChart>
                     <Pie
                       data={statsData?.browserStats || []}
                       cx="50%"
                       cy="50%"
-                      labelLine={false}
-                      label={({ browser, ratio }) => `${browser} ${(ratio * 100).toFixed(0)}%`}
-                      outerRadius={60}
+                      labelLine={true}
+                      label={({ browser, ratio }) => {
+                        // 截断过长的浏览器名称
+                        const shortBrowser = browser.length > 12 ? browser.substring(0, 12) + '...' : browser;
+                        return `${shortBrowser} ${(ratio * 100).toFixed(0)}%`;
+                      }}
+                      outerRadius={70}
                       fill="#8884d8"
                       dataKey="cnt"
                     >
@@ -334,22 +307,31 @@ const ShortLinkStats: React.FC = () => {
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip />
+                    <Tooltip 
+                      formatter={(value, name, props) => [
+                        `${props.payload.browser}: ${value} (${(props.payload.ratio * 100).toFixed(1)}%)`,
+                        '访问量'
+                      ]}
+                    />
                   </PieChart>
                 </ResponsiveContainer>
               </Card>
             </Col>
             <Col xs={24} lg={8}>
               <Card title="操作系统分布" className="chart-container">
-                <ResponsiveContainer width="100%" height={250}>
+                <ResponsiveContainer width="100%" height={300}>
                   <PieChart>
                     <Pie
                       data={statsData?.osStats || []}
                       cx="50%"
                       cy="50%"
-                      labelLine={false}
-                      label={({ os, ratio }) => `${os} ${(ratio * 100).toFixed(0)}%`}
-                      outerRadius={60}
+                      labelLine={true}
+                      label={({ os, ratio }) => {
+                        // 截断过长的操作系统名称
+                        const shortOs = os.length > 12 ? os.substring(0, 12) + '...' : os;
+                        return `${shortOs} ${(ratio * 100).toFixed(0)}%`;
+                      }}
+                      outerRadius={70}
                       fill="#8884d8"
                       dataKey="cnt"
                     >
@@ -357,22 +339,31 @@ const ShortLinkStats: React.FC = () => {
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip />
+                    <Tooltip 
+                      formatter={(value, name, props) => [
+                        `${props.payload.os}: ${value} (${(props.payload.ratio * 100).toFixed(1)}%)`,
+                        '访问量'
+                      ]}
+                    />
                   </PieChart>
                 </ResponsiveContainer>
               </Card>
             </Col>
             <Col xs={24} lg={8}>
               <Card title="网络类型分布" className="chart-container">
-                <ResponsiveContainer width="100%" height={250}>
+                <ResponsiveContainer width="100%" height={300}>
                   <PieChart>
                     <Pie
                       data={statsData?.networkStats || []}
                       cx="50%"
                       cy="50%"
-                      labelLine={false}
-                      label={({ network, ratio }) => `${network} ${(ratio * 100).toFixed(0)}%`}
-                      outerRadius={60}
+                      labelLine={true}
+                      label={({ network, ratio }) => {
+                        // 截断过长的网络类型名称
+                        const shortNetwork = network.length > 12 ? network.substring(0, 12) + '...' : network;
+                        return `${shortNetwork} ${(ratio * 100).toFixed(0)}%`;
+                      }}
+                      outerRadius={70}
                       fill="#8884d8"
                       dataKey="cnt"
                     >
@@ -380,7 +371,12 @@ const ShortLinkStats: React.FC = () => {
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip />
+                    <Tooltip 
+                      formatter={(value, name, props) => [
+                        `${props.payload.network}: ${value} (${(props.payload.ratio * 100).toFixed(1)}%)`,
+                        '访问量'
+                      ]}
+                    />
                   </PieChart>
                 </ResponsiveContainer>
               </Card>
