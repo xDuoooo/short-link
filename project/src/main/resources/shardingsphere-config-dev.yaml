@@ -49,7 +49,7 @@ rules:
         # 分表策略
         tableStrategy:
           standard:
-            shardingColumn: full_short_url
+            shardingColumn: gid
             shardingAlgorithmName: link_access_logs_table_hash_mod
       t_link_access_stats:
         # 真实数据节点 - 扩展到32个分表
@@ -57,7 +57,7 @@ rules:
         # 分表策略
         tableStrategy:
           standard:
-            shardingColumn: full_short_url
+            shardingColumn: gid
             shardingAlgorithmName: link_access_stats_table_hash_mod
       t_link_browser_stats:
         # 真实数据节点
@@ -65,7 +65,7 @@ rules:
         # 分表策略
         tableStrategy:
           standard:
-            shardingColumn: full_short_url
+            shardingColumn: gid
             shardingAlgorithmName: link_browser_stats_table_hash_mod
       t_link_device_stats:
         # 真实数据节点
@@ -73,7 +73,7 @@ rules:
         # 分表策略
         tableStrategy:
           standard:
-            shardingColumn: full_short_url
+            shardingColumn: gid
             shardingAlgorithmName: link_device_stats_table_hash_mod
       t_link_locale_stats:
         # 真实数据节点
@@ -81,7 +81,7 @@ rules:
         # 分表策略
         tableStrategy:
           standard:
-            shardingColumn: full_short_url
+            shardingColumn: gid
             shardingAlgorithmName: link_locale_stats_table_hash_mod
       t_link_network_stats:
         # 真实数据节点
@@ -89,7 +89,7 @@ rules:
         # 分表策略
         tableStrategy:
           standard:
-            shardingColumn: full_short_url
+            shardingColumn: gid
             shardingAlgorithmName: link_network_stats_table_hash_mod
       t_link_os_stats:
         # 真实数据节点
@@ -97,7 +97,7 @@ rules:
         # 分表策略
         tableStrategy:
           standard:
-            shardingColumn: full_short_url
+            shardingColumn: gid
             shardingAlgorithmName: link_os_stats_table_hash_mod
       t_user:
         # 真实数据节点
