@@ -39,8 +39,7 @@
         FROM
         t_link_network_stats lns
         WHERE
-        lns.full_short_url = #{requestParam.fullShortUrl}
-        AND lns.gid = #{requestParam.gid}
+        lns.gid = #{requestParam.gid}
         AND lns.date BETWEEN #{requestParam.startDate} AND #{requestParam.endDate}
         GROUP BY
         lns.network

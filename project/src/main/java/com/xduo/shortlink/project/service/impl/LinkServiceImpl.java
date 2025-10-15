@@ -219,6 +219,9 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
 
         baseMapper.update(linkDO, wrapper);
 
+        // 删除缓存，让下次访问时重新加载
+        stringRedisTemplate.delete(String.format(GOTO_SHORT_LINK_HASH_KEY, requestParam.getFullShortUrl()));
+
         // 0 永久有效 1自定义
         //过期 -> 不过期 删缓存
 
@@ -248,6 +251,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
         }
 
     }
+
 
     @Override
     public void restoreUrl(String shortUri, HttpServletRequest request, HttpServletResponse response) {
@@ -540,12 +544,29 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
 
     /**
      * 从Hash缓存中获取完整短链接信息
+     * 同时检查链接是否已过期
      */
     private Map<String, Object> getShortLinkInfoFromCache(String fullShortUrl) {
         try {
             Map<Object, Object> hashData = stringRedisTemplate.opsForHash().entries(String.format(GOTO_SHORT_LINK_HASH_KEY, fullShortUrl));
             if (hashData.isEmpty()) {
                 return null;
+            }
+            
+            // 检查链接是否已过期
+            String validDateStr = (String) hashData.get("validDate");
+            if (StrUtil.isNotBlank(validDateStr) && !"0".equals(validDateStr)) {
+                try {
+                    long validDate = Long.parseLong(validDateStr);
+                    if (validDate < System.currentTimeMillis()) {
+                        // 链接已过期，删除缓存并返回null
+                        log.info("短链接已过期，删除缓存: fullShortUrl={}, validDate={}", fullShortUrl, new Date(validDate));
+                        stringRedisTemplate.delete(String.format(GOTO_SHORT_LINK_HASH_KEY, fullShortUrl));
+                        return null;
+                    }
+                } catch (NumberFormatException e) {
+                    log.warn("解析缓存中的validDate失败: fullShortUrl={}, validDateStr={}", fullShortUrl, validDateStr);
+                }
             }
             
             Map<String, Object> result = new HashMap<>();

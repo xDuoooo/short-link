@@ -36,7 +36,7 @@ public interface LinkAccessStatsMapper extends BaseMapper<LinkAccessStatsDO> {
      * @param username
      * @return
      */
-    List<LinkAccessStatsDO> getOneLinkBaseDateBetweenDateOptimized(ShortLinkStatsReqDTO shortLinkStatsReqDTO, @Param("username") String username);
+    List<LinkAccessStatsDO> getOneLinkBaseDateBetweenDateOptimized(@Param("shortLinkStatsReqDTO") ShortLinkStatsReqDTO shortLinkStatsReqDTO, @Param("username") String username);
     /**
      * 获取一组短链接指定日期的基础数据
      * @param shortLinkGroupStatsReqDTO
@@ -52,7 +52,7 @@ public interface LinkAccessStatsMapper extends BaseMapper<LinkAccessStatsDO> {
     /**
      * 根据短链接获取指定日期内小时基础监控数据（优化版本）
      */
-    List<LinkAccessStatsDO> listHourStatsByShortLinkOptimized(ShortLinkStatsReqDTO shortLinkStatsReqDTO, @Param("username") String username);
+    List<LinkAccessStatsDO> listHourStatsByShortLinkOptimized(@Param("shortLinkStatsReqDTO") ShortLinkStatsReqDTO shortLinkStatsReqDTO, @Param("username") String username);
 
     /**
      * 根据短链接获取指定日期weekday基础监控数据
@@ -62,7 +62,7 @@ public interface LinkAccessStatsMapper extends BaseMapper<LinkAccessStatsDO> {
     /**
      * 根据短链接获取指定日期weekday基础监控数据（优化版本）
      */
-    List<LinkAccessStatsDO> listWeekdayStatsByShortLinkOptimized(ShortLinkStatsReqDTO requestParam, @Param("username") String username);
+    List<LinkAccessStatsDO> listWeekdayStatsByShortLinkOptimized(@Param("requestParam") ShortLinkStatsReqDTO requestParam, @Param("username") String username);
     /**
      * 根据一组短链接获取指定日期内小时基础监控数据
      */
