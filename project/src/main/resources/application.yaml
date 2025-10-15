@@ -13,6 +13,20 @@ spring:
       channel-topic:
         short-link-stats: 'short-link:stats-stream'
         short-link-stats-group: 'short-link:stats-stream:only-group'
+  kafka:
+    bootstrap-servers: localhost:9092
+    topic:
+      short-link-stats: short-link-stats
+    consumer:
+      group-id: short-link-stats-group
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      max-poll-records: 10
+    producer:
+      acks: all
+      retries: 3
+      enable-idempotence: true
+      max-in-flight-requests-per-connection: 1
   mvc:
     view:
       prefix: /templates/

@@ -113,5 +113,17 @@ public class ShortLinkPageRespDTO {
      */
     private Integer todayUip;
 
+    /**
+     * 删除标识 0：未删除 1：已删除
+     */
+    @TableField(value = "del_flag")
+    private Integer delFlag;
+
+    /**
+     * 删除时间
+     */
+    @TableField(value = "del_time")
+    private Long delTime;
+
 
 }

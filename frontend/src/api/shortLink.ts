@@ -22,6 +22,7 @@ export interface ShortLink {
   updateTime: string;
   delTime: number;
   delFlag: number;
+  favicon: string;
 }
 
 export interface ShortLinkPageResponse {
@@ -84,7 +85,9 @@ export interface UpdateShortLinkRequest {
   validDateType: number;
   validDate: string;
   describe: string;
+  originGid: string;
 }
+
 
 export interface GetShortLinksRequest {
   gid?: string;
@@ -132,4 +135,5 @@ export const shortLinkApi = {
       params: { gids: gids.join(',') },
     });
   },
+
 };

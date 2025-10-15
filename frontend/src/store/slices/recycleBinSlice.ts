@@ -46,7 +46,7 @@ const initialState: RecycleBinState = {
 export const fetchRecycleBinShortLinks = createAsyncThunk(
   'recycleBin/fetchRecycleBinShortLinks',
   async (params: {
-    gid?: string;
+    gidList?: string[];
     current?: number;
     size?: number;
     orderTag?: string;

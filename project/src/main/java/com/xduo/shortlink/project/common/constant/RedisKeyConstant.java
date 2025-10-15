@@ -5,9 +5,9 @@ package com.xduo.shortlink.project.common.constant;
  */
 public class RedisKeyConstant {
     /**
-     * 短链接跳转前缀Key
+     * 短链接完整信息Hash前缀Key
      */
-    public static final String GOTO_SHORT_LINK_KEY = "short-link:goto:%s";
+    public static final String GOTO_SHORT_LINK_HASH_KEY = "short-link:hash:%s";
 
     /**
      * 短链接跳转锁前缀Key

@@ -12,5 +12,5 @@ import org.apache.ibatis.annotations.Param;
 */
 public interface LinkStatsTodayMapper extends BaseMapper<LinkStatsTodayDO> {
 
-    void shortLinkTodayState(@Param("param") LinkStatsTodayDO linkStatsTodayDO);
+    void shortLinkTodayState(LinkStatsTodayDO linkStatsTodayDO);
 }

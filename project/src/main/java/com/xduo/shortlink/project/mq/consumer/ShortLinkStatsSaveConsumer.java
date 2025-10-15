@@ -93,12 +93,7 @@ public class ShortLinkStatsSaveConsumer  implements StreamListener<String, MapRe
             return;
         }
         try {
-            if (StrUtil.isBlank(gid)) {
-                LambdaQueryWrapper<LinkGoToDO> queryWrapper = Wrappers.lambdaQuery(LinkGoToDO.class)
-                        .eq(LinkGoToDO::getFullShortUrl, fullShortUrl);
-                LinkGoToDO shortLinkGotoDO = linkGoToMapper.selectOne(queryWrapper);
-                gid = shortLinkGotoDO.getGid();
-            }
+            // gid 现在直接从消息中获取，不需要查询数据库
             int hour = DateUtil.hour(date, true);
             Week week = DateUtil.dayOfWeekEnum(date);
             int weekValue = week.getIso8601Value();

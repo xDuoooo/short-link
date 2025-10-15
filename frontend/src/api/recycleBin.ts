@@ -32,7 +32,7 @@ export interface RecycleBinPageResponse {
 }
 
 export interface GetRecycleBinShortLinksRequest {
-  gid?: string;
+  gidList?: string[];
   current?: number;
   size?: number;
   orderTag?: string;

@@ -18,21 +18,21 @@
         update_time,
         del_flag)
         VALUES(
-        #{param.fullShortUrl},
-        #{param.gid},
-        #{param.date},
-        #{param.todayUv},
-        #{param.todayPv},
-        #{param.todayUip},
-        #{param.createTime},
-        #{param.updateTime},
-        #{param.delFlag}
+        #{fullShortUrl},
+        #{gid},
+        #{date},
+        #{todayUv},
+        #{todayPv},
+        #{todayUip},
+        #{createTime},
+        #{updateTime},
+        #{delFlag}
         )
         ON DUPLICATE KEY UPDATE
-        today_uv = today_uv + #{param.todayUv},
-        today_pv = today_pv + #{param.todayPv},
-        today_uip = today_uip + #{param.todayUip},
-        update_time = #{param.updateTime};
+        today_uv = today_uv + #{todayUv},
+        today_pv = today_pv + #{todayPv},
+        today_uip = today_uip + #{todayUip},
+        update_time = #{updateTime};
     </insert>
 </mapper>
 

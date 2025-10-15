@@ -17,6 +17,11 @@ public class ShortLinkStatsRecordDTO {
     private String fullShortUrl;
 
     /**
+     * 分组标识
+     */
+    private String gid;
+
+    /**
      * 访问用户IP
      */
     private String remoteAddr;

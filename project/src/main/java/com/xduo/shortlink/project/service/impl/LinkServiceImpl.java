@@ -20,8 +20,9 @@ import com.xduo.shortlink.project.config.GotoDomainWhiteListConfiguration;
 import com.xduo.shortlink.project.dao.entity.*;
 import com.xduo.shortlink.project.dao.mapper.*;
 import com.xduo.shortlink.project.dto.req.*;
+import com.xduo.shortlink.project.dto.req.ShortLinkStatsRecordDTO;
 import com.xduo.shortlink.project.dto.resp.*;
-import com.xduo.shortlink.project.mq.producer.ShortLinkStatsSaveProducer;
+import com.xduo.shortlink.project.mq.producer.ShortLinkStatsKafkaProducer;
 import com.xduo.shortlink.project.service.LinkService;
 import com.xduo.shortlink.project.service.LinkStatsTodayService;
 import com.xduo.shortlink.project.util.HashUtil;
@@ -93,7 +94,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
 
     private final GotoDomainWhiteListConfiguration gotoDomainWhiteListConfiguration;
 
-    private final ShortLinkStatsSaveProducer shortLinkStatsSaveProducer;
+    private final ShortLinkStatsKafkaProducer shortLinkStatsKafkaProducer;
 
     private final LinkStatsTodayService linkStatsTodayService;
 
@@ -147,7 +148,14 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
                 log.warn("短链接：{} 重复入库", fullShortUrl);
                 throw new ServiceException("短链接生成重复:" + fullShortUrl);
         }
-        stringRedisTemplate.opsForValue().set(String.format(GOTO_SHORT_LINK_KEY, fullShortUrl), shortLinkCreateReqDTO.getOriginUrl(), LinkUtil.getLinkCacheValidDate(shortLinkCreateReqDTO.getValidDate()), TimeUnit.MILLISECONDS);
+        // 存储完整信息到Hash缓存
+        Map<String, String> linkInfo = new HashMap<>();
+        linkInfo.put("originUrl", shortLinkCreateReqDTO.getOriginUrl());
+        linkInfo.put("gid", shortLinkCreateReqDTO.getGid());
+        linkInfo.put("enableStatus", "1");
+        linkInfo.put("validDate", shortLinkCreateReqDTO.getValidDate() != null ? String.valueOf(shortLinkCreateReqDTO.getValidDate().getTime()) : "0");
+        stringRedisTemplate.opsForHash().putAll(String.format(GOTO_SHORT_LINK_HASH_KEY, fullShortUrl), linkInfo);
+        stringRedisTemplate.expire(String.format(GOTO_SHORT_LINK_HASH_KEY, fullShortUrl), LinkUtil.getLinkCacheValidDate(shortLinkCreateReqDTO.getValidDate()), TimeUnit.MILLISECONDS);
         shortUriCreateCachePenetrationBloomFilter.add(fullShortUrl);
 
         return ShortLinkCreateRespDTO.builder()
@@ -345,25 +353,21 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
         //这里是 0 永久有效  -> 自定义有效期  且 自定义的有效期已经过期
         if (!Objects.equals(requestParam.getValidDateType(), selectedOne.getValidDateType()) && (requestParam.getValidDateType() == 1 && requestParam.getValidDate().before(new Date()))) {
             stringRedisTemplate.delete(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, selectedOne.getFullShortUrl()));
-            stringRedisTemplate.delete(String.format(GOTO_SHORT_LINK_KEY, selectedOne.getFullShortUrl()));
             return;
         }
         //自定义有效期已经过期的 -> 到 永久有效
         if (selectedOne.getValidDateType() == 1 && (selectedOne.getValidDate().before(new Date())) && requestParam.getValidDateType() == 0) {
             stringRedisTemplate.delete(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, selectedOne.getFullShortUrl()));
-            stringRedisTemplate.delete(String.format(GOTO_SHORT_LINK_KEY, selectedOne.getFullShortUrl()));
             return;
         }
         //自定义有效期 没过期 -> 过期
         if(selectedOne.getValidDateType() == 1 && requestParam.getValidDateType() == 1 && requestParam.getValidDate().before(new Date())&& selectedOne.getValidDate().after(new Date())){
             stringRedisTemplate.delete(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, selectedOne.getFullShortUrl()));
-            stringRedisTemplate.delete(String.format(GOTO_SHORT_LINK_KEY, selectedOne.getFullShortUrl()));
             return;
         }
         //自定义有效期 过期 -> 没过期
         if(selectedOne.getValidDateType() == 1 && requestParam.getValidDateType() == 1 && requestParam.getValidDate().after(new Date())&& selectedOne.getValidDate().before(new Date())){
             stringRedisTemplate.delete(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, selectedOne.getFullShortUrl()));
-            stringRedisTemplate.delete(String.format(GOTO_SHORT_LINK_KEY, selectedOne.getFullShortUrl()));
         }
 
     }
@@ -372,17 +376,33 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
     public void restoreUrl(String shortUri, HttpServletRequest request, HttpServletResponse response) {
 
         String serverName = request.getServerName();
-        String fullShortUrl = serverName + "/" + shortUri;
-        String originalLink = stringRedisTemplate.opsForValue().get(String.format(GOTO_SHORT_LINK_KEY, fullShortUrl));
-        if (StrUtil.isNotBlank(originalLink)) {
+        String fullShortUrl;
+        if(serverName.equals("localhost")){
+            fullShortUrl = "http://"+ serverName + ":8001/" + shortUri;
+        }else {
+            fullShortUrl = serverName + "/" + shortUri;
+        }
+        // 从Hash缓存获取完整信息
+        Map<String, Object> cacheInfo = getShortLinkInfoFromCache(fullShortUrl);
+        if (cacheInfo != null && !cacheInfo.isEmpty()) {
             try {
-                ShortLinkStatsRecordDTO statsRecord = buildLinkStatsRecordAndSetUser(fullShortUrl, request, response);
-                shortLinkStats(fullShortUrl, null, statsRecord);
-                response.sendRedirect(originalLink);
+                String gid = (String) cacheInfo.get("gid");
+                String originalLink = (String) cacheInfo.get("originUrl");
+                
+                if (StrUtil.isBlank(gid)) {
+                    // 如果缓存中没有gid，则查询数据库
+                    gid = getGidByFullShortUrl(fullShortUrl);
+                }
+                
+                if (StrUtil.isNotBlank(originalLink)) {
+                    ShortLinkStatsRecordDTO statsRecord = buildLinkStatsRecordAndSetUser(fullShortUrl, gid, request, response);
+                    shortLinkStats(fullShortUrl, gid, statsRecord);
+                    response.sendRedirect(originalLink);
+                    return;
+                }
             } catch (Exception e) {
                 throw new ServiceException("服务端异常:跳转失败");
             }
-            return;
         }
         //查的是域名+短链接
         boolean contains = shortUriCreateCachePenetrationBloomFilter.contains(fullShortUrl);
@@ -414,12 +434,22 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
         lock.lock();
         try {
             //双检 防止 大量请求在拿到锁前停滞
-            originalLink = stringRedisTemplate.opsForValue().get(String.format(GOTO_SHORT_LINK_KEY, fullShortUrl));
-            if (StrUtil.isNotBlank(originalLink)) {
-                ShortLinkStatsRecordDTO statsRecord = buildLinkStatsRecordAndSetUser(fullShortUrl, request, response);
-                shortLinkStats(fullShortUrl, null, statsRecord);
-                response.sendRedirect(originalLink);
-                return;
+            Map<String, Object> cacheInfo2 = getShortLinkInfoFromCache(fullShortUrl);
+            if (cacheInfo2 != null && !cacheInfo2.isEmpty()) {
+                String gid = (String) cacheInfo2.get("gid");
+                String originalLink = (String) cacheInfo2.get("originUrl");
+                
+                if (StrUtil.isBlank(gid)) {
+                    // 如果缓存中没有gid，则查询数据库
+                    gid = getGidByFullShortUrl(fullShortUrl);
+                }
+                
+                if (StrUtil.isNotBlank(originalLink)) {
+                    ShortLinkStatsRecordDTO statsRecord = buildLinkStatsRecordAndSetUser(fullShortUrl, gid, request, response);
+                    shortLinkStats(fullShortUrl, gid, statsRecord);
+                    response.sendRedirect(originalLink);
+                    return;
+                }
             }
 
 
@@ -454,8 +484,16 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
                 return;
             }
             try {
-                stringRedisTemplate.opsForValue().set(String.format(GOTO_SHORT_LINK_KEY, fullShortUrl), linkDO.getOriginUrl(), LinkUtil.getLinkCacheValidDate(linkDO.getValidDate()), TimeUnit.MILLISECONDS);
-                ShortLinkStatsRecordDTO statsRecord = buildLinkStatsRecordAndSetUser(fullShortUrl, request, response);
+                // 只使用Hash缓存存储完整信息
+                Map<String, String> linkInfo = new HashMap<>();
+                linkInfo.put("originUrl", linkDO.getOriginUrl());
+                linkInfo.put("gid", linkDO.getGid());
+                linkInfo.put("enableStatus", String.valueOf(linkDO.getEnableStatus()));
+                linkInfo.put("validDate", linkDO.getValidDate() != null ? String.valueOf(linkDO.getValidDate().getTime()) : "0");
+                stringRedisTemplate.opsForHash().putAll(String.format(GOTO_SHORT_LINK_HASH_KEY, fullShortUrl), linkInfo);
+                stringRedisTemplate.expire(String.format(GOTO_SHORT_LINK_HASH_KEY, fullShortUrl), LinkUtil.getLinkCacheValidDate(linkDO.getValidDate()), TimeUnit.MILLISECONDS);
+                
+                ShortLinkStatsRecordDTO statsRecord = buildLinkStatsRecordAndSetUser(fullShortUrl, linkDO.getGid(), request, response);
                 shortLinkStats(fullShortUrl, linkDO.getGid(), statsRecord);
                 response.sendRedirect(linkDO.getOriginUrl());
 
@@ -546,7 +584,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
     }
 
 
-    private ShortLinkStatsRecordDTO buildLinkStatsRecordAndSetUser(String fullShortUrl, HttpServletRequest request, HttpServletResponse response) {
+    private ShortLinkStatsRecordDTO buildLinkStatsRecordAndSetUser(String fullShortUrl, String gid, HttpServletRequest request, HttpServletResponse response) {
         Cookie[] cookies = request.getCookies();
         //有flag标识
         AtomicBoolean uvFirstFlag = new AtomicBoolean();
@@ -590,6 +628,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
                 .uvFirstFlag(uvFirstFlag.get())
                 .device(device)
                 .fullShortUrl(fullShortUrl)
+                .gid(gid)
                 .browser(browser)
                 .build();
 
@@ -603,7 +642,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
         producerMap.put("fullShortUrl", fullShortUrl);
         producerMap.put("gid", gid);
         producerMap.put("statsRecord", JSON.toJSONString(statsRecord));
-        shortLinkStatsSaveProducer.send(producerMap);
+        shortLinkStatsKafkaProducer.send(statsRecord);
     }
 
     private void verificationWhitelist(String originUrl) {
@@ -618,6 +657,46 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
         List<String> details = gotoDomainWhiteListConfiguration.getDetails();
         if (!details.contains(domain)) {
             throw new ClientException("演示环境为避免恶意攻击，请生成以下网站跳转链接：" + gotoDomainWhiteListConfiguration.getNames());
+        }
+    }
+
+
+    /**
+     * 从Hash缓存中获取完整短链接信息
+     */
+    private Map<String, Object> getShortLinkInfoFromCache(String fullShortUrl) {
+        try {
+            Map<Object, Object> hashData = stringRedisTemplate.opsForHash().entries(String.format(GOTO_SHORT_LINK_HASH_KEY, fullShortUrl));
+            if (hashData.isEmpty()) {
+                return null;
+            }
+            
+            Map<String, Object> result = new HashMap<>();
+            for (Map.Entry<Object, Object> entry : hashData.entrySet()) {
+                result.put(entry.getKey().toString(), entry.getValue());
+            }
+            return result;
+        } catch (Exception e) {
+            log.error("从Hash缓存获取短链接信息失败: fullShortUrl={}, error={}", fullShortUrl, e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
+     * 根据完整短链接获取分组ID
+     */
+    private String getGidByFullShortUrl(String fullShortUrl) {
+        try {
+            LambdaQueryWrapper<LinkDO> queryWrapper = Wrappers.lambdaQuery(LinkDO.class)
+                    .eq(LinkDO::getFullShortUrl, fullShortUrl)
+                    .eq(LinkDO::getDelFlag, 0)
+                    .select(LinkDO::getGid);
+            
+            LinkDO linkDO = baseMapper.selectOne(queryWrapper);
+            return linkDO != null ? linkDO.getGid() : null;
+        } catch (Exception e) {
+            log.error("查询短链接分组ID失败: fullShortUrl={}, error={}", fullShortUrl, e.getMessage(), e);
+            return null;
         }
     }
 }

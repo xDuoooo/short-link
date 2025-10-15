@@ -1,6 +1,7 @@
 package com.xduo.shortlink.project.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.date.DateTime;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -17,7 +18,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import static com.xduo.shortlink.project.common.constant.RedisKeyConstant.GOTO_IS_NULL_SHORT_LINK_KEY;
-import static com.xduo.shortlink.project.common.constant.RedisKeyConstant.GOTO_SHORT_LINK_KEY;
+import static com.xduo.shortlink.project.common.constant.RedisKeyConstant.GOTO_SHORT_LINK_HASH_KEY;
 
 /**
  * 回收站管理接口实现层
@@ -29,7 +30,7 @@ public class RecycleBinServiceImpl extends ServiceImpl<LinkMapper, LinkDO> imple
     private final StringRedisTemplate stringRedisTemplate;
 
     /**
-     * 保存到回收站
+     * 保存到回收站（删除短链接）
      *
      * @param recycleBinSaveReqDTO
      */
@@ -40,10 +41,11 @@ public class RecycleBinServiceImpl extends ServiceImpl<LinkMapper, LinkDO> imple
                 .eq(LinkDO::getFullShortUrl, recycleBinSaveReqDTO.getFullShortUrl())
                 .eq(LinkDO::getEnableStatus, 1)
                 .eq(LinkDO::getDelFlag, 0);
-        LinkDO linkDO = LinkDO.builder().enableStatus(0).build();
+        LinkDO linkDO = LinkDO.builder().enableStatus(0).delTime(DateTime.now().getTime()).build();
         update(linkDO, lambdaUpdateWrapper);
-        //删除缓存
-        stringRedisTemplate.delete(String.format(GOTO_SHORT_LINK_KEY, recycleBinSaveReqDTO.getFullShortUrl()));
+        //删除Hash缓存，设置空值缓存
+        stringRedisTemplate.delete(String.format(GOTO_SHORT_LINK_HASH_KEY, recycleBinSaveReqDTO.getFullShortUrl()));
+        stringRedisTemplate.opsForValue().set(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, recycleBinSaveReqDTO.getFullShortUrl()), "-", 30, java.util.concurrent.TimeUnit.SECONDS);
     }
 
     /**
@@ -56,10 +58,10 @@ public class RecycleBinServiceImpl extends ServiceImpl<LinkMapper, LinkDO> imple
                 .in(LinkDO::getGid, shortLinkPageReqDTO.getGidList())
                 .eq(LinkDO::getEnableStatus, 0)
                 .eq(BaseDO::getDelFlag, 0);
-        IPage<LinkDO> resultPage = baseMapper.selectPage(shortLinkPageReqDTO, lambdaQueryWrapper);
+        IPage<LinkDO> resultPage = baseMapper.selectPage(new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(shortLinkPageReqDTO.getCurrent(), shortLinkPageReqDTO.getSize()), lambdaQueryWrapper);
         return resultPage.convert(each -> {
             ShortLinkPageRespDTO bean = BeanUtil.toBean(each, ShortLinkPageRespDTO.class);
-            bean.setDomain("http://" + bean.getDomain());
+            bean.setDomain(bean.getDomain());
             return bean;
         });
     }
@@ -77,12 +79,13 @@ public class RecycleBinServiceImpl extends ServiceImpl<LinkMapper, LinkDO> imple
                 .eq(LinkDO::getDelFlag, 0);
         LinkDO linkDO = LinkDO.builder().enableStatus(1).build();
         update(linkDO, lambdaUpdateWrapper);
-        //删除缓存
+        //删除空值缓存，重新构建Hash缓存
         stringRedisTemplate.delete(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, recycleBinRecoverReqDTO.getFullShortUrl()));
+        rebuildShortLinkCache(recycleBinRecoverReqDTO.getFullShortUrl(), recycleBinRecoverReqDTO.getGid());
     }
 
     /**
-     * 彻底删除
+     * 软删除（从回收站彻底删除）
      * @param recycleBinRemoveReqDTO
      */
     @Override
@@ -90,14 +93,46 @@ public class RecycleBinServiceImpl extends ServiceImpl<LinkMapper, LinkDO> imple
         LambdaUpdateWrapper<LinkDO> updateWrapper = Wrappers.lambdaUpdate(LinkDO.class)
                 .eq(LinkDO::getFullShortUrl, recycleBinRemoveReqDTO.getFullShortUrl())
                 .eq(LinkDO::getGid, recycleBinRemoveReqDTO.getGid())
-                .eq(LinkDO::getEnableStatus, 1)
-                .eq(LinkDO::getDelTime, 0L)
-                .eq(LinkDO::getDelFlag, 0);
-        baseMapper.delete(updateWrapper);
-        LinkDO delShortLinkDO = LinkDO.builder()
-                .delTime(System.currentTimeMillis())
-                .build();
-        delShortLinkDO.setDelFlag(1);
-        baseMapper.update(delShortLinkDO, updateWrapper);
+                .eq(LinkDO::getEnableStatus, 0)  // 回收站中的记录是禁用状态
+                .eq(LinkDO::getDelFlag, 0)
+                .set(LinkDO::getDelFlag, 1)
+                .set(LinkDO::getDelTime, System.currentTimeMillis());
+        
+        int updateCount = baseMapper.update(null, updateWrapper);
+        if (updateCount == 0) {
+            throw new com.xduo.shortlink.project.common.convention.exception.ServiceException("短链接不存在或不在回收站中");
+        }
+        
+        // 删除相关缓存
+        stringRedisTemplate.delete(String.format(GOTO_SHORT_LINK_HASH_KEY, recycleBinRemoveReqDTO.getFullShortUrl()));
+        stringRedisTemplate.delete(String.format(GOTO_IS_NULL_SHORT_LINK_KEY, recycleBinRemoveReqDTO.getFullShortUrl()));
+    }
+    
+    /**
+     * 重新构建短链接缓存
+     */
+    private void rebuildShortLinkCache(String fullShortUrl, String gid) {
+        try {
+            LambdaQueryWrapper<LinkDO> queryWrapper = Wrappers.lambdaQuery(LinkDO.class)
+                    .eq(LinkDO::getFullShortUrl, fullShortUrl)
+                    .eq(LinkDO::getGid, gid)
+                    .eq(LinkDO::getDelFlag, 0)
+                    .eq(LinkDO::getEnableStatus, 1);
+            
+            LinkDO linkDO = baseMapper.selectOne(queryWrapper);
+            if (linkDO != null) {
+                java.util.Map<String, String> linkInfo = new java.util.HashMap<>();
+                linkInfo.put("originUrl", linkDO.getOriginUrl());
+                linkInfo.put("gid", linkDO.getGid());
+                linkInfo.put("enableStatus", String.valueOf(linkDO.getEnableStatus()));
+                linkInfo.put("validDate", linkDO.getValidDate() != null ? String.valueOf(linkDO.getValidDate().getTime()) : "0");
+                stringRedisTemplate.opsForHash().putAll(String.format(GOTO_SHORT_LINK_HASH_KEY, fullShortUrl), linkInfo);
+                stringRedisTemplate.expire(String.format(GOTO_SHORT_LINK_HASH_KEY, fullShortUrl), 
+                    com.xduo.shortlink.project.util.LinkUtil.getLinkCacheValidDate(linkDO.getValidDate()), 
+                    java.util.concurrent.TimeUnit.MILLISECONDS);
+            }
+        } catch (Exception e) {
+            // 记录日志但不抛出异常
+        }
     }
 }

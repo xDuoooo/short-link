@@ -225,6 +225,7 @@ const ShortLinkManagement: React.FC = () => {
         await dispatch(updateShortLink({
           ...formData,
           fullShortUrl: editingLink.fullShortUrl,
+          originGid: editingLink.gid,
         })).unwrap();
         message.success('更新成功');
       } else {
@@ -337,20 +338,10 @@ const ShortLinkManagement: React.FC = () => {
     },
     {
       title: '访问量',
-      dataIndex: 'clickNum',
-      key: 'clickNum',
+      dataIndex: 'totalPv',
+      key: 'totalPv',
       render: (text: number) => (
-        <Tag color="blue">{text}</Tag>
-      ),
-    },
-    {
-      title: '状态',
-      dataIndex: 'enableStatus',
-      key: 'enableStatus',
-      render: (status: number) => (
-        <Tag color={status === 0 ? 'green' : 'red'}>
-          {status === 0 ? '启用' : '禁用'}
-        </Tag>
+        <Tag color="blue">{text || 0}</Tag>
       ),
     },
     {
@@ -381,7 +372,7 @@ const ShortLinkManagement: React.FC = () => {
             访问
           </Button>
           <Popconfirm
-            title="确定要删除这个短链接吗？"
+            title="确定要将这个短链接移到回收站吗？"
             onConfirm={() => handleDelete(record)}
             okText="确定"
             cancelText="取消"
@@ -391,7 +382,7 @@ const ShortLinkManagement: React.FC = () => {
               danger
               icon={<DeleteOutlined />}
             >
-              删除
+              移到回收站
             </Button>
           </Popconfirm>
         </Space>
@@ -474,6 +465,17 @@ const ShortLinkManagement: React.FC = () => {
             name="validDate"
             label="有效期"
             dependencies={['validDateType']}
+            rules={[
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  const validDateType = getFieldValue('validDateType');
+                  if (validDateType === 1 && !value) {
+                    return Promise.reject(new Error('请选择有效期!'));
+                  }
+                  return Promise.resolve();
+                },
+              }),
+            ]}
           >
             <Form.Item shouldUpdate={(prevValues, currentValues) => prevValues.validDateType !== currentValues.validDateType} noStyle>
               {({ getFieldValue }) => (
@@ -563,6 +565,17 @@ const ShortLinkManagement: React.FC = () => {
             name="validDate"
             label="有效期"
             dependencies={['validDateType']}
+            rules={[
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  const validDateType = getFieldValue('validDateType');
+                  if (validDateType === 1 && !value) {
+                    return Promise.reject(new Error('请选择有效期!'));
+                  }
+                  return Promise.resolve();
+                },
+              }),
+            ]}
           >
             <Form.Item shouldUpdate={(prevValues, currentValues) => prevValues.validDateType !== currentValues.validDateType} noStyle>
               {({ getFieldValue }) => (
@@ -608,12 +621,6 @@ const ShortLinkManagement: React.FC = () => {
             onClick={handleCreate}
           >
             创建短链接
-          </Button>
-          <Button
-            icon={<DownloadOutlined />}
-            onClick={handleBatchCreate}
-          >
-            批量创建
           </Button>
         </Space>
       </div>
@@ -743,6 +750,17 @@ const ShortLinkManagement: React.FC = () => {
             name="validDate"
             label="有效期"
             dependencies={['validDateType']}
+            rules={[
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  const validDateType = getFieldValue('validDateType');
+                  if (validDateType === 1 && !value) {
+                    return Promise.reject(new Error('请选择有效期!'));
+                  }
+                  return Promise.resolve();
+                },
+              }),
+            ]}
           >
             <Form.Item shouldUpdate={(prevValues, currentValues) => prevValues.validDateType !== currentValues.validDateType} noStyle>
               {({ getFieldValue }) => (

@@ -75,4 +75,5 @@ public interface LinkService extends IService<LinkDO> {
      * @param shortLinkStatsRecord 短链接统计实体参数
      */
     void shortLinkStats(String fullShortUrl, String gid, ShortLinkStatsRecordDTO shortLinkStatsRecord);
+
 }

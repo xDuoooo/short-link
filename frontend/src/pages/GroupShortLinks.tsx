@@ -25,6 +25,7 @@ import {
   EyeOutlined,
   DownloadOutlined,
   ArrowLeftOutlined,
+  LinkOutlined,
 } from '@ant-design/icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
@@ -36,6 +37,7 @@ import {
   updateShortLink,
   getTitleByUrl,
 } from '../store/slices/shortLinkSlice';
+import { shortLinkApi } from '../api/shortLink';
 import { saveToRecycleBin } from '../store/slices/recycleBinSlice';
 import dayjs from 'dayjs';
 
@@ -131,18 +133,32 @@ const GroupShortLinks: React.FC = () => {
     message.success('已复制到剪贴板');
   };
 
+
   const handleSubmit = async (values: ShortLinkFormData) => {
     try {
+      console.log('表单提交值:', values);
+      console.log('validDateType:', values.validDateType);
+      console.log('validDate:', values.validDate);
+      
+      // 验证有效期
+      if (values.validDateType === 1 && !values.validDate) {
+        message.error('请选择有效期!');
+        return;
+      }
+
       const formData = {
         ...values,
         createdType: 1, // 控制台创建
-        validDate: values.validDate ? dayjs(values.validDate).format('YYYY-MM-DD HH:mm:ss') : '',
+        // 如果是永久有效（validDateType = 0），则设置 validDate 为 null
+        // 如果是自定义有效期（validDateType = 1），则格式化日期
+        validDate: values.validDateType === 0 ? null : (values.validDate ? dayjs(values.validDate).format('YYYY-MM-DD HH:mm:ss') : ''),
       };
 
       if (editingLink) {
         await dispatch(updateShortLink({
           ...formData,
           fullShortUrl: editingLink.fullShortUrl,
+          originGid: editingLink.gid, // 添加原始分组ID
         })).unwrap();
         message.success('更新成功');
       } else {
@@ -159,6 +175,16 @@ const GroupShortLinks: React.FC = () => {
 
   const handleBatchSubmit = async (values: BatchCreateFormData) => {
     try {
+      console.log('批量表单提交值:', values);
+      console.log('validDateType:', values.validDateType);
+      console.log('validDate:', values.validDate);
+      
+      // 验证有效期
+      if (values.validDateType === 1 && !values.validDate) {
+        message.error('请选择有效期!');
+        return;
+      }
+
       const formData = {
         ...values,
         createdType: 1, // 控制台创建
@@ -187,12 +213,33 @@ const GroupShortLinks: React.FC = () => {
 
   const columns = [
     {
-      title: '短链接',
+      title: (
+        <span>
+          <LinkOutlined style={{ marginRight: 8 }} />
+          短链接
+        </span>
+      ),
       dataIndex: 'fullShortUrl',
       key: 'fullShortUrl',
-      render: (text: string) => (
+      width: 300,
+      render: (text: string, record: any) => (
         <div>
-          <div style={{ fontWeight: 500, marginBottom: 4 }}>
+          <div style={{ fontWeight: 500, marginBottom: 4, display: 'flex', alignItems: 'center' }}>
+            {record.favicon && (
+              <img 
+                src={record.favicon} 
+                alt="favicon" 
+                style={{ 
+                  width: 16, 
+                  height: 16, 
+                  marginRight: 8,
+                  borderRadius: 2
+                }}
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+            )}
             <a 
               href={text} 
               target="_blank" 
@@ -237,20 +284,11 @@ const GroupShortLinks: React.FC = () => {
     },
     {
       title: '访问量',
-      dataIndex: 'clickNum',
-      key: 'clickNum',
+      dataIndex: 'totalPv',
+      key: 'totalPv',
+      width: 80,
       render: (text: number) => (
-        <Tag color="blue">{text}</Tag>
-      ),
-    },
-    {
-      title: '状态',
-      dataIndex: 'enableStatus',
-      key: 'enableStatus',
-      render: (status: number) => (
-        <Tag color={status === 0 ? 'green' : 'red'}>
-          {status === 0 ? '启用' : '禁用'}
-        </Tag>
+        <Tag color="blue">{text || 0}</Tag>
       ),
     },
     {
@@ -260,9 +298,20 @@ const GroupShortLinks: React.FC = () => {
       render: (text: string) => new Date(text).toLocaleString(),
     },
     {
+      title: '过期时间',
+      dataIndex: 'validDate',
+      key: 'validDate',
+      render: (text: string) => {
+        if (!text || text === '2099-12-31 23:59:59') {
+          return '永久';
+        }
+        return new Date(text).toLocaleString();
+      },
+    },
+    {
       title: '操作',
       key: 'action',
-      width: 200,
+      width: 280,
       render: (_: any, record: any) => (
         <Space>
           <Button
@@ -273,7 +322,7 @@ const GroupShortLinks: React.FC = () => {
             编辑
           </Button>
           <Popconfirm
-            title="确定要删除这个短链接吗？"
+            title="确定要将这个短链接移到回收站吗？"
             onConfirm={() => handleDelete(record)}
             okText="确定"
             cancelText="取消"
@@ -283,7 +332,7 @@ const GroupShortLinks: React.FC = () => {
               danger
               icon={<DeleteOutlined />}
             >
-              删除
+              移到回收站
             </Button>
           </Popconfirm>
         </Space>
@@ -300,6 +349,7 @@ const GroupShortLinks: React.FC = () => {
           form={form}
           layout="vertical"
           onFinish={handleSubmit}
+          initialValues={{ validDateType: 0 }}
         >
           <Form.Item name="gid" style={{ display: 'none' }}>
             <Input />
@@ -349,21 +399,21 @@ const GroupShortLinks: React.FC = () => {
             </Select>
           </Form.Item>
 
-          <Form.Item
-            name="validDate"
-            label="有效期"
-            dependencies={['validDateType']}
-          >
-            <Form.Item shouldUpdate={(prevValues, currentValues) => prevValues.validDateType !== currentValues.validDateType} noStyle>
-              {({ getFieldValue }) => (
+          <Form.Item shouldUpdate={(prevValues, currentValues) => prevValues.validDateType !== currentValues.validDateType} noStyle>
+            {({ getFieldValue }) => (
+              <Form.Item
+                name="validDate"
+                label="有效期"
+                dependencies={['validDateType']}
+              >
                 <DatePicker
                   showTime
                   placeholder="请选择有效期"
                   style={{ width: '100%' }}
                   disabled={getFieldValue('validDateType') === 0}
                 />
-              )}
-            </Form.Item>
+              </Form.Item>
+            )}
           </Form.Item>
 
           <Form.Item
@@ -407,6 +457,7 @@ const GroupShortLinks: React.FC = () => {
           form={batchForm}
           layout="vertical"
           onFinish={handleBatchSubmit}
+          initialValues={{ validDateType: 0 }}
         >
           <Form.Item name="gid" style={{ display: 'none' }}>
             <Input />
@@ -446,17 +497,21 @@ const GroupShortLinks: React.FC = () => {
             </Select>
           </Form.Item>
 
-          <Form.Item
-            name="validDate"
-            label="有效期"
-            dependencies={['validDateType']}
-          >
-            <DatePicker
-              showTime
-              placeholder="请选择有效期"
-              style={{ width: '100%' }}
-              disabled={batchForm.getFieldValue('validDateType') === 0}
-            />
+          <Form.Item shouldUpdate={(prevValues, currentValues) => prevValues.validDateType !== currentValues.validDateType} noStyle>
+            {({ getFieldValue }) => (
+              <Form.Item
+                name="validDate"
+                label="有效期"
+                dependencies={['validDateType']}
+              >
+                <DatePicker
+                  showTime
+                  placeholder="请选择有效期"
+                  style={{ width: '100%' }}
+                  disabled={getFieldValue('validDateType') === 0}
+                />
+              </Form.Item>
+            )}
           </Form.Item>
 
           <Form.Item
@@ -533,13 +588,6 @@ const GroupShortLinks: React.FC = () => {
             onClick={handleCreate}
           >
             创建短链接
-          </Button>
-          <Button
-            type="primary"
-            icon={<DownloadOutlined />}
-            onClick={handleBatchCreate}
-          >
-            批量创建
           </Button>
         </Space>
       </div>

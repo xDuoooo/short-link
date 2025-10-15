@@ -23,6 +23,7 @@ export interface ShortLink {
   updateTime: string;
   delTime: number;
   delFlag: number;
+  favicon: string;
 }
 
 export interface ShortLinkState {
@@ -97,6 +98,7 @@ export const updateShortLink = createAsyncThunk(
     validDateType: number;
     validDate: string;
     describe: string;
+    originGid: string;
   }) => {
     await shortLinkApi.updateShortLink(data);
   }

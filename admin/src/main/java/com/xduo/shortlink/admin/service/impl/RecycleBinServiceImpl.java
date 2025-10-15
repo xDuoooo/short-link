@@ -34,7 +34,22 @@ public class RecycleBinServiceImpl implements RecycleBinService {
         if(CollUtil.isEmpty(groupDOS)){
             throw new ClientException("当前用户没有分组");
         }
-        requestParam.setGidList(groupDOS.stream().map(GroupDO::getGid).toList());
+        
+        // 如果前端没有传递gid参数或者传递了所有分组的标识，则查询所有分组
+        if (CollUtil.isEmpty(requestParam.getGidList())) {
+            requestParam.setGidList(groupDOS.stream().map(GroupDO::getGid).toList());
+        } else {
+            // 验证前端传递的gid是否属于当前用户
+            List<String> userGidList = groupDOS.stream().map(GroupDO::getGid).toList();
+            List<String> validGidList = requestParam.getGidList().stream()
+                    .filter(userGidList::contains)
+                    .toList();
+            if (CollUtil.isEmpty(validGidList)) {
+                throw new ClientException("没有权限访问指定的分组");
+            }
+            requestParam.setGidList(validGidList);
+        }
+        
         return shortLinkActualRemoteService.pageRecycleBinShortLink(requestParam);
     }
 }

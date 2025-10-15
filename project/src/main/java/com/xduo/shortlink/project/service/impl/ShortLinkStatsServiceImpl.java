@@ -93,11 +93,15 @@ public class ShortLinkStatsServiceImpl implements ShortLinkStatsService {
         List<ShortLinkStatsTopIpRespDTO> topIpStats = new ArrayList<>();
         List<HashMap<String, Object>> listTopIpByShortLink = linkAccessLogsMapper.listTopIpByShortLink(shortLinkStatsReqDTO);
         listTopIpByShortLink.forEach(each -> {
-            ShortLinkStatsTopIpRespDTO statsTopIpRespDTO = ShortLinkStatsTopIpRespDTO.builder()
-                    .ip(each.get("ip").toString())
-                    .cnt(Integer.parseInt(each.get("count").toString()))
-                    .build();
-            topIpStats.add(statsTopIpRespDTO);
+            Object ipObj = each.get("ip");
+            Object countObj = each.get("count");
+            if (ipObj != null && countObj != null) {
+                ShortLinkStatsTopIpRespDTO statsTopIpRespDTO = ShortLinkStatsTopIpRespDTO.builder()
+                        .ip(ipObj.toString())
+                        .cnt(Integer.parseInt(countObj.toString()))
+                        .build();
+                topIpStats.add(statsTopIpRespDTO);
+            }
         });
         //封装星期day统计量
         List<LinkAccessStatsDO> listWeekdayStatsByShortLinkDO = linkAccessStatsMapper.listWeekdayStatsByShortLink(shortLinkStatsReqDTO);
@@ -253,11 +257,15 @@ public class ShortLinkStatsServiceImpl implements ShortLinkStatsService {
         List<ShortLinkStatsTopIpRespDTO> topIpStats = new ArrayList<>();
         List<HashMap<String, Object>> listGroupTopIpByShortLink = linkAccessLogsMapper.listGroupTopIpByShortLink(shortLinkGroupStatsReqDTO);
         listGroupTopIpByShortLink.forEach(each -> {
-            ShortLinkStatsTopIpRespDTO statsTopIpRespDTO = ShortLinkStatsTopIpRespDTO.builder()
-                    .ip(each.get("ip").toString())
-                    .cnt(Integer.parseInt(each.get("count").toString()))
-                    .build();
-            topIpStats.add(statsTopIpRespDTO);
+            Object ipObj = each.get("ip");
+            Object countObj = each.get("count");
+            if (ipObj != null && countObj != null) {
+                ShortLinkStatsTopIpRespDTO statsTopIpRespDTO = ShortLinkStatsTopIpRespDTO.builder()
+                        .ip(ipObj.toString())
+                        .cnt(Integer.parseInt(countObj.toString()))
+                        .build();
+                topIpStats.add(statsTopIpRespDTO);
+            }
         });
         //封装星期day统计量
         List<LinkAccessStatsDO> listWeekdayStatsByShortLinkDO = linkAccessStatsMapper.listGroupWeekdayStatsByShortLink(shortLinkGroupStatsReqDTO);

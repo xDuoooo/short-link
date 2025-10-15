@@ -69,4 +69,5 @@ public class ShortLinkController {
         return shortLinkActualRemoteService.listGroupShortLinkCount(gids);
     }
 
+
 }
