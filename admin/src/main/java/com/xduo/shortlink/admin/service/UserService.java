@@ -5,6 +5,10 @@ import com.xduo.shortlink.admin.dao.entity.UserDO;
 import com.xduo.shortlink.admin.dto.req.UserLoginReqDTO;
 import com.xduo.shortlink.admin.dto.req.UserRegisterReqDTO;
 import com.xduo.shortlink.admin.dto.req.UserUpdateReqDTO;
+import com.xduo.shortlink.admin.dto.req.UserChangePasswordReqDTO;
+import com.xduo.shortlink.admin.dto.req.SendEmailCodeReqDTO;
+import com.xduo.shortlink.admin.dto.req.SendForgotPasswordEmailReqDTO;
+import com.xduo.shortlink.admin.dto.req.ForgotPasswordReqDTO;
 import com.xduo.shortlink.admin.dto.resp.UserLoginRespDTO;
 import com.xduo.shortlink.admin.dto.resp.UserRespDTO;
 
@@ -60,4 +64,28 @@ public interface UserService extends IService<UserDO> {
      * @return
      */
     void logout(String username, String token);
+
+    /**
+     * 修改密码
+     * @param changePasswordReqDTO
+     */
+    void changePassword(UserChangePasswordReqDTO changePasswordReqDTO);
+
+    /**
+     * 发送邮箱验证码
+     * @param sendEmailCodeReqDTO
+     */
+    void sendEmailCode(SendEmailCodeReqDTO sendEmailCodeReqDTO);
+
+    /**
+     * 发送找回密码邮箱验证码
+     * @param sendForgotPasswordEmailReqDTO
+     */
+    void sendForgotPasswordEmailCode(SendForgotPasswordEmailReqDTO sendForgotPasswordEmailReqDTO);
+
+    /**
+     * 找回密码
+     * @param forgotPasswordReqDTO
+     */
+    void forgotPassword(ForgotPasswordReqDTO forgotPasswordReqDTO);
 }

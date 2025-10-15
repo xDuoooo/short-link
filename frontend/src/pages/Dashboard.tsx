@@ -1,12 +1,27 @@
 import React, { useEffect, useState } from 'react';
-import { Row, Col, Card, Statistic, Typography, Spin } from 'antd';
-import { LinkOutlined, TeamOutlined, EyeOutlined, FireOutlined, BarChartOutlined, TrophyOutlined } from '@ant-design/icons';
+import { Row, Col, Card, Statistic, Typography, Spin, Avatar } from 'antd';
+import { LinkOutlined, TeamOutlined, EyeOutlined, FireOutlined, BarChartOutlined, TrophyOutlined, StarOutlined, ClockCircleOutlined, FolderOutlined, GlobalOutlined } from '@ant-design/icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../store';
 import { fetchGroups } from '../store/slices/groupSlice';
 import { fetchShortLinks, getGroupShortLinkCount } from '../store/slices/shortLinkSlice';
 
 const { Title } = Typography;
+
+// Favicon组件
+const FaviconDisplay: React.FC<{ favicon?: string; size?: number }> = ({ favicon, size = 16 }) => {
+  if (!favicon) {
+    return <Avatar size={size} icon={<GlobalOutlined />} />;
+  }
+
+  return (
+    <Avatar 
+      size={size} 
+      src={favicon}
+      icon={<GlobalOutlined />}
+    />
+  );
+};
 
 const Dashboard: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -51,7 +66,7 @@ const Dashboard: React.FC = () => {
   // 找出最热门的短链接
   const topShortLink = (shortLinks || []).reduce((max, link) => 
     (link.totalPv || 0) > (max.totalPv || 0) ? link : max, 
-    { totalPv: 0, describe: '暂无', fullShortUrl: '' }
+    { totalPv: 0, describe: '暂无', fullShortUrl: '', favicon: '' }
   );
 
   // 按短链接数量排序分组
@@ -119,8 +134,8 @@ const Dashboard: React.FC = () => {
       </Row>
 
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-        <Col xs={24} sm={12} lg={6}>
-          <Card className="stats-card">
+        <Col xs={24} sm={12} lg={8}>
+          <Card className="stats-card" style={{ height: '100%' }}>
             <Statistic
               title="活跃短链接"
               value={activeShortLinks}
@@ -129,8 +144,8 @@ const Dashboard: React.FC = () => {
             />
           </Card>
         </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card className="stats-card">
+        <Col xs={24} sm={12} lg={8}>
+          <Card className="stats-card" style={{ height: '100%' }}>
             <Statistic
               title="平均访问量"
               value={avgPvPerLink}
@@ -139,22 +154,26 @@ const Dashboard: React.FC = () => {
             />
           </Card>
         </Col>
-        <Col xs={24} sm={12} lg={12}>
-          <Card className="stats-card">
-            <div style={{ color: '#fff' }}>
-              <div style={{ fontSize: 14, marginBottom: 8, opacity: 0.8 }}>
+        <Col xs={24} sm={24} lg={8}>
+          <Card className="stats-card" style={{ height: '100%' }}>
+            <div style={{ color: '#fff', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <div style={{ fontSize: 14, marginBottom: 8, opacity: 0.8, display: 'flex', alignItems: 'center' }}>
+                <StarOutlined style={{ marginRight: 6, color: '#ffd700' }} />
                 最热门短链接
               </div>
               <div style={{ fontSize: 16, fontWeight: 500 }}>
                 {topShortLink.totalPv > 0 ? (
-                  <>
-                    <div style={{ marginBottom: 4 }}>
-                      {topShortLink.describe || '无描述'}
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
+                      <FaviconDisplay favicon={topShortLink.favicon} size={20} />
+                      <div style={{ marginLeft: 8, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
+                        {topShortLink.describe || '无描述'}
+                      </div>
                     </div>
-                    <div style={{ fontSize: 12, opacity: 0.7 }}>
+                    <div style={{ fontSize: 12, opacity: 0.7, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginLeft: 28 }}>
                       {topShortLink.fullShortUrl} - {topShortLink.totalPv} 次访问
                     </div>
-                  </>
+                  </div>
                 ) : (
                   <div style={{ opacity: 0.7 }}>暂无访问数据</div>
                 )}
@@ -166,7 +185,15 @@ const Dashboard: React.FC = () => {
 
       <Row gutter={[16, 16]}>
         <Col xs={24} lg={12}>
-          <Card title="最近创建的短链接" className="chart-container">
+          <Card 
+            title={
+              <span style={{ display: 'flex', alignItems: 'center' }}>
+                <ClockCircleOutlined style={{ marginRight: 8, color: '#1890ff' }} />
+                最近创建的短链接
+              </span>
+            } 
+            className="chart-container"
+          >
             {shortLinks.length > 0 ? (
               <div>
                 {shortLinks.slice(0, 5).map((link) => (
@@ -177,12 +204,15 @@ const Dashboard: React.FC = () => {
                     justifyContent: 'space-between',
                     alignItems: 'center'
                   }}>
-                    <div>
-                      <div style={{ fontWeight: 500, marginBottom: 4 }}>
-                        {link.describe || '无描述'}
-                      </div>
-                      <div style={{ color: '#666', fontSize: 12 }}>
-                        {link.fullShortUrl}
+                    <div style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+                      <FaviconDisplay favicon={link.favicon} size={20} />
+                      <div style={{ marginLeft: 8, flex: 1 }}>
+                        <div style={{ fontWeight: 500, marginBottom: 4 }}>
+                          {link.describe || '无描述'}
+                        </div>
+                        <div style={{ color: '#666', fontSize: 12 }}>
+                          {link.fullShortUrl}
+                        </div>
                       </div>
                     </div>
                     <div style={{ textAlign: 'right' }}>
@@ -215,7 +245,15 @@ const Dashboard: React.FC = () => {
           </Card>
         </Col>
         <Col xs={24} lg={12}>
-          <Card title="分组概览（按短链接数量排序）" className="chart-container">
+          <Card 
+            title={
+              <span style={{ display: 'flex', alignItems: 'center' }}>
+                <FolderOutlined style={{ marginRight: 8, color: '#52c41a' }} />
+                分组概览（按短链接数量排序）
+              </span>
+            } 
+            className="chart-container"
+          >
             {sortedGroups.length > 0 ? (
               <div>
                 {sortedGroups.slice(0, 5).map((group) => (

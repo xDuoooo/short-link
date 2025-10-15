@@ -105,6 +105,16 @@ const Login: React.FC = () => {
               登录
             </Button>
           </Form.Item>
+
+          <Form.Item style={{ textAlign: 'center', marginBottom: '0' }}>
+            <Button
+              type="link"
+              onClick={() => navigate('/forgot-password')}
+              style={{ padding: '0' }}
+            >
+              忘记密码？
+            </Button>
+          </Form.Item>
         </Form>
       ),
     },

@@ -52,7 +52,7 @@ export const fetchRecycleBinShortLinks = createAsyncThunk(
     orderTag?: string;
   }) => {
     const response = await recycleBinApi.getRecycleBinShortLinks(params);
-    return response;
+    return { ...response, currentPage: params.current || 1, pageSize: params.size || 10 };
   }
 );
 
@@ -102,6 +102,8 @@ const recycleBinSlice = createSlice({
         state.loading = false;
         state.shortLinks = action.payload?.records || [];
         state.total = action.payload?.total || 0;
+        state.currentPage = action.payload?.currentPage || 1;
+        state.pageSize = action.payload?.pageSize || 10;
       })
       .addCase(fetchRecycleBinShortLinks.rejected, (state, action) => {
         state.loading = false;

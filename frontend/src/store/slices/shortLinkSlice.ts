@@ -56,7 +56,7 @@ export const fetchShortLinks = createAsyncThunk(
     includeRecycle?: boolean;
   }) => {
     const response = await shortLinkApi.getShortLinks(params);
-    return response;
+    return { ...response, currentPage: params.current || 1, pageSize: params.size || 10 };
   }
 );
 
@@ -155,6 +155,8 @@ const shortLinkSlice = createSlice({
         state.loading = false;
         state.shortLinks = action.payload?.records || [];
         state.total = action.payload?.total || 0;
+        state.currentPage = action.payload?.currentPage || 1;
+        state.pageSize = action.payload?.pageSize || 10;
       })
       .addCase(fetchShortLinks.rejected, (state, action) => {
         state.loading = false;

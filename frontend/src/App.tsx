@@ -5,12 +5,14 @@ import { AppDispatch, RootState } from './store';
 import { checkLogin, getUserInfo } from './store/slices/authSlice';
 import Layout from './components/Layout';
 import Login from './pages/Login';
+import ForgotPassword from './pages/ForgotPassword';
 import Dashboard from './pages/Dashboard';
 import GroupManagement from './pages/GroupManagement';
 import GroupShortLinks from './pages/GroupShortLinks';
 import ShortLinkStats from './pages/ShortLinkStats';
 import RecycleBin from './pages/RecycleBin';
 import UserProfile from './pages/UserProfile';
+import ChangePassword from './pages/ChangePassword';
 
 const App: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -63,6 +65,7 @@ const App: React.FC = () => {
     return (
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     );
@@ -78,6 +81,7 @@ const App: React.FC = () => {
         <Route path="/stats" element={<ShortLinkStats />} />
         <Route path="/recycle" element={<RecycleBin />} />
         <Route path="/profile" element={<UserProfile />} />
+        <Route path="/change-password" element={<ChangePassword />} />
         <Route path="/login" element={<Navigate to="/dashboard" replace />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>

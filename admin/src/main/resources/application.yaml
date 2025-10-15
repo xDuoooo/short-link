@@ -14,6 +14,18 @@ spring:
     nacos:
       discovery:
         server-addr: 127.0.0.1:8848
+  mail:
+    host: smtp.qq.com
+    port: 587
+    username: ${EMAIL_USERNAME:1257180096@qq.com}
+    password: ${EMAIL_PASSWORD:rjwreidpzcesjjjj}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
 
 short-link:
   group:
@@ -29,3 +41,10 @@ minio:
   access-key: minioadmin
   secret-key: minioadmin123
   bucket-name: short-link-avatars
+
+# 邮件配置
+
+# 邮件发送配置
+email:
+  from: ${EMAIL_USERNAME:1257180096@qq.com}
+  from-name: xDuo-短链接系统

@@ -15,7 +15,6 @@ import {
   Col,
   Statistic,
   Empty,
-  Modal,
 } from 'antd';
 import {
   RestOutlined,
@@ -23,7 +22,7 @@ import {
   CopyOutlined,
   ReloadOutlined,
   ClearOutlined,
-  ExclamationCircleOutlined,
+  LinkOutlined,
 } from '@ant-design/icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../store';
@@ -39,8 +38,6 @@ const { Option } = Select;
 
 const RecycleBin: React.FC = () => {
   const [selectedGroup, setSelectedGroup] = useState<string>('all');
-  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-  const [batchModalVisible, setBatchModalVisible] = useState<boolean>(false);
   const dispatch = useDispatch<AppDispatch>();
   const { shortLinks, total, loading, currentPage, pageSize } = useSelector((state: RootState) => state.recycleBin);
   const { groups } = useSelector((state: RootState) => state.group);
@@ -112,61 +109,6 @@ const RecycleBin: React.FC = () => {
     dispatch(fetchRecycleBinShortLinks({ current: 1, size: pageSize }));
   };
 
-  const handleBatchRecover = async () => {
-    if (selectedRowKeys.length === 0) {
-      message.warning('请选择要恢复的短链接');
-      return;
-    }
-    
-    try {
-      const selectedRecords = shortLinks.filter(link => selectedRowKeys.includes(link.fullShortUrl));
-      for (const record of selectedRecords) {
-        await dispatch(recoverFromRecycleBin({
-          gid: record.gid,
-          fullShortUrl: record.fullShortUrl,
-        })).unwrap();
-      }
-      message.success(`成功恢复 ${selectedRecords.length} 个短链接`);
-      setSelectedRowKeys([]);
-      setBatchModalVisible(false);
-      handleRefresh();
-    } catch (error) {
-      message.error('批量恢复失败');
-    }
-  };
-
-  const handleBatchDelete = async () => {
-    if (selectedRowKeys.length === 0) {
-      message.warning('请选择要删除的短链接');
-      return;
-    }
-    
-    Modal.confirm({
-      title: '确认批量删除',
-      icon: <ExclamationCircleOutlined />,
-      content: `确定要彻底删除选中的 ${selectedRowKeys.length} 个短链接吗？此操作不可恢复！`,
-      okText: '确定',
-      cancelText: '取消',
-      okType: 'danger',
-      onOk: async () => {
-        try {
-          const selectedRecords = shortLinks.filter(link => selectedRowKeys.includes(link.fullShortUrl));
-          for (const record of selectedRecords) {
-            await dispatch(removeFromRecycleBin({
-              gid: record.gid,
-              fullShortUrl: record.fullShortUrl,
-            })).unwrap();
-          }
-          message.success(`成功删除 ${selectedRecords.length} 个短链接`);
-          setSelectedRowKeys([]);
-          setBatchModalVisible(false);
-          handleRefresh();
-        } catch (error) {
-          message.error('批量删除失败');
-        }
-      },
-    });
-  };
 
   const handleTableChange = (pagination: any) => {
     dispatch(fetchRecycleBinShortLinks({ 
@@ -176,24 +118,46 @@ const RecycleBin: React.FC = () => {
     }));
   };
 
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: setSelectedRowKeys,
-    getCheckboxProps: (record: any) => ({
-      disabled: record.delFlag === 1, // 已删除的不允许选择
-    }),
-  };
 
   const columns = [
     {
-      title: '短链接',
+      title: (
+        <span>
+          <LinkOutlined style={{ marginRight: 8 }} />
+          短链接
+        </span>
+      ),
       dataIndex: 'fullShortUrl',
       key: 'fullShortUrl',
-      width: 200,
-      render: (text: string) => (
+      width: 300,
+      render: (text: string, record: any) => (
         <div>
-          <div style={{ fontWeight: 500, marginBottom: 4, wordBreak: 'break-all' }}>
-            {text}
+          <div style={{ fontWeight: 500, marginBottom: 4, display: 'flex', alignItems: 'center' }}>
+            {record.favicon && (
+              <img 
+                src={record.favicon} 
+                alt="favicon" 
+                style={{ 
+                  width: 16, 
+                  height: 16, 
+                  marginRight: 8,
+                  borderRadius: 2
+                }}
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+            )}
+            <a 
+              href={text} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              style={{ color: '#1890ff', textDecoration: 'none' }}
+              onMouseEnter={(e) => (e.target as HTMLElement).style.textDecoration = 'underline'}
+              onMouseLeave={(e) => (e.target as HTMLElement).style.textDecoration = 'none'}
+            >
+              {text}
+            </a>
           </div>
           <Button
             type="link"
@@ -234,12 +198,7 @@ const RecycleBin: React.FC = () => {
       width: 120,
       render: (_: any, record: any) => (
         <div>
-          <div style={{ marginBottom: 4 }}>
-            <Tag color="blue">总访问: {record.totalPv || 0}</Tag>
-          </div>
-          <div>
-            <Tag color="green">今日: {record.todayPv || 0}</Tag>
-          </div>
+          <Tag color="blue">总访问: {record.totalPv || 0}</Tag>
         </div>
       ),
     },
@@ -302,7 +261,7 @@ const RecycleBin: React.FC = () => {
   ];
 
   // 计算统计数据
-  const totalLinks = shortLinks.length;
+  const totalLinks = total;
   const totalPv = shortLinks.reduce((sum, link) => sum + (link.totalPv || 0), 0);
   const totalUv = shortLinks.reduce((sum, link) => sum + (link.totalUv || 0), 0);
   
@@ -444,28 +403,6 @@ const RecycleBin: React.FC = () => {
               ))}
             </Select>
           </Col>
-          <Col span={6}>
-            <Space>
-              {selectedRowKeys.length > 0 && (
-                <>
-                  <Button
-                    type="primary"
-                    icon={<RestOutlined />}
-                    onClick={() => setBatchModalVisible(true)}
-                  >
-                    批量恢复 ({selectedRowKeys.length})
-                  </Button>
-                  <Button
-                    danger
-                    icon={<DeleteOutlined />}
-                    onClick={handleBatchDelete}
-                  >
-                    批量删除 ({selectedRowKeys.length})
-                  </Button>
-                </>
-              )}
-            </Space>
-          </Col>
         </Row>
       </Card>
 
@@ -476,7 +413,6 @@ const RecycleBin: React.FC = () => {
           dataSource={shortLinks}
           rowKey="fullShortUrl"
           loading={loading}
-          rowSelection={rowSelection}
           pagination={{
             current: currentPage,
             pageSize: pageSize,
@@ -501,25 +437,6 @@ const RecycleBin: React.FC = () => {
         />
       </Card>
 
-      {/* 批量操作确认弹窗 */}
-      <Modal
-        title="批量操作确认"
-        open={batchModalVisible}
-        onCancel={() => setBatchModalVisible(false)}
-        footer={[
-          <Button key="cancel" onClick={() => setBatchModalVisible(false)}>
-            取消
-          </Button>,
-          <Button key="recover" type="primary" onClick={handleBatchRecover}>
-            确认恢复
-          </Button>,
-        ]}
-      >
-        <p>确定要恢复选中的 {selectedRowKeys.length} 个短链接吗？</p>
-        <p style={{ color: '#666', fontSize: '12px' }}>
-          恢复后的短链接将重新变为可用状态
-        </p>
-      </Modal>
     </div>
   );
 };

@@ -407,6 +407,18 @@ code {
   flex: 1;
 }
 
+/* 禁用状态下覆盖透明背景 */
+.ant-input-password:disabled .ant-input {
+  background: #f5f5f5 !important;
+}
+
+/* 深色模式下禁用状态覆盖透明背景 */
+@media (prefers-color-scheme: dark) {
+  .ant-input-password:disabled .ant-input {
+    background: #262626 !important;
+  }
+}
+
 .ant-input-password .ant-input:focus {
   border: none !important;
   box-shadow: none !important;
@@ -528,6 +540,59 @@ code {
   z-index: 9999;
 }
 
+/* 找回密码页面专用样式 */
+.forgot-password-content {
+  max-width: 480px;
+  padding: 20px;
+}
+
+.forgot-password-card {
+  min-height: auto;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 40px 32px;
+}
+
+.forgot-password-steps {
+  margin-bottom: 24px !important;
+}
+
+.forgot-password-steps .ant-steps-item-title {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.forgot-password-steps .ant-steps-item-description {
+  display: none !important;
+}
+
+/* 步骤内容区域 */
+.forgot-password-card .ant-form {
+  margin-bottom: 16px;
+}
+
+.forgot-password-card .ant-form-item {
+  margin-bottom: 16px;
+}
+
+/* 验证码输入框样式 */
+.forgot-password-card .ant-form-item:has(.ant-input[placeholder="邮箱验证码"]) {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.forgot-password-card .ant-form-item:has(.ant-input[placeholder="邮箱验证码"]) .ant-form-item-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 成功页面样式 */
+.forgot-password-card .ant-typography {
+  margin-bottom: 16px;
+}
+
 /* 响应式设计 */
 @media (max-width: 768px) {
   .ant-layout-content {
@@ -542,6 +607,20 @@ code {
   .login-card {
     padding: 32px 24px;
     border-radius: 20px;
+  }
+  
+  .forgot-password-content {
+    max-width: 100%;
+    padding: 16px;
+  }
+  
+  .forgot-password-card {
+    padding: 32px 24px;
+    max-height: 95vh;
+  }
+  
+  .forgot-password-steps .ant-steps-item-description {
+    display: none !important;
   }
   
   .login-title {
@@ -566,6 +645,11 @@ code {
   .login-card {
     padding: 24px 20px;
     border-radius: 16px;
+  }
+  
+  .forgot-password-card {
+    padding: 24px 20px;
+    max-height: 98vh;
   }
   
   .login-title {
@@ -595,6 +679,23 @@ code {
     outline: none !important;
     padding: 0;
     flex: 1;
+  }
+  
+  /* 找回密码页面小屏幕优化 */
+  .forgot-password-steps {
+    margin-bottom: 16px !important;
+  }
+  
+  .forgot-password-steps .ant-steps-item-title {
+    font-size: 13px;
+  }
+  
+  .forgot-password-steps .ant-steps-item-description {
+    display: none !important;
+  }
+  
+  .forgot-password-card .ant-form-item {
+    margin-bottom: 12px;
   }
 }
 
@@ -628,6 +729,117 @@ code {
   
   .footer-text {
     color: #ccc;
+  }
+}
+
+/* 禁用状态输入框样式优化 */
+.ant-input:disabled,
+.ant-input-password:disabled {
+  background: #f5f5f5 !important;
+  border-color: #d9d9d9 !important;
+  color: #999 !important;
+  cursor: not-allowed;
+  opacity: 1 !important;
+}
+
+.ant-input:disabled::placeholder,
+.ant-input-password:disabled .ant-input::placeholder {
+  color: #bfbfbf !important;
+}
+
+.ant-input:disabled:hover,
+.ant-input-password:disabled:hover {
+  border-color: #d9d9d9 !important;
+  background: #f5f5f5 !important;
+}
+
+.ant-input:disabled:focus,
+.ant-input-password:disabled:focus-within {
+  border-color: #d9d9d9 !important;
+  box-shadow: none !important;
+  background: #f5f5f5 !important;
+}
+
+/* 禁用状态输入框前缀图标样式 */
+.ant-input:disabled + .ant-input-prefix,
+.ant-input-password:disabled .ant-input-prefix {
+  color: #bfbfbf !important;
+}
+
+/* 禁用状态输入框内部样式 */
+.ant-input:disabled .ant-input,
+.ant-input-password:disabled .ant-input {
+  background: #f5f5f5 !important;
+  color: #999 !important;
+}
+
+/* 确保输入框内部和外部背景色完全一致 */
+.ant-input:disabled,
+.ant-input:disabled input,
+.ant-input-password:disabled,
+.ant-input-password:disabled input {
+  background-color: #f5f5f5 !important;
+  background: #f5f5f5 !important;
+}
+
+/* 强制覆盖所有可能的背景色 */
+.ant-input:disabled * {
+  background-color: #f5f5f5 !important;
+  background: #f5f5f5 !important;
+}
+
+/* 深色模式下禁用状态样式 */
+@media (prefers-color-scheme: dark) {
+  .ant-input:disabled,
+  .ant-input-password:disabled {
+    background: #262626 !important;
+    border-color: #434343 !important;
+    color: #8c8c8c !important;
+    opacity: 1 !important;
+  }
+  
+  .ant-input:disabled::placeholder,
+  .ant-input-password:disabled .ant-input::placeholder {
+    color: #595959 !important;
+  }
+  
+  .ant-input:disabled:hover,
+  .ant-input-password:disabled:hover {
+    border-color: #434343 !important;
+    background: #262626 !important;
+  }
+  
+  .ant-input:disabled:focus,
+  .ant-input-password:disabled:focus-within {
+    border-color: #434343 !important;
+    box-shadow: none !important;
+    background: #262626 !important;
+  }
+  
+  .ant-input:disabled + .ant-input-prefix,
+  .ant-input-password:disabled .ant-input-prefix {
+    color: #595959 !important;
+  }
+  
+  .ant-input:disabled .ant-input,
+  .ant-input-password:disabled .ant-input {
+    background: #262626 !important;
+    color: #8c8c8c !important;
+  }
+  
+  /* 深色模式确保输入框内部和外部背景色完全一致 */
+  .ant-input:disabled,
+  .ant-input:disabled input,
+  .ant-input-password:disabled,
+  .ant-input-password:disabled input {
+    background-color: #262626 !important;
+    background: #262626 !important;
+  }
+  
+  /* 深色模式强制覆盖所有可能的背景色 */
+  .ant-input:disabled * {
+    background-color: #262626 !important;
+    background: #262626 !important;
   }
 }
 

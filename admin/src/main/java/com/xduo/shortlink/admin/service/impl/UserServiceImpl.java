@@ -15,10 +15,16 @@ import com.xduo.shortlink.admin.dao.mapper.UserMapper;
 import com.xduo.shortlink.admin.dto.req.UserLoginReqDTO;
 import com.xduo.shortlink.admin.dto.req.UserRegisterReqDTO;
 import com.xduo.shortlink.admin.dto.req.UserUpdateReqDTO;
+import com.xduo.shortlink.admin.dto.req.UserChangePasswordReqDTO;
+import com.xduo.shortlink.admin.dto.req.SendEmailCodeReqDTO;
+import com.xduo.shortlink.admin.dto.req.SendForgotPasswordEmailReqDTO;
+import com.xduo.shortlink.admin.dto.req.ForgotPasswordReqDTO;
 import com.xduo.shortlink.admin.dto.resp.UserLoginRespDTO;
 import com.xduo.shortlink.admin.dto.resp.UserRespDTO;
 import com.xduo.shortlink.admin.service.GroupService;
 import com.xduo.shortlink.admin.service.UserService;
+import com.xduo.shortlink.admin.service.EmailCodeService;
+import com.xduo.shortlink.admin.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import org.redisson.api.RBloomFilter;
 import org.redisson.api.RLock;
@@ -43,6 +49,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
     private final RedissonClient redissonClient;
     private final StringRedisTemplate stringRedisTemplate;
     private final GroupService groupService;
+    private final EmailCodeService emailCodeService;
+    private final EmailService emailService;
 
     @Override
     public UserRespDTO getUserByUsername(String username) {
@@ -154,6 +162,152 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
             return;
         }
         throw new ClientException("用户Token不存在或用户未登录");
+    }
+
+    @Override
+    public void changePassword(UserChangePasswordReqDTO changePasswordReqDTO) {
+        // 验证参数
+        if (changePasswordReqDTO.getUsername() == null || changePasswordReqDTO.getUsername().trim().isEmpty()) {
+            throw new ClientException("用户名不能为空");
+        }
+        
+        // 查询用户信息
+        LambdaQueryWrapper<UserDO> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(UserDO::getUsername, changePasswordReqDTO.getUsername()).eq(UserDO::getDelFlag, 0);
+        UserDO userDO = baseMapper.selectOne(lambdaQueryWrapper);
+        if (userDO == null) {
+            throw new ClientException("用户不存在");
+        }
+
+        // 根据修改方式验证
+        if ("PASSWORD".equals(changePasswordReqDTO.getChangeType())) {
+            // 使用当前密码修改
+            if (changePasswordReqDTO.getCurrentPassword() == null || changePasswordReqDTO.getCurrentPassword().isEmpty()) {
+                throw new ClientException("当前密码不能为空");
+            }
+            if (!userDO.getPassword().equals(changePasswordReqDTO.getCurrentPassword())) {
+                throw new ClientException("当前密码错误");
+            }
+        } else if ("EMAIL".equals(changePasswordReqDTO.getChangeType())) {
+            // 使用邮箱验证码修改
+            if (changePasswordReqDTO.getEmailCode() == null || changePasswordReqDTO.getEmailCode().isEmpty()) {
+                throw new ClientException("邮箱验证码不能为空");
+            }
+            if (userDO.getMail() == null || userDO.getMail().isEmpty()) {
+                throw new ClientException("用户未绑定邮箱");
+            }
+            if (!emailCodeService.verifyEmailCode(userDO.getMail(), changePasswordReqDTO.getEmailCode())) {
+                throw new ClientException("邮箱验证码错误或已过期");
+            }
+        } else {
+            throw new ClientException("修改方式不支持");
+        }
+
+        // 验证新密码
+        if (changePasswordReqDTO.getNewPassword() == null || changePasswordReqDTO.getNewPassword().isEmpty()) {
+            throw new ClientException("新密码不能为空");
+        }
+        if (changePasswordReqDTO.getNewPassword().length() < 6) {
+            throw new ClientException("新密码长度不能少于6位");
+        }
+
+        // 更新密码
+        LambdaUpdateWrapper<UserDO> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(UserDO::getUsername, changePasswordReqDTO.getUsername())
+                .set(UserDO::getPassword, changePasswordReqDTO.getNewPassword());
+        
+        int update = baseMapper.update(null, updateWrapper);
+        if (update < 1) {
+            throw new ClientException("密码修改失败");
+        }
+
+        // 如果是邮箱验证码方式，删除验证码
+        if ("EMAIL".equals(changePasswordReqDTO.getChangeType())) {
+            emailCodeService.deleteEmailCode(userDO.getMail());
+        }
+    }
+
+    @Override
+    public void sendEmailCode(SendEmailCodeReqDTO sendEmailCodeReqDTO) {
+        // 查询用户信息
+        LambdaQueryWrapper<UserDO> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(UserDO::getUsername, sendEmailCodeReqDTO.getUsername()).eq(UserDO::getDelFlag, 0);
+        UserDO userDO = baseMapper.selectOne(lambdaQueryWrapper);
+        if (userDO == null) {
+            throw new ClientException("用户不存在");
+        }
+
+        // 验证邮箱是否匹配
+        if (userDO.getMail() == null || userDO.getMail().isEmpty()) {
+            throw new ClientException("用户未绑定邮箱");
+        }
+        if (!userDO.getMail().equals(sendEmailCodeReqDTO.getEmail())) {
+            throw new ClientException("邮箱地址不匹配");
+        }
+
+        // 生成并发送验证码
+        String code = emailCodeService.sendEmailCode(userDO.getMail(), sendEmailCodeReqDTO.getUsername());
+        emailService.sendEmailCode(userDO.getMail(), code, sendEmailCodeReqDTO.getUsername());
+    }
+
+    @Override
+    public void sendForgotPasswordEmailCode(SendForgotPasswordEmailReqDTO sendForgotPasswordEmailReqDTO) {
+        // 查询用户信息
+        LambdaQueryWrapper<UserDO> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(UserDO::getUsername, sendForgotPasswordEmailReqDTO.getUsername()).eq(UserDO::getDelFlag, 0);
+        UserDO userDO = baseMapper.selectOne(lambdaQueryWrapper);
+        if (userDO == null) {
+            throw new ClientException("用户不存在");
+        }
+
+        // 验证邮箱是否匹配
+        if (userDO.getMail() == null || userDO.getMail().isEmpty()) {
+            throw new ClientException("用户未绑定邮箱");
+        }
+        if (!userDO.getMail().equals(sendForgotPasswordEmailReqDTO.getEmail())) {
+            throw new ClientException("邮箱地址不匹配");
+        }
+
+        // 生成并发送找回密码验证码
+        String code = emailCodeService.sendEmailCode(userDO.getMail(), sendForgotPasswordEmailReqDTO.getUsername());
+        emailService.sendForgotPasswordEmailCode(userDO.getMail(), code, sendForgotPasswordEmailReqDTO.getUsername());
+    }
+
+    @Override
+    public void forgotPassword(ForgotPasswordReqDTO forgotPasswordReqDTO) {
+        // 查询用户信息
+        LambdaQueryWrapper<UserDO> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(UserDO::getUsername, forgotPasswordReqDTO.getUsername()).eq(UserDO::getDelFlag, 0);
+        UserDO userDO = baseMapper.selectOne(lambdaQueryWrapper);
+        if (userDO == null) {
+            throw new ClientException("用户不存在");
+        }
+
+        // 验证邮箱是否匹配
+        if (userDO.getMail() == null || userDO.getMail().isEmpty()) {
+            throw new ClientException("用户未绑定邮箱");
+        }
+        if (!userDO.getMail().equals(forgotPasswordReqDTO.getEmail())) {
+            throw new ClientException("邮箱地址不匹配");
+        }
+
+        // 验证邮箱验证码
+        boolean isCodeValid = emailCodeService.verifyEmailCode(forgotPasswordReqDTO.getEmail(), forgotPasswordReqDTO.getEmailCode());
+        if (!isCodeValid) {
+            throw new ClientException("验证码错误或已过期");
+        }
+
+        // 更新密码
+        LambdaUpdateWrapper<UserDO> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(UserDO::getUsername, forgotPasswordReqDTO.getUsername())
+                .set(UserDO::getPassword, forgotPasswordReqDTO.getNewPassword());
+        int updateResult = baseMapper.update(null, updateWrapper);
+        if (updateResult < 1) {
+            throw new ClientException("密码更新失败");
+        }
+
+        // 删除验证码
+        emailCodeService.deleteEmailCode(userDO.getMail());
     }
 
 

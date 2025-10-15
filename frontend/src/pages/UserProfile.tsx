@@ -22,8 +22,10 @@ import {
   SaveOutlined,
   CameraOutlined,
   LoadingOutlined,
+  SafetyOutlined,
 } from '@ant-design/icons';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { AppDispatch, RootState } from '../store';
 import { getUserInfo, getActualUserInfo, updateUser } from '../store/slices/authSlice';
 import { authApi } from '../api/auth';
@@ -41,6 +43,7 @@ const UserProfile: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [form] = Form.useForm();
+  const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const { user, loading } = useSelector((state: RootState) => state.auth);
 
@@ -150,16 +153,16 @@ const UserProfile: React.FC = () => {
 
       <Row gutter={[24, 24]}>
         <Col xs={24} lg={8}>
-          <Card>
-            <div style={{ textAlign: 'center' }}>
+          <Card style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ textAlign: 'center', width: '100%' }}>
               <div style={{ position: 'relative', display: 'inline-block' }}>
                 <Avatar
-                  size={80}
+                  size={120}
                   src={user?.avatar}
                   icon={<UserOutlined />}
                   style={{ 
                     backgroundColor: '#1890ff',
-                    marginBottom: 16,
+                    marginBottom: 24,
                   }}
                 />
                 {isEditing && (
@@ -176,7 +179,7 @@ const UserProfile: React.FC = () => {
                       size="small"
                       style={{
                         position: 'absolute',
-                        bottom: 20,
+                        bottom: 30,
                         right: 0,
                         zIndex: 1,
                       }}
@@ -185,10 +188,10 @@ const UserProfile: React.FC = () => {
                   </Upload>
                 )}
               </div>
-              <Title level={4} style={{ margin: 0 }}>
+              <Title level={2} style={{ margin: 0, marginBottom: 8 }}>
                 {user?.realName || user?.username}
               </Title>
-              <div style={{ color: '#666', marginTop: 8 }}>
+              <div style={{ color: '#666', fontSize: '16px', fontWeight: 500 }}>
                 {user?.username}
               </div>
             </div>
@@ -296,22 +299,6 @@ const UserProfile: React.FC = () => {
                 </Col>
                 <Col xs={24} sm={12}>
                   <div>
-                    <div style={{ color: '#666', marginBottom: 4 }}>注册时间</div>
-                    <div style={{ fontWeight: 500 }}>
-                      {user?.createTime ? new Date(user.createTime).toLocaleString() : '-'}
-                    </div>
-                  </div>
-                </Col>
-                <Col xs={24} sm={12}>
-                  <div>
-                    <div style={{ color: '#666', marginBottom: 4 }}>最后更新</div>
-                    <div style={{ fontWeight: 500 }}>
-                      {user?.updateTime ? new Date(user.updateTime).toLocaleString() : '-'}
-                    </div>
-                  </div>
-                </Col>
-                <Col xs={24} sm={12}>
-                  <div>
                     <div style={{ color: '#666', marginBottom: 4 }}>账户状态</div>
                     <div style={{ fontWeight: 500, color: '#52c41a' }}>
                       正常
@@ -319,6 +306,20 @@ const UserProfile: React.FC = () => {
                   </div>
                 </Col>
               </Row>
+              
+              <Divider />
+              
+              <div>
+                <Title level={5}>安全设置</Title>
+                <Button
+                  type="primary"
+                  icon={<SafetyOutlined />}
+                  onClick={() => navigate('/change-password')}
+                  style={{ marginTop: 8 }}
+                >
+                  修改密码
+                </Button>
+              </div>
             </div>
           </Card>
         </Col>

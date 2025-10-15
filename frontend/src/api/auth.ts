@@ -43,6 +43,31 @@ export interface CheckLoginRequest {
   token: string;
 }
 
+export interface ChangePasswordRequest {
+  username: string;
+  currentPassword?: string;
+  newPassword: string;
+  emailCode?: string;
+  changeType: 'PASSWORD' | 'EMAIL';
+}
+
+export interface SendEmailCodeRequest {
+  username: string;
+  email: string;
+}
+
+export interface SendForgotPasswordEmailRequest {
+  username: string;
+  email: string;
+}
+
+export interface ForgotPasswordRequest {
+  username: string;
+  email: string;
+  newPassword: string;
+  emailCode: string;
+}
+
 export const authApi = {
   // 用户登录
   login: (data: LoginRequest): Promise<LoginResponse> => {
@@ -93,5 +118,25 @@ export const authApi = {
         'Content-Type': 'multipart/form-data',
       },
     }).then(response => ({ url: response.data }));
+  },
+
+  // 修改密码
+  changePassword: (data: ChangePasswordRequest): Promise<void> => {
+    return api.post('/api/short-link/admin/v1/user/change-password', data);
+  },
+
+  // 发送邮箱验证码
+  sendEmailCode: (data: SendEmailCodeRequest): Promise<void> => {
+    return api.post('/api/short-link/admin/v1/user/send-email-code', data);
+  },
+
+  // 发送找回密码邮箱验证码
+  sendForgotPasswordEmailCode: (data: SendForgotPasswordEmailRequest): Promise<void> => {
+    return api.post('/api/short-link/admin/v1/user/send-forgot-password-email-code', data);
+  },
+
+  // 找回密码
+  forgotPassword: (data: ForgotPasswordRequest): Promise<void> => {
+    return api.post('/api/short-link/admin/v1/user/forgot-password', data);
   },
 };

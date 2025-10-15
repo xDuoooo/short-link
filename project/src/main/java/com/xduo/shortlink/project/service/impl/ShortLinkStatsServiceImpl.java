@@ -429,7 +429,8 @@ public class ShortLinkStatsServiceImpl implements ShortLinkStatsService {
                 .eq(LinkAccessLogsDO::getFullShortUrl, requestParam.getFullShortUrl())
                 .between(LinkAccessLogsDO::getCreateTime, startDateTime, endDateTime)
                 .eq(LinkAccessLogsDO::getDelFlag, 0)
-                .orderByDesc(LinkAccessLogsDO::getCreateTime);
+                .orderByDesc(LinkAccessLogsDO::getCreateTime)
+                .orderByDesc(LinkAccessLogsDO::getId);
         IPage<LinkAccessLogsDO> linkAccessLogsDOIPage = linkAccessLogsMapper.selectPage(requestParam, queryWrapper);
         IPage<ShortLinkStatsAccessRecordRespDTO> actualResult = linkAccessLogsDOIPage.convert(each -> {
             ShortLinkStatsAccessRecordRespDTO dto = BeanUtil.toBean(each, ShortLinkStatsAccessRecordRespDTO.class);
@@ -494,7 +495,8 @@ public class ShortLinkStatsServiceImpl implements ShortLinkStatsService {
         LambdaQueryWrapper<LinkAccessLogsDO> queryWrapper = Wrappers.lambdaQuery(LinkAccessLogsDO.class)
                 .eq(LinkAccessLogsDO::getGid, requestParam.getGid())
                 .between(LinkAccessLogsDO::getCreateTime, startDateTime, endDateTime)
-                .orderByDesc(LinkAccessLogsDO::getCreateTime);
+                .orderByDesc(LinkAccessLogsDO::getCreateTime)
+                .orderByDesc(LinkAccessLogsDO::getId);
         
         // 如果includeRecycle为false或null，只查询有效短链接的访问日志
         if (requestParam.getIncludeRecycle() == null || !requestParam.getIncludeRecycle()) {

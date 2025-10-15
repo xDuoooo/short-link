@@ -31,6 +31,8 @@ import {
   getShortLinkAccessRecords,
   getGroupShortLinkAccessRecords,
   clearStatsData,
+  setCurrentPage,
+  setPageSize,
 } from '../store/slices/statsSlice';
 import { fetchShortLinks, clearShortLinks } from '../store/slices/shortLinkSlice';
 import { fetchGroups } from '../store/slices/groupSlice';
@@ -53,7 +55,7 @@ const ShortLinkStats: React.FC = () => {
   const [includeRecycle, setIncludeRecycle] = useState<boolean>(true);
 
   const dispatch = useDispatch<AppDispatch>();
-  const { statsData, accessRecords, loading } = useSelector((state: RootState) => state.stats);
+  const { statsData, accessRecords, loading, total, currentPage, pageSize } = useSelector((state: RootState) => state.stats);
   const { shortLinks } = useSelector((state: RootState) => state.shortLink);
   const { groups } = useSelector((state: RootState) => state.group);
 
@@ -112,7 +114,6 @@ const ShortLinkStats: React.FC = () => {
           startDate: dateRange[0].format('YYYY-MM-DD'),
           endDate: dateRange[1].format('YYYY-MM-DD'),
           includeRecycle: true,
-          requestKey: requestKey,
         }));
         // 获取单个短链接访问记录 - 历史记录可选择是否包含回收站
         dispatch(getShortLinkAccessRecords({
@@ -123,7 +124,6 @@ const ShortLinkStats: React.FC = () => {
           current: 1,
           size: 10,
           includeRecycle: includeRecycle,
-          requestKey: requestKey,
         }));
       } else {
         // 获取分组统计 - 概览始终包含所有数据
@@ -132,7 +132,6 @@ const ShortLinkStats: React.FC = () => {
           startDate: dateRange[0].format('YYYY-MM-DD'),
           endDate: dateRange[1].format('YYYY-MM-DD'),
           includeRecycle: true,
-          requestKey: requestKey,
         }));
         // 获取分组访问记录 - 历史记录可选择是否包含回收站
         dispatch(getGroupShortLinkAccessRecords({
@@ -142,7 +141,6 @@ const ShortLinkStats: React.FC = () => {
           current: 1,
           size: 10,
           includeRecycle: includeRecycle,
-          requestKey: requestKey,
         }));
       }
     }
@@ -186,8 +184,8 @@ const ShortLinkStats: React.FC = () => {
           gid: selectedGroup,
           startDate: dateRange[0].format('YYYY-MM-DD'),
           endDate: dateRange[1].format('YYYY-MM-DD'),
-          current: 1,
-          size: 10,
+          current: currentPage,
+          size: pageSize,
           includeRecycle: includeRecycle,
         }));
       } else {
@@ -203,8 +201,42 @@ const ShortLinkStats: React.FC = () => {
           gid: selectedGroup,
           startDate: dateRange[0].format('YYYY-MM-DD'),
           endDate: dateRange[1].format('YYYY-MM-DD'),
-          current: 1,
-          size: 10,
+          current: currentPage,
+          size: pageSize,
+          includeRecycle: includeRecycle,
+        }));
+      }
+    }
+  };
+
+  // 处理分页变化
+  const handlePageChange = (page: number, size?: number) => {
+    if (selectedGroup && dateRange[0] && dateRange[1]) {
+      const newPageSize = size || pageSize;
+      
+      // 更新分页状态
+      dispatch(setCurrentPage(page));
+      if (size && size !== pageSize) {
+        dispatch(setPageSize(size));
+      }
+      
+      if (selectedShortLink) {
+        dispatch(getShortLinkAccessRecords({
+          fullShortUrl: selectedShortLink,
+          gid: selectedGroup,
+          startDate: dateRange[0].format('YYYY-MM-DD'),
+          endDate: dateRange[1].format('YYYY-MM-DD'),
+          current: page,
+          size: newPageSize,
+          includeRecycle: includeRecycle,
+        }));
+      } else {
+        dispatch(getGroupShortLinkAccessRecords({
+          gid: selectedGroup,
+          startDate: dateRange[0].format('YYYY-MM-DD'),
+          endDate: dateRange[1].format('YYYY-MM-DD'),
+          current: page,
+          size: newPageSize,
           includeRecycle: includeRecycle,
         }));
       }
@@ -342,7 +374,16 @@ const ShortLinkStats: React.FC = () => {
                     </LineChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div style={{ textAlign: 'center', padding: '50px', color: '#999' }}>
+                  <div style={{ 
+                    textAlign: 'center', 
+                    padding: '50px', 
+                    color: '#999',
+                    height: '300px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}>
                     <div style={{ fontSize: '16px', marginBottom: '8px' }}>暂无访问趋势数据</div>
                     <div style={{ fontSize: '14px' }}>请访问短链接后查看访问趋势</div>
                   </div>
@@ -381,7 +422,16 @@ const ShortLinkStats: React.FC = () => {
                     </PieChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div style={{ textAlign: 'center', padding: '50px', color: '#999' }}>
+                  <div style={{ 
+                    textAlign: 'center', 
+                    padding: '50px', 
+                    color: '#999',
+                    height: '300px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}>
                     <div style={{ fontSize: '16px', marginBottom: '8px' }}>暂无设备数据</div>
                     <div style={{ fontSize: '14px' }}>请访问短链接后查看设备分布</div>
                   </div>
@@ -422,7 +472,16 @@ const ShortLinkStats: React.FC = () => {
                     </PieChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div style={{ textAlign: 'center', padding: '50px', color: '#999' }}>
+                  <div style={{ 
+                    textAlign: 'center', 
+                    padding: '50px', 
+                    color: '#999',
+                    height: '300px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}>
                     <div style={{ fontSize: '16px', marginBottom: '8px' }}>暂无浏览器数据</div>
                     <div style={{ fontSize: '14px' }}>请访问短链接后查看浏览器分布</div>
                   </div>
@@ -461,7 +520,16 @@ const ShortLinkStats: React.FC = () => {
                     </PieChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div style={{ textAlign: 'center', padding: '50px', color: '#999' }}>
+                  <div style={{ 
+                    textAlign: 'center', 
+                    padding: '50px', 
+                    color: '#999',
+                    height: '300px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}>
                     <div style={{ fontSize: '16px', marginBottom: '8px' }}>暂无操作系统数据</div>
                     <div style={{ fontSize: '14px' }}>请访问短链接后查看操作系统分布</div>
                   </div>
@@ -500,7 +568,16 @@ const ShortLinkStats: React.FC = () => {
                     </PieChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div style={{ textAlign: 'center', padding: '50px', color: '#999' }}>
+                  <div style={{ 
+                    textAlign: 'center', 
+                    padding: '50px', 
+                    color: '#999',
+                    height: '300px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}>
                     <div style={{ fontSize: '16px', marginBottom: '8px' }}>暂无网络数据</div>
                     <div style={{ fontSize: '14px' }}>请访问短链接后查看网络类型分布</div>
                   </div>
@@ -528,7 +605,16 @@ const ShortLinkStats: React.FC = () => {
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div style={{ textAlign: 'center', padding: '50px', color: '#999' }}>
+                  <div style={{ 
+                    textAlign: 'center', 
+                    padding: '50px', 
+                    color: '#999',
+                    height: '300px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}>
                     <div style={{ fontSize: '16px', marginBottom: '8px' }}>暂无24小时数据</div>
                     <div style={{ fontSize: '14px' }}>请访问短链接后查看24小时访问分布</div>
                   </div>
@@ -556,7 +642,16 @@ const ShortLinkStats: React.FC = () => {
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div style={{ textAlign: 'center', padding: '50px', color: '#999' }}>
+                  <div style={{ 
+                    textAlign: 'center', 
+                    padding: '50px', 
+                    color: '#999',
+                    height: '300px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}>
                     <div style={{ fontSize: '16px', marginBottom: '8px' }}>暂无星期数据</div>
                     <div style={{ fontSize: '14px' }}>请访问短链接后查看星期访问分布</div>
                   </div>
@@ -627,10 +722,15 @@ const ShortLinkStats: React.FC = () => {
             rowKey="createTime"
             loading={loading}
             pagination={{
-              pageSize: 10,
+              current: currentPage,
+              pageSize: pageSize,
+              total: total,
               showSizeChanger: true,
               showQuickJumper: true,
-              showTotal: (total) => `共 ${total} 条记录`,
+              showTotal: (total, range) => `第 ${range[0]}-${range[1]} 条，共 ${total} 条记录`,
+              onChange: handlePageChange,
+              onShowSizeChange: handlePageChange,
+              pageSizeOptions: ['10', '20', '50', '100'],
             }}
             size="middle"
           />

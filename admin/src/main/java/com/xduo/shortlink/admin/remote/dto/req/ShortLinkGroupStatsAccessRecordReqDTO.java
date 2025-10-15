@@ -1,12 +1,15 @@
 package com.xduo.shortlink.admin.remote.dto.req;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * 短链接监控访问记录请求参数
  */
 @Data
-public class ShortLinkGroupStatsAccessRecordReqDTO  {
+@EqualsAndHashCode(callSuper = false)
+public class ShortLinkGroupStatsAccessRecordReqDTO extends Page<Object> {
 
     /**
      * 分组标识

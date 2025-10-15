@@ -78,6 +78,12 @@
             <artifactId>minio</artifactId>
             <version>8.5.7</version>
         </dependency>
+        
+        <!-- 邮件发送依赖 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

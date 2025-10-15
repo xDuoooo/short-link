@@ -12,6 +12,8 @@ spring:
                 whitePathList:
                   - /api/short-link/admin/v1/user/login
                   - /api/short-link/admin/v1/user/has-username
+                  - /api/short-link/admin/v1/user/send-forgot-password-email-code
+                  - /api/short-link/admin/v1/user/forgot-password
 
         - id: short-link-project
           uri: lb://short-link-project

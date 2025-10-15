@@ -6,6 +6,10 @@ import com.xduo.shortlink.admin.common.convention.result.Results;
 import com.xduo.shortlink.admin.dto.req.UserLoginReqDTO;
 import com.xduo.shortlink.admin.dto.req.UserRegisterReqDTO;
 import com.xduo.shortlink.admin.dto.req.UserUpdateReqDTO;
+import com.xduo.shortlink.admin.dto.req.UserChangePasswordReqDTO;
+import com.xduo.shortlink.admin.dto.req.SendEmailCodeReqDTO;
+import com.xduo.shortlink.admin.dto.req.SendForgotPasswordEmailReqDTO;
+import com.xduo.shortlink.admin.dto.req.ForgotPasswordReqDTO;
 import com.xduo.shortlink.admin.dto.resp.UserActualRespDTO;
 import com.xduo.shortlink.admin.dto.resp.UserLoginRespDTO;
 import com.xduo.shortlink.admin.dto.resp.UserRespDTO;
@@ -84,6 +88,28 @@ public class UserController {
     }
 
     /**
+     * 修改密码
+     * @param changePasswordReqDTO
+     * @return
+     */
+    @PostMapping("/api/short-link/admin/v1/user/change-password")
+    public Result<Void> changePassword(@RequestBody UserChangePasswordReqDTO changePasswordReqDTO){
+        userService.changePassword(changePasswordReqDTO);
+        return Results.success();
+    }
+
+    /**
+     * 发送邮箱验证码
+     * @param sendEmailCodeReqDTO
+     * @return
+     */
+    @PostMapping("/api/short-link/admin/v1/user/send-email-code")
+    public Result<Void> sendEmailCode(@RequestBody SendEmailCodeReqDTO sendEmailCodeReqDTO){
+        userService.sendEmailCode(sendEmailCodeReqDTO);
+        return Results.success();
+    }
+
+    /**
      * 检查用户是否登录
      * @param username
      * @param token
@@ -138,6 +164,24 @@ public class UserController {
         } catch (Exception e) {
             return Results.failure("AVATAR_UPLOAD_FAILED", "头像上传失败: " + e.getMessage(), String.class);
         }
+    }
+
+    /**
+     * 发送找回密码邮箱验证码
+     */
+    @PostMapping("/api/short-link/admin/v1/user/send-forgot-password-email-code")
+    public Result<Void> sendForgotPasswordEmailCode(@RequestBody SendForgotPasswordEmailReqDTO sendForgotPasswordEmailReqDTO) {
+        userService.sendForgotPasswordEmailCode(sendForgotPasswordEmailReqDTO);
+        return Results.success();
+    }
+
+    /**
+     * 找回密码
+     */
+    @PostMapping("/api/short-link/admin/v1/user/forgot-password")
+    public Result<Void> forgotPassword(@RequestBody ForgotPasswordReqDTO forgotPasswordReqDTO) {
+        userService.forgotPassword(forgotPasswordReqDTO);
+        return Results.success();
     }
 
 }
