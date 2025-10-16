@@ -179,8 +179,7 @@ const GroupManagement: React.FC = () => {
     try {
       await dispatch(deleteGroup(gid)).unwrap();
       message.success('删除成功');
-      // 删除成功后重新获取分组列表
-      dispatch(fetchGroups());
+      // Redux store 会自动更新本地状态，无需重新获取数据
     } catch (error) {
       message.error('删除失败');
     }
@@ -302,30 +301,57 @@ const GroupManagement: React.FC = () => {
       </div>
 
       <Card className="table-container">
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-        >
-          <SortableContext
-            items={groups.map((group) => group.gid)}
-            strategy={verticalListSortingStrategy}
+        {groups.length > 0 ? (
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
           >
-            <Table
-              columns={columns}
-              dataSource={groups}
-              rowKey="gid"
-              loading={loading}
-              pagination={false}
-              size="middle"
-              components={{
-                body: {
-                  row: SortableRow,
-                },
-              }}
-            />
-          </SortableContext>
-        </DndContext>
+            <SortableContext
+              items={groups.map((group) => group.gid)}
+              strategy={verticalListSortingStrategy}
+            >
+              <Table
+                columns={columns}
+                dataSource={groups}
+                rowKey="gid"
+                loading={loading}
+                pagination={false}
+                size="middle"
+                components={{
+                  body: {
+                    row: SortableRow,
+                  },
+                }}
+              />
+            </SortableContext>
+          </DndContext>
+        ) : (
+          <Table
+            columns={columns}
+            dataSource={[]}
+            rowKey="gid"
+            loading={loading}
+            pagination={false}
+            size="middle"
+            locale={{
+              emptyText: (
+                <div style={{ 
+                  padding: '40px 0', 
+                  textAlign: 'center',
+                  color: '#999'
+                }}>
+                  <div style={{ fontSize: '16px', marginBottom: '8px' }}>
+                    暂无分组数据
+                  </div>
+                  <div style={{ fontSize: '14px' }}>
+                    点击右上角"新建分组"按钮创建第一个分组
+                  </div>
+                </div>
+              )
+            }}
+          />
+        )}
       </Card>
 
       <Modal

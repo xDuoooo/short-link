@@ -28,7 +28,7 @@ rules:
         tableStrategy:
           # 用于单分片键的标准分片场景
           standard:
-            # 分片键
+            # 分片键 - 使用full_short_url，因为用户访问时只知道短链接
             shardingColumn: full_short_url
             # 分片算法，对应 rules[0].shardingAlgorithms
             shardingAlgorithmName: link_goto_table_hash_mod

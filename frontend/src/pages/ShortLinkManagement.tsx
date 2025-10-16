@@ -71,6 +71,7 @@ const ShortLinkManagement: React.FC = () => {
   const [isBatchModalVisible, setIsBatchModalVisible] = useState(false);
   const [editingLink, setEditingLink] = useState<any>(null);
   const [activeTab, setActiveTab] = useState('single');
+  const [selectedGid, setSelectedGid] = useState<string>('');
   const [form] = Form.useForm();
   const [batchForm] = Form.useForm();
   const dispatch = useDispatch<AppDispatch>();
@@ -80,8 +81,21 @@ const ShortLinkManagement: React.FC = () => {
   useEffect(() => {
     console.log('组件初始化，开始加载分组数据');
     dispatch(fetchGroups());
-    dispatch(fetchShortLinks({ current: 1, size: 10 }));
   }, [dispatch]);
+
+  // 当分组数据加载完成后，自动选择第一个分组
+  useEffect(() => {
+    if (groups.length > 0 && !selectedGid) {
+      setSelectedGid(groups[0].gid);
+    }
+  }, [groups, selectedGid]);
+
+  // 当选择分组后，加载该分组的短链接
+  useEffect(() => {
+    if (selectedGid) {
+      dispatch(fetchShortLinks({ gid: selectedGid, current: 1, size: 10 }));
+    }
+  }, [selectedGid, dispatch]);
 
   // 当分组数据加载完成后，如果模态框是打开的，自动设置默认分组
   useEffect(() => {
@@ -170,7 +184,7 @@ const ShortLinkManagement: React.FC = () => {
         fullShortUrl: record.fullShortUrl,
       })).unwrap();
       message.success('已移至回收站');
-      dispatch(fetchShortLinks({ current: currentPage, size: pageSize }));
+      dispatch(fetchShortLinks({ gid: selectedGid, current: currentPage, size: pageSize }));
     } catch (error) {
       message.error('操作失败');
     }
@@ -631,11 +645,36 @@ const ShortLinkManagement: React.FC = () => {
         </Space>
       </div>
 
+      {/* 分组选择器 */}
+      <Card style={{ marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <span style={{ fontWeight: 500 }}>选择分组：</span>
+          <Select
+            value={selectedGid}
+            onChange={setSelectedGid}
+            placeholder="请选择分组"
+            style={{ width: 200 }}
+            loading={groups.length === 0}
+          >
+            {groups.map(group => (
+              <Option key={group.gid} value={group.gid}>
+                {group.name}
+              </Option>
+            ))}
+          </Select>
+          {selectedGid && (
+            <span style={{ color: '#666', fontSize: '14px' }}>
+              当前分组：{groups.find(g => g.gid === selectedGid)?.name}
+            </span>
+          )}
+        </div>
+      </Card>
+
       <Card className="table-container">
         <Table
           columns={columns}
           dataSource={shortLinks}
-          rowKey="gid"
+          rowKey="fullShortUrl"
           loading={loading}
           pagination={{
             current: currentPage,

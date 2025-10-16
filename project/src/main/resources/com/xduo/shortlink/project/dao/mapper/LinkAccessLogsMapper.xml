@@ -12,11 +12,11 @@
         FROM
         t_link_access_logs lal
         WHERE
-        lal.full_short_url = #{fullShortUrl}
-        AND lal.gid = #{gid}
+        lal.gid = #{gid}
+        AND lal.full_short_url = #{fullShortUrl}
         AND lal.create_time BETWEEN #{startDate} AND #{endDate}
         GROUP BY
-        lal.full_short_url, lal.gid, lal.ip
+        lal.ip
         ORDER BY
         count DESC
         LIMIT 5;
@@ -28,8 +28,8 @@
         MIN(create_time) as first_access_time,
         MAX(create_time) as last_access_time
         FROM t_link_access_logs
-        WHERE full_short_url = #{fullShortUrl}
-        AND gid = #{gid}
+        WHERE gid = #{gid}
+        AND full_short_url = #{fullShortUrl}
         AND create_time BETWEEN #{startDate} AND #{endDate}
         GROUP BY user
     </select>
@@ -45,8 +45,8 @@
         network,
         locale
         FROM t_link_access_logs
-        WHERE full_short_url = #{fullShortUrl}
-        AND gid = #{gid}
+        WHERE gid = #{gid}
+        AND full_short_url = #{fullShortUrl}
         AND create_time BETWEEN #{startDate} AND #{endDate}
         <if test="userAccessLogsList != null and userAccessLogsList.size() &gt; 0">
             AND user IN

@@ -114,8 +114,11 @@ const groupSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(deleteGroup.fulfilled, (state) => {
+      .addCase(deleteGroup.fulfilled, (state, action) => {
         state.loading = false;
+        // 从本地状态中移除被删除的分组
+        const deletedGid = action.meta.arg;
+        state.groups = state.groups.filter(group => group.gid !== deletedGid);
       })
       .addCase(deleteGroup.rejected, (state, action) => {
         state.loading = false;

@@ -144,10 +144,15 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
     }
 
     /**
-     * 分页查询短链接 - 优化版本
+     * 分页查询短链接 - 性能优化版本，强制要求gid参数
      */
     @Override
     public IPage<ShortLinkPageRespDTO> pageShortLink(ShortLinkPageReqDTO shortLinkPageReqDTO) {
+        // 强制要求gid参数，避免全表扫描
+        if (shortLinkPageReqDTO.getGid() == null || shortLinkPageReqDTO.getGid().isEmpty()) {
+            throw new ClientException("分组ID不能为空，必须指定分组进行查询");
+        }
+        
         // 分页参数验证
         if (shortLinkPageReqDTO.getCurrent() <= 0) {
             shortLinkPageReqDTO.setCurrent(1L);
@@ -159,15 +164,8 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
             shortLinkPageReqDTO.setSize(100L);
         }
 
-        // 根据是否有gid过滤选择查询方法
-        IPage<LinkDO> resultPage;
-        if (shortLinkPageReqDTO.getGid() != null && !shortLinkPageReqDTO.getGid().isEmpty()) {
-            // 有gid过滤时使用优化查询，可以路由到特定分片
-            resultPage = baseMapper.pageLinkOptimized(shortLinkPageReqDTO);
-        } else {
-            // 无gid过滤时使用普通查询（需要扫描所有分片）
-            resultPage = baseMapper.pageLink(shortLinkPageReqDTO);
-        }
+        // 使用优化查询，可以路由到特定分片
+        IPage<LinkDO> resultPage = baseMapper.pageLinkOptimized(shortLinkPageReqDTO);
         
         return resultPage.convert(each -> {
             ShortLinkPageRespDTO bean = BeanUtil.toBean(each, ShortLinkPageRespDTO.class);
