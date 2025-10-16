@@ -174,12 +174,36 @@ else
     if [ "$docker_ok" = false ] || [ "$docker_compose_ok" = false ]; then
         print_message $YELLOW "📋 软件安装指南:"
         echo ""
-        if [ "$docker_ok" = false ]; then
-            print_message $BLUE "Docker 安装:"
-            print_message $BLUE "  macOS: https://docs.docker.com/desktop/mac/install/"
-            print_message $BLUE "  Linux: https://docs.docker.com/engine/install/"
-            echo ""
+    if [ "$docker_ok" = false ]; then
+        print_message $BLUE "Docker 安装:"
+        print_message $BLUE "  自动安装: ./deployment/install-docker.sh"
+        print_message $BLUE "  手动安装:"
+        print_message $BLUE "    macOS: https://docs.docker.com/desktop/mac/install/"
+        print_message $BLUE "    Windows: https://docs.docker.com/desktop/windows/install/"
+        print_message $BLUE "    Linux: https://docs.docker.com/engine/install/"
+        echo ""
+        
+        # 询问是否自动安装Docker
+        read -p "是否自动安装Docker? (y/N): " -n 1 -r
+        echo ""
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            if [ -f "./deployment/install-docker.sh" ]; then
+                print_message $YELLOW "🚀 开始自动安装Docker..."
+                chmod +x ./deployment/install-docker.sh
+                ./deployment/install-docker.sh
+                if [ $? -eq 0 ]; then
+                    print_message $GREEN "✅ Docker 安装完成，请重新运行环境检查"
+                    exit 0
+                else
+                    print_message $RED "❌ Docker 安装失败，请手动安装"
+                    exit 1
+                fi
+            else
+                print_message $RED "❌ 自动安装脚本不存在"
+                exit 1
+            fi
         fi
+    fi
         
         if [ "$docker_compose_ok" = false ]; then
             print_message $BLUE "Docker Compose 安装:"
