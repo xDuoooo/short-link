@@ -97,6 +97,13 @@ export interface GetShortLinksRequest {
   includeRecycle?: boolean;
 }
 
+export interface BatchGetShortLinksRequest {
+  gids: string[];
+  current?: number;
+  size?: number;
+  orderTag?: string;
+}
+
 export interface GroupCountResponse {
   gid: string;
   shortLinkCount: number;
@@ -135,6 +142,11 @@ export const shortLinkApi = {
     return api.get('/api/short-link/admin/v1/count', {
       params: { gids: gids.join(',') },
     });
+  },
+
+  // 批量获取短链接列表
+  batchGetShortLinks: (params: BatchGetShortLinksRequest): Promise<ShortLinkPageResponse> => {
+    return api.post('/api/short-link/admin/v1/page/batch', params);
   },
 
 };

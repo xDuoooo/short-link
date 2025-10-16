@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.xduo.shortlink.project.dao.entity.LinkDO;
 import com.xduo.shortlink.project.dto.req.*;
 import com.xduo.shortlink.project.dto.resp.ShortLinkBatchCreateRespDTO;
+import com.xduo.shortlink.project.dto.resp.ShortLinkBatchPageRespDTO;
 import com.xduo.shortlink.project.dto.resp.ShortLinkCreateRespDTO;
 import com.xduo.shortlink.project.dto.resp.ShortLinkGroupCountQueryRespDTO;
 import com.xduo.shortlink.project.dto.resp.ShortLinkPageRespDTO;
@@ -35,6 +36,14 @@ public interface LinkService extends IService<LinkDO> {
      * @return
      */
     IPage<ShortLinkPageRespDTO> pageShortLink(ShortLinkPageReqDTO shortLinkPageReqDTO);
+
+    /**
+     * 批量分页查询短链接
+     *
+     * @param shortLinkBatchPageReqDTO
+     * @return
+     */
+    ShortLinkBatchPageRespDTO batchPageShortLink(ShortLinkBatchPageReqDTO shortLinkBatchPageReqDTO);
 
     /**
      * 获取分组下短链接数量接口

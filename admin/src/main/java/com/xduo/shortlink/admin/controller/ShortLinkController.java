@@ -62,6 +62,14 @@ public class ShortLinkController {
     }
 
     /**
+     * 批量分页查询短链接
+     */
+    @PostMapping("/api/short-link/admin/v1/page/batch")
+    public Result<ShortLinkBatchPageRespDTO> batchPageShortLink(@RequestBody ShortLinkBatchPageReqDTO requestParam) {
+        return shortLinkActualRemoteService.batchPageShortLink(requestParam);
+    }
+
+    /**
      * 查询短链接分组下短链接数量
      */
     @GetMapping("/api/short-link/admin/v1/count")

@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.xduo.shortlink.project.common.constant.RedisKeyConstant.*;
@@ -172,6 +173,47 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
             bean.setDomain(bean.getDomain());
             return bean;
         });
+    }
+
+    /**
+     * 批量分页查询短链接 - 性能优化版本，支持多个分组批量查询
+     */
+    @Override
+    public ShortLinkBatchPageRespDTO batchPageShortLink(ShortLinkBatchPageReqDTO shortLinkBatchPageReqDTO) {
+        // 验证gids参数
+        if (shortLinkBatchPageReqDTO.getGids() == null || shortLinkBatchPageReqDTO.getGids().isEmpty()) {
+            throw new ClientException("分组ID列表不能为空，必须指定分组进行查询");
+        }
+        
+        // 分页参数验证
+        if (shortLinkBatchPageReqDTO.getCurrent() <= 0) {
+            shortLinkBatchPageReqDTO.setCurrent(1L);
+        }
+        if (shortLinkBatchPageReqDTO.getSize() <= 0) {
+            shortLinkBatchPageReqDTO.setSize(10L);
+        }
+        if (shortLinkBatchPageReqDTO.getSize() > 100) {
+            shortLinkBatchPageReqDTO.setSize(100L);
+        }
+
+        // 使用批量查询，可以路由到多个分片
+        List<LinkDO> allLinks = baseMapper.batchPageLinkOptimized(shortLinkBatchPageReqDTO);
+        
+        // 转换为响应DTO
+        List<ShortLinkPageRespDTO> records = allLinks.stream()
+            .map(each -> {
+                ShortLinkPageRespDTO bean = BeanUtil.toBean(each, ShortLinkPageRespDTO.class);
+                bean.setDomain(bean.getDomain());
+                return bean;
+            })
+            .collect(Collectors.toList());
+
+        return ShortLinkBatchPageRespDTO.builder()
+            .records(records)
+            .total((long) records.size())
+            .current(shortLinkBatchPageReqDTO.getCurrent())
+            .size(shortLinkBatchPageReqDTO.getSize())
+            .build();
     }
 
     @Override

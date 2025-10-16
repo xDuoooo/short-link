@@ -115,4 +115,47 @@ resultType="com.xduo.shortlink.project.dao.entity.LinkDO">
             </otherwise>
         </choose>
     </select>
+
+    <!-- 批量分页查询短链接 - 支持多个分组批量查询 -->
+    <select id="batchPageLinkOptimized" parameterType="com.xduo.shortlink.project.dto.req.ShortLinkBatchPageReqDTO"
+    resultType="com.xduo.shortlink.project.dao.entity.LinkDO">
+        SELECT t.*,
+        COALESCE(s.today_pv, 0) AS todayPv,
+        COALESCE(s.today_uv, 0) AS todayUv,
+        COALESCE(s.today_uip, 0) AS todayUip
+        FROM t_link t
+        LEFT JOIN t_link_stats_today s ON t.gid = s.gid
+        AND t.full_short_url = s.full_short_url
+        AND s.date = CURDATE()
+        WHERE t.del_flag = 0
+        AND t.enable_status = 1
+        AND t.gid IN
+        <foreach collection="gids" open="(" close=")" separator="," item="gid">
+            #{gid}
+        </foreach>
+        <choose>
+            <when test="orderTag == 'todayPv'">
+                ORDER BY todayPv DESC, t.create_time DESC
+            </when>
+            <when test="orderTag == 'todayUv'">
+                ORDER BY todayUv DESC, t.create_time DESC
+            </when>
+            <when test="orderTag == 'todayUip'">
+                ORDER BY todayUip DESC, t.create_time DESC
+            </when>
+            <when test="orderTag == 'totalPv'">
+                ORDER BY t.total_pv DESC, t.create_time DESC
+            </when>
+            <when test="orderTag == 'totalUv'">
+                ORDER BY t.total_uv DESC, t.create_time DESC
+            </when>
+            <when test="orderTag == 'totalUip'">
+                ORDER BY t.total_uip DESC, t.create_time DESC
+            </when>
+            <otherwise>
+                ORDER BY t.create_time DESC
+            </otherwise>
+        </choose>
+        LIMIT #{size}
+    </select>
 </mapper>

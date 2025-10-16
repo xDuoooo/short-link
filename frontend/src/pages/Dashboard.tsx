@@ -4,7 +4,7 @@ import { LinkOutlined, TeamOutlined, EyeOutlined, FireOutlined, BarChartOutlined
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../store';
 import { fetchGroups } from '../store/slices/groupSlice';
-import { fetchShortLinks, getGroupShortLinkCount } from '../store/slices/shortLinkSlice';
+import { fetchShortLinks, getGroupShortLinkCount, batchFetchShortLinks } from '../store/slices/shortLinkSlice';
 
 const { Title } = Typography;
 
@@ -36,41 +36,36 @@ const Dashboard: React.FC = () => {
   // 当分组加载完成后，获取所有分组的短链接
   useEffect(() => {
     if (groups.length > 0) {
-      // 获取所有分组的短链接数据，需要分别查询每个分组
+      // 使用批量查询接口，一次性获取所有分组的短链接数据
       const fetchAllGroupShortLinks = async () => {
-        const allShortLinks: any[] = [];
-        const promises = groups.map(group => 
-          dispatch(fetchShortLinks({ 
-            gid: group.gid, 
-            current: 1, 
-            size: 50, // 每个分组最多获取50条
-            orderTag: 'create_time' 
-          }))
-        );
-        
         try {
-          const results = await Promise.all(promises);
-          results.forEach(result => {
-            if (result.payload && (result.payload as any).records) {
-              allShortLinks.push(...(result.payload as any).records);
-            }
-          });
+          const gids = groups.map(group => group.gid);
+          const result = await dispatch(batchFetchShortLinks({ 
+            gids,
+            current: 1, 
+            size: 50, // 总共获取50条
+            orderTag: 'create_time' 
+          }));
           
-          // 按创建时间排序，取前10条
-          const sortedLinks = allShortLinks
-            .sort((a, b) => new Date(b.createTime).getTime() - new Date(a.createTime).getTime())
-            .slice(0, 10);
-          
-          // 更新Redux状态
-          dispatch({
-            type: 'shortLink/fetchShortLinks/fulfilled',
-            payload: {
-              records: sortedLinks,
-              total: allShortLinks.length,
-              current: 1,
-              size: 10
-            }
-          });
+          if (result.payload && (result.payload as any).records) {
+            const allShortLinks = (result.payload as any).records;
+            
+            // 按创建时间排序，取前10条
+            const sortedLinks = allShortLinks
+              .sort((a: any, b: any) => new Date(b.createTime).getTime() - new Date(a.createTime).getTime())
+              .slice(0, 10);
+            
+            // 更新Redux状态
+            dispatch({
+              type: 'shortLink/batchFetchShortLinks/fulfilled',
+              payload: {
+                records: sortedLinks,
+                total: allShortLinks.length,
+                current: 1,
+                size: 10
+              }
+            });
+          }
         } catch (error) {
           console.error('获取短链接数据失败:', error);
         }

@@ -1,6 +1,5 @@
 package com.xduo.shortlink.admin.remote.dto;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xduo.shortlink.admin.common.convention.result.Result;
 import com.xduo.shortlink.admin.remote.dto.req.*;
@@ -54,6 +53,15 @@ public interface ShortLinkActualRemoteService {
      */
     @GetMapping("/api/short-link/v1/page")
     Result<Page<ShortLinkPageRespDTO>> pageShortLink(ShortLinkPageReqDTO requestParam);
+
+    /**
+     * 批量分页查询短链接
+     *
+     * @param requestParam 批量分页查询短链接请求参数
+     * @return 批量查询短链接响应
+     */
+    @PostMapping("/api/short-link/v1/page/batch")
+    Result<ShortLinkBatchPageRespDTO> batchPageShortLink(@RequestBody ShortLinkBatchPageReqDTO requestParam);
 
     /**
      * 查询分组短链接总量

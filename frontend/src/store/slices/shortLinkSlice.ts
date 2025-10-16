@@ -123,6 +123,19 @@ export const getGroupShortLinkCount = createAsyncThunk(
   }
 );
 
+export const batchFetchShortLinks = createAsyncThunk(
+  'shortLink/batchFetchShortLinks',
+  async (params: {
+    gids: string[];
+    current?: number;
+    size?: number;
+    orderTag?: string;
+  }) => {
+    const response = await shortLinkApi.batchGetShortLinks(params);
+    return { ...response, currentPage: params.current || 1, pageSize: params.size || 10 };
+  }
+);
+
 const shortLinkSlice = createSlice({
   name: 'shortLink',
   initialState,
@@ -197,6 +210,22 @@ const shortLinkSlice = createSlice({
       .addCase(updateShortLink.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || '更新短链接失败';
+      })
+      // Batch Fetch Short Links
+      .addCase(batchFetchShortLinks.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(batchFetchShortLinks.fulfilled, (state, action) => {
+        state.loading = false;
+        state.shortLinks = action.payload?.records || [];
+        state.total = action.payload?.total || 0;
+        state.currentPage = action.payload?.currentPage || 1;
+        state.pageSize = action.payload?.pageSize || 10;
+      })
+      .addCase(batchFetchShortLinks.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || '批量获取短链接列表失败';
       });
   },
 });

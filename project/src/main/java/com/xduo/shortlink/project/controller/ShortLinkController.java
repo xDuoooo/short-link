@@ -5,10 +5,12 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.xduo.shortlink.project.common.convention.result.Result;
 import com.xduo.shortlink.project.common.convention.result.Results;
 import com.xduo.shortlink.project.dto.req.ShortLinkBatchCreateReqDTO;
+import com.xduo.shortlink.project.dto.req.ShortLinkBatchPageReqDTO;
 import com.xduo.shortlink.project.dto.req.ShortLinkCreateReqDTO;
 import com.xduo.shortlink.project.dto.req.ShortLinkPageReqDTO;
 import com.xduo.shortlink.project.dto.req.ShortLinkUpdateReqDTO;
 import com.xduo.shortlink.project.dto.resp.ShortLinkBatchCreateRespDTO;
+import com.xduo.shortlink.project.dto.resp.ShortLinkBatchPageRespDTO;
 import com.xduo.shortlink.project.dto.resp.ShortLinkCreateRespDTO;
 import com.xduo.shortlink.project.dto.resp.ShortLinkGroupCountQueryRespDTO;
 import com.xduo.shortlink.project.dto.resp.ShortLinkPageRespDTO;
@@ -80,6 +82,16 @@ public class ShortLinkController {
     @PostMapping("/page")
     public Result<IPage<ShortLinkPageRespDTO>> pageShortLink(@RequestBody ShortLinkPageReqDTO shortLinkPageReqDTO) {
         return Results.success(linkService.pageShortLink(shortLinkPageReqDTO));
+    }
+
+    /**
+     * 批量分页查询短链接请求
+     *
+     * @return
+     */
+    @PostMapping("/page/batch")
+    public Result<ShortLinkBatchPageRespDTO> batchPageShortLink(@RequestBody ShortLinkBatchPageReqDTO shortLinkBatchPageReqDTO) {
+        return Results.success(linkService.batchPageShortLink(shortLinkBatchPageReqDTO));
     }
 
     /**
