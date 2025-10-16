@@ -17,10 +17,12 @@ echo.
 REM 检查Docker
 where docker >nul 2>&1
 if %errorLevel% neq 0 (
-    echo ❌ Docker 未安装，请先安装 Docker
-    echo 💡 运行: deployment\install-docker.bat
-    pause
-    exit /b 1
+echo ❌ Docker 未安装，请先安装 Docker
+echo 💡 运行: deployment\install-docker.bat
+echo.
+echo 按任意键退出...
+pause
+exit /b 1
 )
 
 REM 检查Docker Compose
@@ -28,10 +30,12 @@ where docker-compose >nul 2>&1
 if %errorLevel% neq 0 (
     docker compose version >nul 2>&1
     if %errorLevel% neq 0 (
-        echo ❌ Docker Compose 未安装，请先安装 Docker Compose
-        echo 💡 重新安装Docker Desktop或运行: deployment\install-docker.bat
-        pause
-        exit /b 1
+echo ❌ Docker Compose 未安装，请先安装 Docker Compose
+echo 💡 重新安装Docker Desktop或运行: deployment\install-docker.bat
+echo.
+echo 按任意键退出...
+pause
+exit /b 1
     )
 )
 
@@ -40,11 +44,13 @@ if exist ".\check-environment.bat" (
     call .\check-environment.bat
     echo.
     set /p continue="是否继续启动中间件服务? (y/N): "
-    if /i not "!continue!"=="y" (
-        echo ❌ 用户取消启动
-        pause
-        exit /b 0
-    )
+if /i not "!continue!"=="y" (
+    echo ❌ 用户取消启动
+echo.
+echo 按任意键退出...
+    pause
+    exit /b 0
+)
 ) else (
     echo ⚠️  环境检查脚本不存在，跳过环境检查
 )
@@ -96,9 +102,11 @@ if %errorLevel% neq 0 (
     echo ❌ 启动失败，尝试使用docker compose命令...
     docker compose -f docker-compose.yml up -d
     if %errorLevel% neq 0 (
-        echo ❌ 启动失败，请检查Docker和docker-compose.yml配置
-        pause
-        exit /b 1
+echo ❌ 启动失败，请检查Docker和docker-compose.yml配置
+echo.
+echo 按任意键退出...
+pause
+exit /b 1
     )
 )
 
@@ -161,4 +169,5 @@ echo ✅ 中间件服务已准备就绪！
 echo.
 echo 🧪 服务测试: deployment\test-services.bat
 echo.
+echo 按任意键退出...
 pause

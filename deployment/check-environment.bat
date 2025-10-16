@@ -127,9 +127,11 @@ if "%docker_ok%"=="true" if "%docker_compose_ok%"=="true" if "%ports_ok%"=="fals
     echo.
     set /p continue="是否强制继续启动? (y/N): "
     if /i not "!continue!"=="y" (
-        echo ❌ 用户取消启动，请先解决端口冲突问题
-        pause
-        exit /b 1
+echo ❌ 用户取消启动，请先解决端口冲突问题
+echo.
+echo 按任意键退出...
+pause
+exit /b 1
     )
     goto :end
 )
@@ -154,10 +156,12 @@ if "%docker_compose_ok%"=="false" (
 )
 
 if "%disk_ok%"=="false" (
-    echo 💾 磁盘空间不足，请清理磁盘空间
-    echo.
+echo 💾 磁盘空间不足，请清理磁盘空间
+echo.
 )
 
+echo.
+echo 按任意键退出...
 pause
 exit /b 1
 
@@ -176,4 +180,6 @@ goto :eof
 :end
 echo.
 echo 📚 详细文档: .\MIDDLEWARE_SETUP.md
+echo.
+echo 按任意键退出...
 pause

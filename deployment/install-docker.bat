@@ -18,7 +18,11 @@ net session >nul 2>&1
 if %errorLevel% == 0 (
     echo ⚠️  检测到管理员权限，建议使用普通用户安装Docker Desktop
     set /p continue="是否继续? (y/N): "
-    if /i not "!continue!"=="y" exit /b 1
+    if /i not "!continue!"=="y" (
+    echo 用户取消安装
+    pause
+    exit /b 1
+)
 ) else (
     echo ✅ 使用普通用户权限运行
 )
@@ -66,10 +70,12 @@ echo ⬇️  正在下载Docker Desktop...
 powershell -Command "& {Invoke-WebRequest -Uri 'https://desktop.docker.com/win/main/amd64/Docker%20Desktop%20Installer.exe' -OutFile '%installer_path%'}"
 
 if not exist "%installer_path%" (
-    echo ❌ Docker Desktop 下载失败
-    echo 💡 请手动下载: https://docs.docker.com/desktop/windows/install/
-    pause
-    exit /b 1
+echo ❌ Docker Desktop 下载失败
+echo 💡 请手动下载: https://docs.docker.com/desktop/windows/install/
+echo.
+echo 按任意键退出...
+pause
+exit /b 1
 )
 
 echo ✅ Docker Desktop 下载完成
@@ -98,9 +104,11 @@ echo ⏳ 等待Docker服务启动...
 set /a retries=0
 :wait_loop
 if %retries% geq 30 (
-    echo ❌ Docker服务启动超时，请手动检查Docker Desktop状态
-    pause
-    exit /b 1
+echo ❌ Docker服务启动超时，请手动检查Docker Desktop状态
+echo.
+echo 按任意键退出...
+pause
+exit /b 1
 )
 
 docker info >nul 2>&1
@@ -146,5 +154,6 @@ echo 📚 接下来可以运行:
 echo   deployment\check-environment.bat  # 检查环境
 echo   deployment\middleware-start.bat   # 启动中间件
 echo.
+echo 按任意键退出...
 pause
 exit /b 0

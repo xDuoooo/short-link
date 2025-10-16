@@ -13,7 +13,7 @@
 
 ### 🚀 快速开始
 
-#### 方法一：一键部署（推荐）
+#### 方法一：一键启动（推荐）
 
 1. **下载项目**
    ```cmd
@@ -21,7 +21,16 @@
    cd short-link
    ```
 
-2. **运行一键部署脚本**
+2. **运行一键启动脚本**
+   ```cmd
+   deployment\start-here.bat
+   ```
+   
+   这个脚本提供友好的菜单界面，引导您完成整个部署过程。
+
+#### 方法二：直接运行部署脚本
+
+1. **运行一键部署脚本**
    ```cmd
    deployment\install-docker.bat
    ```
@@ -31,12 +40,12 @@
    - 检查系统环境
    - 启动所有中间件服务
 
-3. **验证部署**
+2. **验证部署**
    ```cmd
    deployment\test-services.bat
    ```
 
-#### 方法二：分步部署
+#### 方法三：分步部署
 
 1. **检查环境**
    ```cmd
@@ -62,10 +71,12 @@
 
 | 脚本文件 | 功能描述 |
 |---------|---------|
+| `start-here.bat` | **一键启动脚本（推荐）** - 提供友好菜单界面 |
 | `install-docker.bat` | 自动安装Docker Desktop |
 | `check-environment.bat` | 检查系统环境和依赖 |
 | `middleware-start.bat` | 启动所有中间件服务 |
 | `test-services.bat` | 测试服务连接状态 |
+| `test-batch-files.bat` | 测试批处理文件完整性 |
 
 ### 🌐 服务访问地址
 
@@ -78,6 +89,40 @@
 | **MinIO控制台** | http://localhost:9001 | minioadmin / minioadmin123 |
 
 ### 🔧 常见问题
+
+#### 0. 批处理文件闪退问题
+
+**问题**: 双击批处理文件后窗口立即关闭
+
+**解决方案**:
+
+1. **使用一键启动脚本（推荐）**:
+   ```cmd
+   deployment\start-here.bat
+   ```
+   这个脚本提供友好的菜单界面，不会闪退。
+
+2. **在命令行中运行**:
+   ```cmd
+   # 打开命令提示符，切换到项目目录
+   cd /d "C:\path\to\short-link"
+   
+   # 运行脚本
+   cmd /k "deployment\install-docker.bat"
+   ```
+
+3. **右键以管理员身份运行**:
+   - 右键点击批处理文件
+   - 选择"以管理员身份运行"
+
+4. **检查文件编码**:
+   - 确保批处理文件保存为 ANSI 编码
+   - 或者使用 UTF-8 编码（带BOM）
+
+5. **测试文件完整性**:
+   ```cmd
+   deployment\test-batch-files.bat
+   ```
 
 #### 1. Docker Desktop 启动失败
 
