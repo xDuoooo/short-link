@@ -46,7 +46,8 @@
             inner join t_link l on las.gid = l.gid and l.del_flag = 0
         </if>
         where las.full_short_url = #{fullShortUrl} and las.gid = #{gid} and las.date between #{startDate} and #{endDate}
-        group by las.date;
+        group by las.date
+        order by las.date asc;
     </select>
     <select id="getOneLinkBaseDateBetweenDateOptimized"
             resultType="com.xduo.shortlink.project.dao.entity.LinkAccessStatsDO">
@@ -55,7 +56,8 @@
             inner join t_link l on las.gid = l.gid and l.del_flag = 0
         </if>
         where las.full_short_url = #{shortLinkStatsReqDTO.fullShortUrl} and las.gid = #{shortLinkStatsReqDTO.gid} and las.date between #{shortLinkStatsReqDTO.startDate} and #{shortLinkStatsReqDTO.endDate}
-        group by las.date;
+        group by las.date
+        order by las.date asc;
     </select>
     <select id="listHourStatsByShortLink" resultType="com.xduo.shortlink.project.dao.entity.LinkAccessStatsDO">
         SELECT hour,SUM(pv) AS pv
@@ -103,7 +105,8 @@
             resultType="com.xduo.shortlink.project.dao.entity.LinkAccessStatsDO">
         select date,sum(pv) as pv,sum(uv) as uv , sum(uip) as uip from t_link_access_stats las
         where las.gid = #{gid} and las.date between #{startDate} and #{endDate}
-        group by las.date;
+        group by las.date
+        order by las.date asc;
     </select>
     <select id="listGroupHourStatsByShortLink"
             resultType="com.xduo.shortlink.project.dao.entity.LinkAccessStatsDO">
