@@ -7,7 +7,6 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.xduo.shortlink.project.common.database.BaseDO;
 import com.xduo.shortlink.project.dao.entity.LinkDO;
 import com.xduo.shortlink.project.dao.mapper.LinkMapper;
 import com.xduo.shortlink.project.dto.req.*;
@@ -49,16 +48,12 @@ public class RecycleBinServiceImpl extends ServiceImpl<LinkMapper, LinkDO> imple
     }
 
     /**
-     * 分页查询回收站短链接
+     * 分页查询回收站短链接 - 性能优化版本
      */
     @Override
     public IPage<ShortLinkPageRespDTO> pageShortLink(ShortLinkRecycleBinPageReqDTO shortLinkPageReqDTO) {
-
-        LambdaQueryWrapper<LinkDO> lambdaQueryWrapper = Wrappers.lambdaQuery(LinkDO.class)
-                .in(LinkDO::getGid, shortLinkPageReqDTO.getGidList())
-                .eq(LinkDO::getEnableStatus, 0)
-                .eq(BaseDO::getDelFlag, 0);
-        IPage<LinkDO> resultPage = baseMapper.selectPage(new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(shortLinkPageReqDTO.getCurrent(), shortLinkPageReqDTO.getSize()), lambdaQueryWrapper);
+        // 使用自定义SQL查询，避免MyBatis Plus生成的IN查询导致全表扫描
+        IPage<LinkDO> resultPage = baseMapper.pageRecycleBinLinkOptimized(shortLinkPageReqDTO);
         return resultPage.convert(each -> {
             ShortLinkPageRespDTO bean = BeanUtil.toBean(each, ShortLinkPageRespDTO.class);
             bean.setDomain(bean.getDomain());

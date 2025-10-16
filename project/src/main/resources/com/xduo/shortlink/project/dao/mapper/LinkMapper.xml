@@ -164,4 +164,20 @@ resultType="com.xduo.shortlink.project.dao.entity.LinkDO">
         </choose>
         LIMIT #{size}
     </select>
+
+    <!-- 批量分页查询回收站短链接 - 支持多个分组批量查询，避免全表扫描 -->
+    <select id="pageRecycleBinLinkOptimized" parameterType="com.xduo.shortlink.project.dto.req.ShortLinkRecycleBinPageReqDTO"
+    resultType="com.xduo.shortlink.project.dao.entity.LinkDO">
+        SELECT *
+        FROM t_link
+        WHERE del_flag = 0
+        AND enable_status = 0
+        <if test="gidList != null and gidList.size() > 0">
+            AND gid IN
+            <foreach collection="gidList" open="(" close=")" separator="," item="gid">
+                #{gid}
+            </foreach>
+        </if>
+        ORDER BY create_time DESC
+    </select>
 </mapper>

@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.xduo.shortlink.project.dao.entity.LinkDO;
 import com.xduo.shortlink.project.dto.req.ShortLinkBatchPageReqDTO;
 import com.xduo.shortlink.project.dto.req.ShortLinkPageReqDTO;
+import com.xduo.shortlink.project.dto.req.ShortLinkRecycleBinPageReqDTO;
 import com.xduo.shortlink.project.dto.resp.ShortLinkGroupCountQueryRespDTO;
 import org.apache.ibatis.annotations.Param;
 
@@ -43,6 +44,11 @@ public interface LinkMapper extends BaseMapper<LinkDO> {
      * 批量分页查询短链接 - 支持多个分组批量查询
      */
     List<LinkDO> batchPageLinkOptimized(ShortLinkBatchPageReqDTO shortLinkBatchPageReqDTO);
+
+    /**
+     * 批量分页查询回收站短链接 - 支持多个分组批量查询
+     */
+    IPage<LinkDO> pageRecycleBinLinkOptimized(ShortLinkRecycleBinPageReqDTO shortLinkRecycleBinPageReqDTO);
 }
 
 
