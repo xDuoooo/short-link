@@ -13,6 +13,7 @@ spring:
       channel-topic:
         short-link-stats: 'short-link:stats-stream'
         short-link-stats-group: 'short-link:stats-stream:only-group'
+      password: redis123
   kafka:
     bootstrap-servers: localhost:9092
     topic:
@@ -34,7 +35,9 @@ spring:
   cloud:
     nacos:
       discovery:
-         server-addr: 127.0.0.1:8848
+        server-addr: 127.0.0.1:8848
+        username: nacos
+        password: nacos
 
 mybatis-plus:
   configuration:

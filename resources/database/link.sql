@@ -513,3 +513,455 @@ CREATE TABLE `t_user_12` LIKE `t_user_0`;
 CREATE TABLE `t_user_13` LIKE `t_user_0`;
 CREATE TABLE `t_user_14` LIKE `t_user_0`;
 CREATE TABLE `t_user_15` LIKE `t_user_0`;
+
+
+-- =============================================
+-- 性能优化：添加缺失的索引
+-- 解决全表扫描问题
+-- =============================================
+
+-- =============================================
+-- 1. t_link_access_logs 表索引优化
+-- =============================================
+
+-- 为所有 t_link_access_logs 分表添加索引
+-- 分片键索引（gid）
+ALTER TABLE `t_link_access_logs_0` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_1` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_2` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_3` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_4` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_5` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_6` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_7` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_8` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_9` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_10` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_11` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_12` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_13` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_14` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_15` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_16` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_17` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_18` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_19` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_20` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_21` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_22` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_23` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_24` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_25` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_26` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_27` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_28` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_29` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_30` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_31` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_32` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_33` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_34` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_35` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_36` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_37` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_38` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_39` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_40` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_41` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_42` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_43` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_44` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_45` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_46` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_47` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_48` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_49` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_50` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_51` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_52` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_53` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_54` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_55` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_56` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_57` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_58` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_59` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_60` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_61` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_62` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+ALTER TABLE `t_link_access_logs_63` ADD INDEX `idx_gid` (`gid`) USING BTREE;
+
+-- 时间范围查询索引（create_time）
+ALTER TABLE `t_link_access_logs_0` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_1` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_2` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_3` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_4` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_5` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_6` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_7` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_8` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_9` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_10` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_11` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_12` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_13` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_14` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_15` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_16` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_17` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_18` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_19` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_20` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_21` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_22` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_23` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_24` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_25` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_26` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_27` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_28` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_29` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_30` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_31` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_32` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_33` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_34` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_35` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_36` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_37` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_38` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_39` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_40` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_41` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_42` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_43` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_44` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_45` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_46` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_47` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_48` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_49` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_50` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_51` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_52` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_53` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_54` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_55` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_56` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_57` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_58` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_59` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_60` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_61` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_62` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_63` ADD INDEX `idx_create_time` (`create_time`) USING BTREE;
+
+-- 复合索引：gid + create_time（最常用的查询组合）
+ALTER TABLE `t_link_access_logs_0` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_1` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_2` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_3` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_4` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_5` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_6` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_7` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_8` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_9` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_10` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_11` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_12` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_13` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_14` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_15` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_16` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_17` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_18` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_19` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_20` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_21` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_22` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_23` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_24` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_25` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_26` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_27` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_28` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_29` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_30` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_31` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_32` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_33` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_34` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_35` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_36` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_37` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_38` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_39` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_40` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_41` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_42` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_43` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_44` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_45` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_46` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_47` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_48` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_49` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_50` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_51` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_52` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_53` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_54` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_55` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_56` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_57` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_58` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_59` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_60` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_61` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_62` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_access_logs_63` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+
+-- =============================================
+-- 2. t_link 表索引优化
+-- =============================================
+
+-- 为所有 t_link 分表添加复合索引
+-- gid + enable_status + del_flag 复合索引（分页查询优化）
+ALTER TABLE `t_link_0` ADD INDEX `idx_gid_status_del` (`gid`, `enable_status`, `del_flag`) USING BTREE;
+ALTER TABLE `t_link_1` ADD INDEX `idx_gid_status_del` (`gid`, `enable_status`, `del_flag`) USING BTREE;
+ALTER TABLE `t_link_2` ADD INDEX `idx_gid_status_del` (`gid`, `enable_status`, `del_flag`) USING BTREE;
+ALTER TABLE `t_link_3` ADD INDEX `idx_gid_status_del` (`gid`, `enable_status`, `del_flag`) USING BTREE;
+ALTER TABLE `t_link_4` ADD INDEX `idx_gid_status_del` (`gid`, `enable_status`, `del_flag`) USING BTREE;
+ALTER TABLE `t_link_5` ADD INDEX `idx_gid_status_del` (`gid`, `enable_status`, `del_flag`) USING BTREE;
+ALTER TABLE `t_link_6` ADD INDEX `idx_gid_status_del` (`gid`, `enable_status`, `del_flag`) USING BTREE;
+ALTER TABLE `t_link_7` ADD INDEX `idx_gid_status_del` (`gid`, `enable_status`, `del_flag`) USING BTREE;
+ALTER TABLE `t_link_8` ADD INDEX `idx_gid_status_del` (`gid`, `enable_status`, `del_flag`) USING BTREE;
+ALTER TABLE `t_link_9` ADD INDEX `idx_gid_status_del` (`gid`, `enable_status`, `del_flag`) USING BTREE;
+ALTER TABLE `t_link_10` ADD INDEX `idx_gid_status_del` (`gid`, `enable_status`, `del_flag`) USING BTREE;
+ALTER TABLE `t_link_11` ADD INDEX `idx_gid_status_del` (`gid`, `enable_status`, `del_flag`) USING BTREE;
+ALTER TABLE `t_link_12` ADD INDEX `idx_gid_status_del` (`gid`, `enable_status`, `del_flag`) USING BTREE;
+ALTER TABLE `t_link_13` ADD INDEX `idx_gid_status_del` (`gid`, `enable_status`, `del_flag`) USING BTREE;
+ALTER TABLE `t_link_14` ADD INDEX `idx_gid_status_del` (`gid`, `enable_status`, `del_flag`) USING BTREE;
+ALTER TABLE `t_link_15` ADD INDEX `idx_gid_status_del` (`gid`, `enable_status`, `del_flag`) USING BTREE;
+
+-- gid + create_time 复合索引（排序优化）
+ALTER TABLE `t_link_0` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_1` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_2` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_3` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_4` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_5` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_6` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_7` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_8` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_9` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_10` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_11` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_12` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_13` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_14` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+ALTER TABLE `t_link_15` ADD INDEX `idx_gid_create_time` (`gid`, `create_time`) USING BTREE;
+
+-- =============================================
+-- 3. t_link_stats_today 表索引优化
+-- =============================================
+
+-- 为所有 t_link_stats_today 分表添加复合索引
+-- gid + date 复合索引（今日统计查询优化）
+ALTER TABLE `t_link_stats_today_0` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_stats_today_1` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_stats_today_2` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_stats_today_3` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_stats_today_4` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_stats_today_5` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_stats_today_6` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_stats_today_7` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_stats_today_8` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_stats_today_9` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_stats_today_10` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_stats_today_11` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_stats_today_12` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_stats_today_13` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_stats_today_14` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_stats_today_15` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+
+-- =============================================
+-- 4. 统计表索引优化
+-- =============================================
+
+-- t_link_access_stats 表索引优化
+-- gid + date 复合索引
+ALTER TABLE `t_link_access_stats_0` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_access_stats_1` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_access_stats_2` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_access_stats_3` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_access_stats_4` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_access_stats_5` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_access_stats_6` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_access_stats_7` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_access_stats_8` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_access_stats_9` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_access_stats_10` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_access_stats_11` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_access_stats_12` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_access_stats_13` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_access_stats_14` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_access_stats_15` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_access_stats_16` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_access_stats_17` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_access_stats_18` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_access_stats_19` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_access_stats_20` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_access_stats_21` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_access_stats_22` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_access_stats_23` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_access_stats_24` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_access_stats_25` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_access_stats_26` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_access_stats_27` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_access_stats_28` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_access_stats_29` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_access_stats_30` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_access_stats_31` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+
+-- 其他统计表的 gid + date 复合索引
+-- t_link_browser_stats
+ALTER TABLE `t_link_browser_stats_0` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_browser_stats_1` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_browser_stats_2` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_browser_stats_3` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_browser_stats_4` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_browser_stats_5` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_browser_stats_6` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_browser_stats_7` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_browser_stats_8` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_browser_stats_9` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_browser_stats_10` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_browser_stats_11` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_browser_stats_12` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_browser_stats_13` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_browser_stats_14` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_browser_stats_15` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+
+-- t_link_device_stats
+ALTER TABLE `t_link_device_stats_0` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_device_stats_1` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_device_stats_2` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_device_stats_3` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_device_stats_4` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_device_stats_5` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_device_stats_6` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_device_stats_7` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_device_stats_8` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_device_stats_9` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_device_stats_10` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_device_stats_11` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_device_stats_12` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_device_stats_13` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_device_stats_14` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_device_stats_15` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+
+-- t_link_locale_stats
+ALTER TABLE `t_link_locale_stats_0` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_locale_stats_1` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_locale_stats_2` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_locale_stats_3` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_locale_stats_4` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_locale_stats_5` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_locale_stats_6` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_locale_stats_7` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_locale_stats_8` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_locale_stats_9` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_locale_stats_10` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_locale_stats_11` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_locale_stats_12` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_locale_stats_13` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_locale_stats_14` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_locale_stats_15` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+
+-- t_link_network_stats
+ALTER TABLE `t_link_network_stats_0` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_network_stats_1` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_network_stats_2` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_network_stats_3` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_network_stats_4` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_network_stats_5` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_network_stats_6` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_network_stats_7` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_network_stats_8` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_network_stats_9` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_network_stats_10` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_network_stats_11` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_network_stats_12` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_network_stats_13` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_network_stats_14` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_network_stats_15` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+
+-- t_link_os_stats
+ALTER TABLE `t_link_os_stats_0` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_os_stats_1` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_os_stats_2` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_os_stats_3` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_os_stats_4` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_os_stats_5` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_os_stats_6` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_os_stats_7` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_os_stats_8` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_os_stats_9` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_os_stats_10` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_os_stats_11` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_os_stats_12` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_os_stats_13` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_os_stats_14` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+ALTER TABLE `t_link_os_stats_15` ADD INDEX `idx_gid_date` (`gid`, `date`) USING BTREE;
+
+-- =============================================
+-- 5. t_link_goto 表索引优化
+-- =============================================
+
+-- 注意：t_link_goto 表在创建时已经定义了 UNIQUE KEY idx_full_short_url
+-- 无需重复添加索引
+
+-- =============================================
+-- 6. 用户表和分组表索引优化
+-- =============================================
+
+-- t_user 表索引优化
+-- gid + del_flag 复合索引
+ALTER TABLE `t_user_0` ADD INDEX `idx_gid_del_flag` (`gid`, `del_flag`) USING BTREE;
+ALTER TABLE `t_user_1` ADD INDEX `idx_gid_del_flag` (`gid`, `del_flag`) USING BTREE;
+ALTER TABLE `t_user_2` ADD INDEX `idx_gid_del_flag` (`gid`, `del_flag`) USING BTREE;
+ALTER TABLE `t_user_3` ADD INDEX `idx_gid_del_flag` (`gid`, `del_flag`) USING BTREE;
+ALTER TABLE `t_user_4` ADD INDEX `idx_gid_del_flag` (`gid`, `del_flag`) USING BTREE;
+ALTER TABLE `t_user_5` ADD INDEX `idx_gid_del_flag` (`gid`, `del_flag`) USING BTREE;
+ALTER TABLE `t_user_6` ADD INDEX `idx_gid_del_flag` (`gid`, `del_flag`) USING BTREE;
+ALTER TABLE `t_user_7` ADD INDEX `idx_gid_del_flag` (`gid`, `del_flag`) USING BTREE;
+ALTER TABLE `t_user_8` ADD INDEX `idx_gid_del_flag` (`gid`, `del_flag`) USING BTREE;
+ALTER TABLE `t_user_9` ADD INDEX `idx_gid_del_flag` (`gid`, `del_flag`) USING BTREE;
+ALTER TABLE `t_user_10` ADD INDEX `idx_gid_del_flag` (`gid`, `del_flag`) USING BTREE;
+ALTER TABLE `t_user_11` ADD INDEX `idx_gid_del_flag` (`gid`, `del_flag`) USING BTREE;
+ALTER TABLE `t_user_12` ADD INDEX `idx_gid_del_flag` (`gid`, `del_flag`) USING BTREE;
+ALTER TABLE `t_user_13` ADD INDEX `idx_gid_del_flag` (`gid`, `del_flag`) USING BTREE;
+ALTER TABLE `t_user_14` ADD INDEX `idx_gid_del_flag` (`gid`, `del_flag`) USING BTREE;
+ALTER TABLE `t_user_15` ADD INDEX `idx_gid_del_flag` (`gid`, `del_flag`) USING BTREE;
+
+-- t_group 表索引优化
+-- gid + del_flag 复合索引
+ALTER TABLE `t_group_0` ADD INDEX `idx_gid_del_flag` (`gid`, `del_flag`) USING BTREE;
+ALTER TABLE `t_group_1` ADD INDEX `idx_gid_del_flag` (`gid`, `del_flag`) USING BTREE;
+ALTER TABLE `t_group_2` ADD INDEX `idx_gid_del_flag` (`gid`, `del_flag`) USING BTREE;
+ALTER TABLE `t_group_3` ADD INDEX `idx_gid_del_flag` (`gid`, `del_flag`) USING BTREE;
+ALTER TABLE `t_group_4` ADD INDEX `idx_gid_del_flag` (`gid`, `del_flag`) USING BTREE;
+ALTER TABLE `t_group_5` ADD INDEX `idx_gid_del_flag` (`gid`, `del_flag`) USING BTREE;
+ALTER TABLE `t_group_6` ADD INDEX `idx_gid_del_flag` (`gid`, `del_flag`) USING BTREE;
+ALTER TABLE `t_group_7` ADD INDEX `idx_gid_del_flag` (`gid`, `del_flag`) USING BTREE;
+ALTER TABLE `t_group_8` ADD INDEX `idx_gid_del_flag` (`gid`, `del_flag`) USING BTREE;
+ALTER TABLE `t_group_9` ADD INDEX `idx_gid_del_flag` (`gid`, `del_flag`) USING BTREE;
+ALTER TABLE `t_group_10` ADD INDEX `idx_gid_del_flag` (`gid`, `del_flag`) USING BTREE;
+ALTER TABLE `t_group_11` ADD INDEX `idx_gid_del_flag` (`gid`, `del_flag`) USING BTREE;
+ALTER TABLE `t_group_12` ADD INDEX `idx_gid_del_flag` (`gid`, `del_flag`) USING BTREE;
+ALTER TABLE `t_group_13` ADD INDEX `idx_gid_del_flag` (`gid`, `del_flag`) USING BTREE;
+ALTER TABLE `t_group_14` ADD INDEX `idx_gid_del_flag` (`gid`, `del_flag`) USING BTREE;
+ALTER TABLE `t_group_15` ADD INDEX `idx_gid_del_flag` (`gid`, `del_flag`) USING BTREE;
