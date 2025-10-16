@@ -218,8 +218,11 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, LinkDO> implements 
 
     @Override
     public List<ShortLinkGroupCountQueryRespDTO> listGroupShortLinkCount(List<String> gids) {
+        // 如果gids为空或null，直接返回空列表
+        if (gids == null || gids.isEmpty()) {
+            return new ArrayList<>();
+        }
         return linkMapper.listGroupShortLinkCount(gids);
-
     }
 
     @Override

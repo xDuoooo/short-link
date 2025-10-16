@@ -10,11 +10,15 @@
 
     <select id="listGroupShortLinkCount"
             resultType="com.xduo.shortlink.project.dto.resp.ShortLinkGroupCountQueryRespDTO">
-        select gid,count(1) as shortLinkCount FROM t_link where gid in
-        <foreach collection="list" open="(" close=")" separator="," item="each">
-            #{each}
-        </foreach>
-        and enable_status=1 and del_flag = 0
+        select gid,count(1) as shortLinkCount FROM t_link where 
+        <if test="list != null and list.size() > 0">
+            gid in
+            <foreach collection="list" open="(" close=")" separator="," item="each">
+                #{each}
+            </foreach>
+            and 
+        </if>
+        enable_status=1 and del_flag = 0
         group by gid
     </select>
 
@@ -129,10 +133,12 @@ resultType="com.xduo.shortlink.project.dao.entity.LinkDO">
         AND s.date = CURDATE()
         WHERE t.del_flag = 0
         AND t.enable_status = 1
-        AND t.gid IN
-        <foreach collection="gids" open="(" close=")" separator="," item="gid">
-            #{gid}
-        </foreach>
+        <if test="gids != null and gids.size() > 0">
+            AND t.gid IN
+            <foreach collection="gids" open="(" close=")" separator="," item="gid">
+                #{gid}
+            </foreach>
+        </if>
         <choose>
             <when test="orderTag == 'todayPv'">
                 ORDER BY todayPv DESC, t.create_time DESC
