@@ -37,6 +37,58 @@ test_service() {
     fi
 }
 
+# 测试MySQL连接
+test_mysql() {
+    print_message $YELLOW "测试 MySQL 连接..."
+    
+    if docker exec mysql mysql -u shortlink -pshortlink123 -e "SELECT 1;" >/dev/null 2>&1; then
+        print_message $GREEN "✅ MySQL 连接成功 (localhost:3306)"
+        return 0
+    else
+        print_message $RED "❌ MySQL 连接失败 (localhost:3306)"
+        return 1
+    fi
+}
+
+# 测试Redis连接
+test_redis() {
+    print_message $YELLOW "测试 Redis 连接..."
+    
+    if redis-cli -h localhost -p 6379 -a redis123 ping >/dev/null 2>&1; then
+        print_message $GREEN "✅ Redis 连接成功 (localhost:6379)"
+        return 0
+    else
+        print_message $RED "❌ Redis 连接失败 (localhost:6379)"
+        return 1
+    fi
+}
+
+# 测试Zookeeper连接
+test_zookeeper() {
+    print_message $YELLOW "测试 Zookeeper 连接..."
+    
+    if echo "srvr" | nc localhost 2181 >/dev/null 2>&1; then
+        print_message $GREEN "✅ Zookeeper 连接成功 (localhost:2181)"
+        return 0
+    else
+        print_message $RED "❌ Zookeeper 连接失败 (localhost:2181)"
+        return 1
+    fi
+}
+
+# 测试Kafka连接
+test_kafka() {
+    print_message $YELLOW "测试 Kafka 连接..."
+    
+    if docker exec kafka kafka-broker-api-versions --bootstrap-server localhost:9092 >/dev/null 2>&1; then
+        print_message $GREEN "✅ Kafka 连接成功 (localhost:9092)"
+        return 0
+    else
+        print_message $RED "❌ Kafka 连接失败 (localhost:9092)"
+        return 1
+    fi
+}
+
 # 测试HTTP服务
 test_http_service() {
     local service_name=$1
@@ -60,10 +112,10 @@ print_title "短链接系统中间件服务测试"
 print_message $BLUE "🔍 测试基础服务连接..."
 echo ""
 
-test_service "MySQL" "localhost" "3306"
-test_service "Redis" "localhost" "6379"
-test_service "Zookeeper" "localhost" "2181"
-test_service "Kafka" "localhost" "9092"
+test_mysql
+test_redis
+test_zookeeper
+test_kafka
 
 echo ""
 
@@ -81,7 +133,7 @@ echo ""
 print_message $BLUE "🐳 检查Docker容器状态..."
 echo ""
 
-docker-compose -f deployment/docker-compose.yml ps
+docker-compose -f docker-compose.yml ps
 
 echo ""
 

@@ -115,47 +115,86 @@ fi
 print_message $BLUE "🔌 检查端口占用..."
 echo ""
 
-check_port 3306 "MySQL"
-check_port 6379 "Redis"
-check_port 2181 "Zookeeper"
-check_port 9092 "Kafka"
-check_port 8080 "Kafka UI"
-check_port 9000 "MinIO"
-check_port 9001 "MinIO Console"
-check_port 8848 "Nacos"
+ports_ok=true
+check_port 3306 "MySQL" || ports_ok=false
+check_port 6379 "Redis" || ports_ok=false
+check_port 2181 "Zookeeper" || ports_ok=false
+check_port 9092 "Kafka" || ports_ok=false
+check_port 8080 "Kafka UI" || ports_ok=false
+check_port 9000 "MinIO" || ports_ok=false
+check_port 9001 "MinIO Console" || ports_ok=false
+check_port 8848 "Nacos" || ports_ok=false
 
 echo ""
 
 # 检查磁盘空间
 print_message $BLUE "💾 检查磁盘空间..."
 echo ""
-check_disk_space
+disk_ok=true
+check_disk_space || disk_ok=false
 
 echo ""
 
 # 总结
 print_title "检查结果"
 
-if [ "$docker_ok" = true ] && [ "$docker_compose_ok" = true ]; then
+# 综合检查结果
+if [ "$docker_ok" = true ] && [ "$docker_compose_ok" = true ] && [ "$ports_ok" = true ] && [ "$disk_ok" = true ]; then
     print_message $GREEN "🎉 环境检查通过！可以运行 ./deployment/middleware-start.sh 启动中间件服务"
+elif [ "$docker_ok" = true ] && [ "$docker_compose_ok" = true ] && [ "$ports_ok" = false ]; then
+    print_message $YELLOW "⚠️  环境检查部分通过，但存在端口冲突"
+    echo ""
+    print_message $YELLOW "💡 解决方案:"
+    print_message $BLUE "1. 停止占用端口的服务:"
+    print_message $BLUE "   sudo lsof -ti:3306 | xargs kill -9  # MySQL"
+    print_message $BLUE "   sudo lsof -ti:6379 | xargs kill -9  # Redis"
+    print_message $BLUE "   sudo lsof -ti:2181 | xargs kill -9  # Zookeeper"
+    print_message $BLUE "   sudo lsof -ti:9092 | xargs kill -9  # Kafka"
+    print_message $BLUE "   sudo lsof -ti:8080 | xargs kill -9  # Kafka UI"
+    print_message $BLUE "   sudo lsof -ti:9000 | xargs kill -9  # MinIO"
+    print_message $BLUE "   sudo lsof -ti:9001 | xargs kill -9  # MinIO Console"
+    print_message $BLUE "   sudo lsof -ti:8848 | xargs kill -9  # Nacos"
+    echo ""
+    print_message $BLUE "2. 或者修改 docker-compose.yml 中的端口映射"
+    echo ""
+    print_message $YELLOW "⚠️  如果继续启动，Docker容器可能会启动失败"
+    echo ""
+    read -p "是否强制继续启动? (y/N): " -n 1 -r
+    echo ""
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        print_message $YELLOW "⚠️  用户选择强制启动，可能会遇到端口冲突问题"
+    else
+        print_message $YELLOW "❌ 用户取消启动，请先解决端口冲突问题"
+        exit 1
+    fi
 else
-    print_message $RED "❌ 环境检查失败，请先安装必需软件"
+    print_message $RED "❌ 环境检查失败，请先解决以下问题:"
     echo ""
-    print_message $YELLOW "📋 安装指南:"
-    echo ""
-    if [ "$docker_ok" = false ]; then
-        print_message $BLUE "Docker 安装:"
-        print_message $BLUE "  macOS: https://docs.docker.com/desktop/mac/install/"
-        print_message $BLUE "  Linux: https://docs.docker.com/engine/install/"
+    
+    if [ "$docker_ok" = false ] || [ "$docker_compose_ok" = false ]; then
+        print_message $YELLOW "📋 软件安装指南:"
+        echo ""
+        if [ "$docker_ok" = false ]; then
+            print_message $BLUE "Docker 安装:"
+            print_message $BLUE "  macOS: https://docs.docker.com/desktop/mac/install/"
+            print_message $BLUE "  Linux: https://docs.docker.com/engine/install/"
+            echo ""
+        fi
+        
+        if [ "$docker_compose_ok" = false ]; then
+            print_message $BLUE "Docker Compose 安装:"
+            print_message $BLUE "  macOS: 通常随Docker Desktop一起安装"
+            print_message $BLUE "  Linux: sudo apt-get install docker-compose-plugin"
+            echo ""
+        fi
+    fi
+    
+    if [ "$disk_ok" = false ]; then
+        print_message $YELLOW "💾 磁盘空间不足，请清理磁盘空间"
         echo ""
     fi
     
-    if [ "$docker_compose_ok" = false ]; then
-        print_message $BLUE "Docker Compose 安装:"
-        print_message $BLUE "  macOS: 通常随Docker Desktop一起安装"
-        print_message $BLUE "  Linux: sudo apt-get install docker-compose-plugin"
-        echo ""
-    fi
+    exit 1
 fi
 
 print_message $BLUE "📚 详细文档: ./MIDDLEWARE_SETUP.md"
