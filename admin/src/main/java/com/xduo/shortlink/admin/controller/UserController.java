@@ -10,6 +10,7 @@ import com.xduo.shortlink.admin.dto.req.UserChangePasswordReqDTO;
 import com.xduo.shortlink.admin.dto.req.SendEmailCodeReqDTO;
 import com.xduo.shortlink.admin.dto.req.SendForgotPasswordEmailReqDTO;
 import com.xduo.shortlink.admin.dto.req.ForgotPasswordReqDTO;
+import com.xduo.shortlink.admin.dto.req.SendRegisterEmailCodeReqDTO;
 import com.xduo.shortlink.admin.dto.resp.UserActualRespDTO;
 import com.xduo.shortlink.admin.dto.resp.UserLoginRespDTO;
 import com.xduo.shortlink.admin.dto.resp.UserRespDTO;
@@ -106,6 +107,17 @@ public class UserController {
     @PostMapping("/api/short-link/admin/v1/user/send-email-code")
     public Result<Void> sendEmailCode(@RequestBody SendEmailCodeReqDTO sendEmailCodeReqDTO){
         userService.sendEmailCode(sendEmailCodeReqDTO);
+        return Results.success();
+    }
+    
+    /**
+     * 发送注册邮箱验证码
+     * @param sendRegisterEmailCodeReqDTO
+     * @return
+     */
+    @PostMapping("/api/short-link/admin/v1/user/send-register-email-code")
+    public Result<Void> sendRegisterEmailCode(@RequestBody SendRegisterEmailCodeReqDTO sendRegisterEmailCodeReqDTO){
+        userService.sendRegisterEmailCode(sendRegisterEmailCodeReqDTO.getEmail());
         return Results.success();
     }
 

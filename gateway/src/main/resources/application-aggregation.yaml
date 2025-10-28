@@ -14,6 +14,7 @@ spring:
                   - /api/short-link/admin/v1/user/has-username
                   - /api/short-link/admin/v1/user/send-forgot-password-email-code
                   - /api/short-link/admin/v1/user/forgot-password
+                  - /api/short-link/admin/v1/user/send-register-email-code
 
         - id: short-link-project-aggregation
           uri: lb://short-link-aggregation/api/short-link/**

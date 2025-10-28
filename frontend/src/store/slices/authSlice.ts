@@ -50,6 +50,7 @@ export const register = createAsyncThunk(
     realName: string;
     phone: string;
     mail: string;
+    emailCode: string;
   }) => {
     await authApi.register(userData);
   }

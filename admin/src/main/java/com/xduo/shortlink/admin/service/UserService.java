@@ -88,4 +88,10 @@ public interface UserService extends IService<UserDO> {
      * @param forgotPasswordReqDTO
      */
     void forgotPassword(ForgotPasswordReqDTO forgotPasswordReqDTO);
+    
+    /**
+     * 发送注册验证码
+     * @param email 邮箱地址
+     */
+    void sendRegisterEmailCode(String email);
 }

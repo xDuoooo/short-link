@@ -35,4 +35,9 @@ public class UserRegisterReqDTO {
 
      */
     private String mail;
+    
+    /**
+     * 邮箱验证码
+     */
+    private String emailCode;
 }

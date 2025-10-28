@@ -15,6 +15,7 @@ export interface RegisterRequest {
   realName: string;
   phone: string;
   mail: string;
+  emailCode: string;
 }
 
 export interface UserInfo {
@@ -58,6 +59,10 @@ export interface SendEmailCodeRequest {
 
 export interface SendForgotPasswordEmailRequest {
   username: string;
+  email: string;
+}
+
+export interface SendRegisterEmailCodeRequest {
   email: string;
 }
 
@@ -138,5 +143,10 @@ export const authApi = {
   // 找回密码
   forgotPassword: (data: ForgotPasswordRequest): Promise<void> => {
     return api.post('/api/short-link/admin/v1/user/forgot-password', data);
+  },
+  
+  // 发送注册邮箱验证码
+  sendRegisterEmailCode: (data: SendRegisterEmailCodeRequest): Promise<void> => {
+    return api.post('/api/short-link/admin/v1/user/send-register-email-code', data);
   },
 };

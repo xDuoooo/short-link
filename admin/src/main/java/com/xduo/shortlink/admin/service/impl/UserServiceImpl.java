@@ -72,9 +72,29 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
 
     @Override
     public void register(UserRegisterReqDTO registerReqDto) {
+        // 1. 验证用户名格式
+        validateUsername(registerReqDto.getUsername());
+        
+        // 2. 验证密码格式
+        validatePassword(registerReqDto.getPassword());
+        
+        // 3. 检查用户名是否存在
         if (hasUsername(registerReqDto.getUsername())) {
             throw new ClientException(UserErrorCodeEnum.USER_EXIST);
         }
+        
+        // 4. 验证邮箱验证码
+        if (registerReqDto.getEmailCode() == null || registerReqDto.getEmailCode().trim().isEmpty()) {
+            throw new ClientException("邮箱验证码不能为空");
+        }
+        if (registerReqDto.getMail() == null || registerReqDto.getMail().trim().isEmpty()) {
+            throw new ClientException("邮箱不能为空");
+        }
+        if (!emailCodeService.verifyEmailCode(registerReqDto.getMail(), registerReqDto.getEmailCode())) {
+            throw new ClientException("邮箱验证码错误或已过期");
+        }
+        
+        // 5. 注册用户
         RLock lock = redissonClient.getLock(RedisCacheConstants.LOCK_USER_REGISTER_KEY + registerReqDto.getUsername());
         try {
             if (lock.tryLock()) {
@@ -89,12 +109,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
                 }
                 userRegisterCachePenetrationBloomFilter.add(registerReqDto.getUsername());
                 groupService.saveGroup(registerReqDto.getUsername(), "默认分组");
+                
+                // 删除验证码
+                emailCodeService.deleteEmailCode(registerReqDto.getMail());
             }
         } finally {
             lock.unlock();
         }
-
-
     }
 
     @Override
@@ -309,6 +330,84 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
         // 删除验证码
         emailCodeService.deleteEmailCode(userDO.getMail());
     }
-
+    
+    @Override
+    public void sendRegisterEmailCode(String email) {
+        // 验证邮箱格式
+        if (email == null || email.trim().isEmpty()) {
+            throw new ClientException("邮箱不能为空");
+        }
+        
+        // 检查邮箱是否已经被注册
+        LambdaQueryWrapper<UserDO> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(UserDO::getMail, email).eq(UserDO::getDelFlag, 0);
+        UserDO existingUser = baseMapper.selectOne(lambdaQueryWrapper);
+        if (existingUser != null) {
+            throw new ClientException("该邮箱已被注册");
+        }
+        
+        // 生成并发送验证码
+        String code = emailCodeService.sendEmailCode(email, "");
+        emailService.sendRegisterEmailCode(email, code);
+    }
+    
+    /**
+     * 验证用户名格式
+     */
+    private void validateUsername(String username) {
+        if (username == null || username.trim().isEmpty()) {
+            throw new ClientException("用户名不能为空");
+        }
+        
+        // 用户名长度至少6个字符
+        if (username.length() < 6) {
+            throw new ClientException("用户名至少需要6个字符");
+        }
+        
+        // 用户名最多20个字符
+        if (username.length() > 20) {
+            throw new ClientException("用户名最多20个字符");
+        }
+        
+        // 用户名只能包含字母、数字、下划线和连字符
+        if (!username.matches("^[a-zA-Z0-9_-]+$")) {
+            throw new ClientException("用户名只能包含字母、数字、下划线和连字符");
+        }
+    }
+    
+    /**
+     * 验证密码格式
+     */
+    private void validatePassword(String password) {
+        if (password == null || password.trim().isEmpty()) {
+            throw new ClientException("密码不能为空");
+        }
+        
+        // 密码长度至少6个字符
+        if (password.length() < 6) {
+            throw new ClientException("密码至少需要6个字符");
+        }
+        
+        // 密码最多20个字符
+        if (password.length() > 20) {
+            throw new ClientException("密码最多20个字符");
+        }
+        
+        // 密码必须至少包含两种类型的字符（小写字母、大写字母、数字、特殊字符）
+        boolean hasLowercase = password.matches(".*[a-z].*");
+        boolean hasUppercase = password.matches(".*[A-Z].*");
+        boolean hasDigit = password.matches(".*\\d.*");
+        boolean hasSpecial = password.matches(".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?].*");
+        
+        int typeCount = 0;
+        if (hasLowercase) typeCount++;
+        if (hasUppercase) typeCount++;
+        if (hasDigit) typeCount++;
+        if (hasSpecial) typeCount++;
+        
+        if (typeCount < 2) {
+            throw new ClientException("密码必须至少包含两种类型的字符（小写字母、大写字母、数字、特殊字符）");
+        }
+    }
 
 }

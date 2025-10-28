@@ -20,4 +20,11 @@ public interface EmailService {
      * @param username 用户名
      */
     void sendForgotPasswordEmailCode(String email, String code, String username);
+    
+    /**
+     * 发送注册邮箱验证码
+     * @param email 邮箱地址
+     * @param code 验证码
+     */
+    void sendRegisterEmailCode(String email, String code);
 }

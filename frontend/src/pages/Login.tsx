@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { AppDispatch, RootState } from '../store';
 import { login, register, clearError } from '../store/slices/authSlice';
+import { authApi } from '../api/auth';
 
 const { Title } = Typography;
 
@@ -19,12 +20,17 @@ interface RegisterForm {
   realName: string;
   phone: string;
   mail: string;
+  emailCode: string;
 }
 
 const Login: React.FC = () => {
   const [activeTab, setActiveTab] = useState('login');
   const [termsModalVisible, setTermsModalVisible] = useState(false);
   const [privacyModalVisible, setPrivacyModalVisible] = useState(false);
+  const [codeLoading, setCodeLoading] = useState(false);
+  const [codeCountdown, setCodeCountdown] = useState(0);
+  const [registerForm] = Form.useForm<RegisterForm>();
+  const timerRef = React.useRef<NodeJS.Timeout | null>(null);
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const { loading, error } = useSelector((state: RootState) => state.auth);
@@ -35,6 +41,15 @@ const Login: React.FC = () => {
       dispatch(clearError());
     }
   }, [activeTab, dispatch, error]);
+
+  // 组件卸载时清理定时器
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, []);
 
   const handleLogin = async (values: LoginForm) => {
     try {
@@ -61,6 +76,62 @@ const Login: React.FC = () => {
       // 使用更详细的错误信息
       const errorMessage = error?.message || '注册失败，请重试';
       message.error(errorMessage);
+    }
+  };
+  
+  const handleSendRegisterCode = async (e?: React.MouseEvent) => {
+    // 阻止事件冒泡和默认行为
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
+    // 获取邮箱输入框的值
+    const email = registerForm.getFieldValue('mail');
+    
+    if (!email) {
+      message.error('请先输入邮箱地址');
+      return;
+    }
+    
+    // 验证邮箱格式
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      message.error('请输入正确的邮箱地址');
+      return;
+    }
+    
+    try {
+      setCodeLoading(true);
+      console.log('发送验证码请求:', email);
+      await authApi.sendRegisterEmailCode({ email });
+      message.success('验证码已发送到您的邮箱，请注意查收');
+      
+      // 清除之前的定时器
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+      
+      setCodeCountdown(60);
+      
+      // 开始倒计时
+      timerRef.current = setInterval(() => {
+        setCodeCountdown((prev) => {
+          if (prev <= 1) {
+            if (timerRef.current) {
+              clearInterval(timerRef.current);
+              timerRef.current = null;
+            }
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } catch (error: any) {
+      console.error('发送验证码失败:', error);
+      message.error(error?.message || '发送验证码失败，请重试');
+    } finally {
+      setCodeLoading(false);
     }
   };
 
@@ -123,6 +194,7 @@ const Login: React.FC = () => {
       label: '注册',
       children: (
         <Form
+          form={registerForm}
           name="register"
           onFinish={handleRegister}
           autoComplete="off"
@@ -132,7 +204,9 @@ const Login: React.FC = () => {
             name="username"
             rules={[
               { required: true, message: '请输入用户名!' },
-              { min: 3, message: '用户名至少3个字符!' },
+              { min: 6, message: '用户名至少6个字符!' },
+              { max: 20, message: '用户名最多20个字符!' },
+              { pattern: /^[a-zA-Z0-9_-]+$/, message: '用户名只能包含字母、数字、下划线和连字符!' },
             ]}
           >
             <Input
@@ -178,10 +252,37 @@ const Login: React.FC = () => {
           </Form.Item>
 
           <Form.Item
+            name="emailCode"
+            rules={[
+              { required: true, message: '请输入验证码!' },
+              { len: 4, message: '验证码为4位数字!' },
+              { pattern: /^\d{4}$/, message: '请输入4位数字验证码!' },
+            ]}
+          >
+            <Input
+              prefix={<MailOutlined />}
+              placeholder="请输入4位验证码"
+              maxLength={4}
+              suffix={
+                <Button
+                  type="link"
+                  onClick={handleSendRegisterCode}
+                  loading={codeLoading}
+                  disabled={codeCountdown > 0}
+                  style={{ padding: 0 }}
+                >
+                  {codeCountdown > 0 ? `${codeCountdown}s` : '发送验证码'}
+                </Button>
+              }
+            />
+          </Form.Item>
+
+          <Form.Item
             name="password"
             rules={[
               { required: true, message: '请输入密码!' },
               { min: 6, message: '密码至少6个字符!' },
+              { max: 20, message: '密码最多20个字符!' },
             ]}
           >
             <Input.Password
@@ -189,6 +290,12 @@ const Login: React.FC = () => {
               placeholder="密码"
             />
           </Form.Item>
+          
+          <div style={{ fontSize: '12px', color: '#999', marginBottom: '16px' }}>
+            <div>密码要求：</div>
+            <div>• 长度6-20个字符</div>
+            <div>• 至少包含两种类型的字符（小写字母、大写字母、数字、特殊字符）</div>
+          </div>
 
           <Form.Item>
             <Button
