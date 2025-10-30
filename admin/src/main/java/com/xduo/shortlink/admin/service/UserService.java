@@ -9,6 +9,7 @@ import com.xduo.shortlink.admin.dto.req.UserChangePasswordReqDTO;
 import com.xduo.shortlink.admin.dto.req.SendEmailCodeReqDTO;
 import com.xduo.shortlink.admin.dto.req.SendForgotPasswordEmailReqDTO;
 import com.xduo.shortlink.admin.dto.req.ForgotPasswordReqDTO;
+import com.xduo.shortlink.admin.dto.req.UserChangeEmailReqDTO;
 import com.xduo.shortlink.admin.dto.resp.UserLoginRespDTO;
 import com.xduo.shortlink.admin.dto.resp.UserRespDTO;
 
@@ -94,4 +95,16 @@ public interface UserService extends IService<UserDO> {
      * @param email 邮箱地址
      */
     void sendRegisterEmailCode(String email);
+
+    /**
+     * 用户变更邮箱
+     * @param reqDTO 变更请求
+     */
+    void changeEmail(UserChangeEmailReqDTO reqDTO);
+
+    /**
+     * 发送变更邮箱验证码
+     * @param sendEmailCodeReqDTO
+     */
+    void sendChangeEmailCode(SendEmailCodeReqDTO sendEmailCodeReqDTO);
 }

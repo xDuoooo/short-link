@@ -27,4 +27,9 @@ public interface EmailService {
      * @param code 验证码
      */
     void sendRegisterEmailCode(String email, String code);
+
+    /**
+     * 发送变更邮箱验证码
+     */
+    void sendChangeEmailCode(String email, String code, String username);
 }

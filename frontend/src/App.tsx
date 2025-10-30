@@ -13,6 +13,7 @@ import ShortLinkStats from './pages/ShortLinkStats';
 import RecycleBin from './pages/RecycleBin';
 import UserProfile from './pages/UserProfile';
 import ChangePassword from './pages/ChangePassword';
+import ChangeEmail from './pages/ChangeEmail';
 
 const App: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -82,6 +83,7 @@ const App: React.FC = () => {
         <Route path="/recycle" element={<RecycleBin />} />
         <Route path="/profile" element={<UserProfile />} />
         <Route path="/change-password" element={<ChangePassword />} />
+        <Route path="/change-email" element={<ChangeEmail />} />
         <Route path="/login" element={<Navigate to="/dashboard" replace />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>

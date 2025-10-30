@@ -22,3 +22,6 @@ spring:
             - Path=/api/short-link/**
           filters:
             - name: TokenValidate
+              args:
+                whitePathList:
+                  - /api/short-link/v1/stats/access-record/export

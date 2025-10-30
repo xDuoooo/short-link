@@ -19,6 +19,7 @@ import com.xduo.shortlink.admin.dto.req.UserChangePasswordReqDTO;
 import com.xduo.shortlink.admin.dto.req.SendEmailCodeReqDTO;
 import com.xduo.shortlink.admin.dto.req.SendForgotPasswordEmailReqDTO;
 import com.xduo.shortlink.admin.dto.req.ForgotPasswordReqDTO;
+import com.xduo.shortlink.admin.dto.req.UserChangeEmailReqDTO;
 import com.xduo.shortlink.admin.dto.resp.UserLoginRespDTO;
 import com.xduo.shortlink.admin.dto.resp.UserRespDTO;
 import com.xduo.shortlink.admin.service.GroupService;
@@ -349,6 +350,54 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserDO> implements 
         // 生成并发送验证码
         String code = emailCodeService.sendEmailCode(email, "");
         emailService.sendRegisterEmailCode(email, code);
+    }
+    
+    @Override
+    public void changeEmail(UserChangeEmailReqDTO reqDTO) {
+        if (reqDTO.getUsername() == null || reqDTO.getUsername().trim().isEmpty()) {
+            throw new ClientException("用户名不能为空");
+        }
+        if (reqDTO.getNewEmail() == null || reqDTO.getNewEmail().trim().isEmpty()) {
+            throw new ClientException("新邮箱不能为空");
+        }
+        if (reqDTO.getEmailCode() == null || reqDTO.getEmailCode().trim().isEmpty()) {
+            throw new ClientException("邮箱验证码不能为空");
+        }
+        // 校验新邮箱是否已被注册
+        LambdaQueryWrapper<UserDO> emailUniqueCheck = new LambdaQueryWrapper<>();
+        emailUniqueCheck.eq(UserDO::getMail, reqDTO.getNewEmail()).eq(UserDO::getDelFlag, 0);
+        UserDO existedUser = baseMapper.selectOne(emailUniqueCheck);
+        if (existedUser != null) {
+            throw new ClientException("该邮箱已被注册");
+        }
+        // 校验验证码
+        if (!emailCodeService.verifyEmailCode(reqDTO.getNewEmail(), reqDTO.getEmailCode())) {
+            throw new ClientException("邮箱验证码错误或已过期");
+        }
+        // 变更邮箱
+        LambdaUpdateWrapper<UserDO> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(UserDO::getUsername, reqDTO.getUsername())
+                     .set(UserDO::getMail, reqDTO.getNewEmail());
+        int update = baseMapper.update(null, updateWrapper);
+        if (update < 1) {
+            throw new ClientException("邮箱变更失败");
+        }
+        // 删除验证码
+        emailCodeService.deleteEmailCode(reqDTO.getNewEmail());
+    }
+    
+    @Override
+    public void sendChangeEmailCode(SendEmailCodeReqDTO reqDTO) {
+        if (reqDTO.getUsername() == null || reqDTO.getUsername().trim().isEmpty()) {
+            throw new ClientException("用户名不能为空");
+        }
+        if (reqDTO.getEmail() == null || reqDTO.getEmail().trim().isEmpty()) {
+            throw new ClientException("邮箱不能为空");
+        }
+        // 生成验证码并缓存（新邮箱）
+        String code = emailCodeService.sendEmailCode(reqDTO.getEmail(), reqDTO.getUsername());
+        // 发送变更邮箱邮件
+        emailService.sendChangeEmailCode(reqDTO.getEmail(), code, reqDTO.getUsername());
     }
     
     /**

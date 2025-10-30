@@ -140,6 +140,11 @@ export const authApi = {
     return api.post('/api/short-link/admin/v1/user/send-forgot-password-email-code', data);
   },
 
+  // 发送变更邮箱验证码（新邮箱）
+  sendChangeEmailCode: (data: SendEmailCodeRequest): Promise<void> => {
+    return api.post('/api/short-link/admin/v1/user/send-change-email-code', data);
+  },
+
   // 找回密码
   forgotPassword: (data: ForgotPasswordRequest): Promise<void> => {
     return api.post('/api/short-link/admin/v1/user/forgot-password', data);
@@ -148,5 +153,10 @@ export const authApi = {
   // 发送注册邮箱验证码
   sendRegisterEmailCode: (data: SendRegisterEmailCodeRequest): Promise<void> => {
     return api.post('/api/short-link/admin/v1/user/send-register-email-code', data);
+  },
+
+  // 修改邮箱
+  changeEmail: (data: { username: string; newEmail: string; emailCode: string }): Promise<void> => {
+    return api.post('/api/short-link/admin/v1/user/change-email', data);
   },
 };

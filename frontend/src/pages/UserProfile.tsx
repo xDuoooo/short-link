@@ -280,6 +280,8 @@ const UserProfile: React.FC = () => {
                     <Input
                       prefix={<MailOutlined />}
                       placeholder="请输入邮箱"
+                      readOnly
+                      style={{ color: '#aaa', width: '100%' }}
                     />
                   </Form.Item>
                 </Col>
@@ -311,14 +313,24 @@ const UserProfile: React.FC = () => {
               
               <div>
                 <Title level={5}>安全设置</Title>
-                <Button
-                  type="primary"
-                  icon={<SafetyOutlined />}
-                  onClick={() => navigate('/change-password')}
-                  style={{ marginTop: 8 }}
-                >
-                  修改密码
-                </Button>
+                <Space direction="vertical" size="middle">
+                  <Button
+                    type="primary"
+                    icon={<SafetyOutlined />}
+                    onClick={() => navigate('/change-password')}
+                    style={{ marginTop: 8 }}
+                  >
+                    修改密码
+                  </Button>
+                  <Button
+                    type="primary"
+                    icon={<MailOutlined />}
+                    onClick={() => navigate('/change-email')}
+                    style={{ marginTop: 8 }}
+                  >
+                    修改邮箱
+                  </Button>
+                </Space>
               </div>
             </div>
           </Card>

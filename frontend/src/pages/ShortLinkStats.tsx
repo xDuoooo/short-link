@@ -37,6 +37,7 @@ import {
 import { fetchShortLinks, clearShortLinks } from '../store/slices/shortLinkSlice';
 import { fetchGroups } from '../store/slices/groupSlice';
 import dayjs from 'dayjs';
+import FileExcelOutlined from '@ant-design/icons/FileExcelOutlined';
 
 const { Title } = Typography;
 const { RangePicker } = DatePicker;
@@ -240,6 +241,55 @@ const ShortLinkStats: React.FC = () => {
           includeRecycle: includeRecycle,
         }));
       }
+    }
+  };
+
+  // 导出访问记录Excel，改为fetch+blob方式
+  const handleExportAccessRecords = async () => {
+    console.log('[导出Excel] 点击按钮，进入handleExportAccessRecords');
+    console.log('[导出Excel][参数]', {selectedGroup, dateRange, pageSize, selectedShortLink});
+    if (!selectedGroup || !dateRange[0] || !dateRange[1]) {
+      console.warn('[导出Excel] 检查未通过，selectedGroup 或 dateRange 未选择');
+      alert('请先选择分组和时间区间再导出');
+      return;
+    } else {
+      console.log('[导出Excel] 检查通过，准备导出');
+    }
+    const params = new URLSearchParams({
+      gid: selectedGroup,
+      startDate: dateRange[0].format('YYYY-MM-DD'),
+      endDate: dateRange[1].format('YYYY-MM-DD'),
+      size: pageSize.toString(),
+    });
+    if (selectedShortLink) {
+      params.append('fullShortUrl', selectedShortLink);
+    }
+    const url = `/api/short-link/v1/stats/access-record/export?${params.toString()}`;
+    console.log('[导出Excel] 构造导出url:', url);
+
+    // fetch 下载实现
+    try {
+      const res = await fetch(url, {
+        method: 'GET',
+        credentials: 'include' // 保证cookie带上
+      });
+      if (!res.ok) {
+        alert('导出失败！请确认登录或联系管理员');
+        console.error('[导出Excel] fetch失败，响应码:', res.status);
+        return;
+      }
+      const blob = await res.blob();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = '访问记录.xlsx';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(a.href);
+      console.log('[导出Excel] fetch+blob 下载流程结束');
+    } catch (err) {
+      console.error('[导出Excel] fetch 下载异常:', err);
+      alert('导出异常，请联系管理员');
     }
   };
 
@@ -715,7 +765,11 @@ const ShortLinkStats: React.FC = () => {
       key: 'records',
       label: '访问记录',
       children: (
-        <Card className="table-container">
+        <Card className="table-container"
+              extra={<Button icon={<FileExcelOutlined />} onClick={handleExportAccessRecords} type="primary" style={{float: 'right'}}>
+              导出Excel
+            </Button>}
+        >
           <Table
             columns={accessRecordColumns}
             dataSource={accessRecords}

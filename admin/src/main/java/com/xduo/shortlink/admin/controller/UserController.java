@@ -11,6 +11,7 @@ import com.xduo.shortlink.admin.dto.req.SendEmailCodeReqDTO;
 import com.xduo.shortlink.admin.dto.req.SendForgotPasswordEmailReqDTO;
 import com.xduo.shortlink.admin.dto.req.ForgotPasswordReqDTO;
 import com.xduo.shortlink.admin.dto.req.SendRegisterEmailCodeReqDTO;
+import com.xduo.shortlink.admin.dto.req.UserChangeEmailReqDTO;
 import com.xduo.shortlink.admin.dto.resp.UserActualRespDTO;
 import com.xduo.shortlink.admin.dto.resp.UserLoginRespDTO;
 import com.xduo.shortlink.admin.dto.resp.UserRespDTO;
@@ -122,6 +123,15 @@ public class UserController {
     }
 
     /**
+     * 发送变更邮箱验证码
+     */
+    @PostMapping("/api/short-link/admin/v1/user/send-change-email-code")
+    public Result<Void> sendChangeEmailCode(@RequestBody SendEmailCodeReqDTO reqDTO) {
+        userService.sendChangeEmailCode(reqDTO);
+        return Results.success();
+    }
+
+    /**
      * 检查用户是否登录
      * @param username
      * @param token
@@ -193,6 +203,15 @@ public class UserController {
     @PostMapping("/api/short-link/admin/v1/user/forgot-password")
     public Result<Void> forgotPassword(@RequestBody ForgotPasswordReqDTO forgotPasswordReqDTO) {
         userService.forgotPassword(forgotPasswordReqDTO);
+        return Results.success();
+    }
+
+    /**
+     * 变更邮箱
+     */
+    @PostMapping("/api/short-link/admin/v1/user/change-email")
+    public Result<Void> changeEmail(@RequestBody UserChangeEmailReqDTO reqDTO) {
+        userService.changeEmail(reqDTO);
         return Results.success();
     }
 
