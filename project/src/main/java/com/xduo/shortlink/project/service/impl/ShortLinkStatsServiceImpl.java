@@ -12,9 +12,7 @@ import com.xduo.shortlink.project.service.ShortLinkStatsService;
 import com.xduo.shortlink.project.service.ShortLinkUvStatsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import com.alibaba.excel.EasyExcel;
-import javax.servlet.http.HttpServletResponse;
-import java.net.URLEncoder;
+
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
@@ -558,30 +556,5 @@ public class ShortLinkStatsServiceImpl implements ShortLinkStatsService {
         );
 
         return actualResult;
-    }
-
-    @Override
-    public void exportShortLinkStatsAccessRecordExcel(ShortLinkStatsAccessRecordReqDTO requestParam, HttpServletResponse response) {
-        // 支持 recent N 条
-        Integer exportSize = requestParam.getExportSize();
-        if (exportSize != null && exportSize > 0) {
-            requestParam.setCurrent(1L);
-            requestParam.setSize(exportSize.longValue());
-        } else {
-            requestParam.setCurrent(1L);
-            requestParam.setSize(Long.MAX_VALUE);
-        }
-        IPage<ShortLinkStatsAccessRecordRespDTO> resultPage = shortLinkStatsAccessRecord(requestParam);
-        try {
-            String fileName = "短链访问记录导出.xlsx";
-            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-            response.setCharacterEncoding("utf-8");
-            response.setHeader("Content-disposition", "attachment;filename=" + URLEncoder.encode(fileName, "UTF-8"));
-            EasyExcel.write(response.getOutputStream(), ShortLinkStatsAccessRecordRespDTO.class)
-                    .sheet("访问记录")
-                    .doWrite(resultPage.getRecords());
-        } catch (Exception e) {
-            throw new RuntimeException("导出访问日志为Excel失败", e);
-        }
     }
 }
