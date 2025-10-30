@@ -14,6 +14,7 @@ import {
   Spin,
   Switch,
   Tooltip,
+  InputNumber,
 } from 'antd';
 import {
   EyeOutlined,
@@ -54,6 +55,7 @@ const ShortLinkStats: React.FC = () => {
   ]);
   const [activeTab, setActiveTab] = useState('overview');
   const [includeRecycle, setIncludeRecycle] = useState<boolean>(true);
+  const [exportSize, setExportSize] = useState<number | null>(null);
 
   const dispatch = useDispatch<AppDispatch>();
   const { statsData, accessRecords, loading, total, currentPage, pageSize } = useSelector((state: RootState) => state.stats);
@@ -255,11 +257,12 @@ const ShortLinkStats: React.FC = () => {
     } else {
       console.log('[导出Excel] 检查通过，准备导出');
     }
+    const sizeParam = exportSize && exportSize > 0 ? exportSize : pageSize;
     const params = new URLSearchParams({
       gid: selectedGroup,
       startDate: dateRange[0].format('YYYY-MM-DD'),
       endDate: dateRange[1].format('YYYY-MM-DD'),
-      size: pageSize.toString(),
+      size: sizeParam.toString(),
     });
     if (selectedShortLink) {
       params.append('fullShortUrl', selectedShortLink);
@@ -766,9 +769,19 @@ const ShortLinkStats: React.FC = () => {
       label: '访问记录',
       children: (
         <Card className="table-container"
-              extra={<Button icon={<FileExcelOutlined />} onClick={handleExportAccessRecords} type="primary" style={{float: 'right'}}>
-              导出Excel
-            </Button>}
+              extra={<span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <InputNumber
+                  min={1}
+                  step={1}
+                  placeholder="导出前N条"
+                  style={{ width: 120 }}
+                  value={exportSize ?? undefined}
+                  onChange={v => setExportSize(v ?? null)}
+                />
+                <Button icon={<FileExcelOutlined />} onClick={handleExportAccessRecords} type="primary">
+                  导出Excel
+                </Button>
+              </span>}
         >
           <Table
             columns={accessRecordColumns}
