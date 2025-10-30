@@ -171,7 +171,7 @@ public class UserController {
             String extension = originalFilename != null && originalFilename.contains(".") 
                 ? originalFilename.substring(originalFilename.lastIndexOf(".")) 
                 : "";
-            String objectName = "avatars/" + username + "_" + System.currentTimeMillis() + extension;
+            String objectName = "avatars/" + username + "/" + System.currentTimeMillis() + extension;
             
             // 直接使用admin模块的MinIO服务
             String avatarUrl = minIOService.uploadFile(file, objectName);
