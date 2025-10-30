@@ -20,6 +20,7 @@ import {
   UserOutlined,
   GlobalOutlined,
   BarChartOutlined,
+  DownloadOutlined,
 } from '@ant-design/icons';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { Tooltip as RechartsTooltip } from 'recharts';
@@ -45,6 +46,33 @@ const { Option } = Select;
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
 const ShortLinkStats: React.FC = () => {
+  // 定义导出相关变量（必须在 tabItems 前定义）
+  const exportOptions = [
+    { label: '全部导出', value: 0 },
+    { label: '最近30条', value: 30 },
+    { label: '最近50条', value: 50 },
+    { label: '最近100条', value: 100 },
+  ];
+  const [exportSize, setExportSize] = useState<number>(0);
+  const handleExport = () => {
+    if (!selectedGroup || !dateRange[0] || !dateRange[1]) return;
+    const params: Record<string, any> = {
+      gid: selectedGroup,
+      startDate: dateRange[0].format('YYYY-MM-DD'),
+      endDate: dateRange[1].format('YYYY-MM-DD'),
+      includeRecycle,
+    };
+    if (selectedShortLink) {
+      params.fullShortUrl = selectedShortLink;
+    }
+    if (exportSize > 0) {
+      params.exportSize = exportSize;
+    }
+    const arr = Object.entries(params).map(([k, v]) => `${k}=${encodeURIComponent(String(v))}`);
+    const url = `/api/short-link/v1/stats/access-record/export?${arr.join('&')}`;
+    window.open(url, '_blank');
+  };
+
   const [selectedGroup, setSelectedGroup] = useState<string>('');
   const [selectedShortLink, setSelectedShortLink] = useState<string>('');
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs]>([
@@ -715,7 +743,21 @@ const ShortLinkStats: React.FC = () => {
       key: 'records',
       label: '访问记录',
       children: (
-        <Card className="table-container">
+        <Card className="table-container" title={
+          <div style={{display:'flex',alignItems:'center',gap:12,justifyContent:'space-between'}}>
+            <div>
+              <Select
+                value={exportSize}
+                style={{ width: 140, marginRight: 8 }}
+                onChange={setExportSize}
+                options={exportOptions}
+              />
+              <Button icon={<DownloadOutlined />} onClick={handleExport} type="primary">
+                导出访问记录 Excel
+              </Button>
+            </div>
+          </div>
+        }>
           <Table
             columns={accessRecordColumns}
             dataSource={accessRecords}

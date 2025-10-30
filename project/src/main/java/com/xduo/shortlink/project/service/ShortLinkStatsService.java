@@ -37,4 +37,11 @@ public interface ShortLinkStatsService {
      * @return 访问记录监控数据
      */
     IPage<ShortLinkStatsAccessRecordRespDTO> shortLinkGroupStatsAccessRecord(ShortLinkGroupStatsAccessRecordReqDTO requestParam);
+
+    /**
+     * 导出短链访问记录为Excel
+     * @param requestParam 查询参数
+     * @param response HTTP响应，为写入下载内容
+     */
+    void exportShortLinkStatsAccessRecordExcel(ShortLinkStatsAccessRecordReqDTO requestParam, javax.servlet.http.HttpServletResponse response);
 }

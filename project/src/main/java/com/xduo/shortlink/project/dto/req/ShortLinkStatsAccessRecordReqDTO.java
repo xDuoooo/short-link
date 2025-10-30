@@ -34,4 +34,9 @@ public class ShortLinkStatsAccessRecordReqDTO extends Page<LinkAccessLogsDO> {
      * 是否包含回收站短链接
      */
     private Boolean includeRecycle;
+
+    /**
+     * 导出最近N条（为空或<=0为全部导出）
+     */
+    private Integer exportSize;
 }
