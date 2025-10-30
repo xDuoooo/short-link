@@ -50,7 +50,7 @@ mybatis-plus:
 short-link:
   stats:
     locale:
-      amap-key: f4f8f283d183514f765a116f78ba2268
+      amap-key:
   domain:
     default: http://xDuo.top
   goto-domain:
